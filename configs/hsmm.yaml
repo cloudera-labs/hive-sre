@@ -1,0 +1,10 @@
+databaseIncludeLists:
+  tpcds_bin_partitioned_orc_10:
+    - "call_center"
+    - "catalog_page"
+    - "catalog_returns"
+    - "customer"
+    - "customer_address"
+  bu_raw:
+    - "cc_input"
+    - "geo_regions"

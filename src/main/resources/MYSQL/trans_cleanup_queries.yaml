@@ -1,0 +1,50 @@
+query_definition:
+  min_txns:
+    statement: "
+    SELECT
+    	M.MHL_TXNID,
+    	FROM_UNIXTIME(T.TXN_STARTED / 1000) as TXN_STARTED,
+    	T.TXN_STATE,
+    	FROM_UNIXTIME(T.TXN_LAST_HEARTBEAT/1000) as LAST_HEARTBEAT,
+    	T.TXN_HEARTBEAT_COUNT,
+    	T.TXN_TYPE
+    FROM
+    	MIN_HISTORY_LEVEL M
+        	INNER JOIN TXNS T ON M.MHL_TXNID = T.TXN_ID
+    WHERE
+    	T.TXN_STARTED / 1000 < UNIX_TIMESTAMP() - (3600 * ?)
+    "
+
+  stuck_cleanup:
+    statement: "
+    SELECT DISTINCT
+        CTC_DATABASE,
+        CTC_TABLE,
+        CTC_PARTITION
+    FROM
+        COMPLETED_TXN_COMPONENTS CTC
+    WHERE
+        CTC_TXNID > ${MIN_HIST_TXN};
+      and CTC.CTC_TXNID NOT IN (SELECT TXN_ID FROM TXNS WHERE TXN_STARTED / 1000 > (3600 * ${HOURS_OLD}));
+    "
+
+  hanging_completed_txns:
+    statement: "
+    SELECT DISTINCT
+        CTC_DATABASE,
+        CTC_TABLE,
+        CTC_PARTITION
+    FROM
+        COMPLETED_TXN_COMPONENTS CTC
+    WHERE
+        CTC.CTC_TXNID NOT IN (SELECT TXN_ID FROM TXNS WHERE TXN_STARTED / 1000 > (3600 * ${HOURS_OLD}));
+    "
+  remove_old_txn:
+    statement: "
+    DELETE FROM TXNS WHERE TXN_ID = ?
+    "
+
+  remove_old_min_txn:
+    statement: "
+    DELETE FROM MIN_HISTORY_LEVEL WHERE ?
+    "

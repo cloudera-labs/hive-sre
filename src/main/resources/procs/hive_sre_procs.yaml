@@ -1,0 +1,290 @@
+processes:
+  - type:                     "metastore.report"
+    id:                       1
+    active:                   true
+    displayName:              "Hive Metastore Summary Report"
+    title:                    "# Hive Metastore Summary Report (v.${Implementation-Version})\n"
+    note:                     "A summary of various Metastore DB counts on Tables, Parameters, Partitons, Types, etc\n"
+    header:                   "| Summary | Count |\n|:---|:---|"
+    queryDefinitionReference: "/hive_sre_queries.yaml"
+    errorDescription:         "Processing Issues"
+    successDescription:       "Hive Metastore Summary"
+    errorFilename:            hms_report_summary_err.txt
+    successFilename:          hms_report_summary.md
+    metastoreQueryDefinitions:
+      - query:                       "notification_log_count"
+        listingColumns: [ "count" ]
+        resultMessageDetailTemplate: "|Notification Log Entries|%1$s|"
+      - query:                       "hive_standard_authorization"
+        listingColumns: [ "count" ]
+        resultMessageDetailTemplate: "|Hive Standard Authorization Count|%1$s|"
+      - query:                       "dbs_count"
+        listingColumns: [ "count" ]
+        resultMessageDetailTemplate: "|Databases|%1$s|"
+      - query:                       "total_column_count"
+        listingColumns: [ "count" ]
+        resultMessageDetailTemplate: "|Table Columns|%1$s|"
+      - query:                       "partition_count"
+        listingColumns: [ "count" ]
+        resultMessageDetailTemplate: "|Partitions|%1$s|"
+      - query:                       "udf_count"
+        listingColumns: [ "count" ]
+        resultMessageDetailTemplate: "|UDF's|%1$s|"
+  - type:                     "metastore.report"
+    id:                       2
+    active:                   true
+    displayName:              "Hive Metastore Details"
+    title:                    "# Hive Metastore Details (v.${Implementation-Version})"
+    note:                     "Detailed breakdown of various Metastore DB data points"
+    queryDefinitionReference: "/hive_sre_queries.yaml"
+    errorDescription:         "Processing Issues"
+    successDescription:       "Hive Metastore"
+    errorFilename:            hms_report_detail_err.txt
+    successFilename:          hms_report_detail.md
+    metastoreQueryDefinitions:
+      - query:                       "dbs_parameters"
+        listingColumns: [ "name" ,"param_key", "param_value" ]
+        resultMessageHeader:         "\n## Database Parameters\n"
+        resultMessageDetailHeader:   "| DB | Key | Value |\n|:---|:---|:---|"
+        resultMessageDetailTemplate: "|%1$s|%2$s|%3$s|"
+      - query:                       "partition_count_by_type"
+        listingColumns: [ "tbl_type", "count" ]
+        resultMessageHeader:         "\n## Partition Count by Table Type\n"
+        resultMessageDetailHeader:   "| Table Type | Count |\n|:---|:---|"
+        resultMessageDetailTemplate: "|%1$s|%2$s|"
+      - query:                       "partition_count_by_table"
+        listingColumns: [ "db_name" ,"tbl_name", "tbl_type", "num_of_partitions" ]
+        resultMessageHeader:         "\n## Partition Count by Table\n"
+        resultMessageDetailHeader:   "| Database | Table | Type | Num of Partitions|\n|:---|:---|:---|:---|"
+        resultMessageDetailTemplate: "|%1$s|%2$s|%3$s|%4$s|"
+      - query:                       "tbl_param_summary"
+        listingColumns: [ "param_key", "count" ]
+        resultMessageHeader:         "\n## Table Parameter Summary\n"
+        resultMessageDetailHeader:   "| Parameter | Count |\n|:---|:---|"
+        resultMessageDetailTemplate: "|%1$s|%2$s|"
+      - query:                       "transactional_param_use"
+        listingColumns: [ "tbl_type" ,"param_value", "count" ]
+        resultMessageHeader:         "\n## Table Parameter Use Summary\n"
+        resultMessageDetailHeader:   "| Table Type | Parameter | Count |\n|:---|:---|:---|"
+        resultMessageDetailTemplate: "|%1$s|%2$s|%3$s|"
+      - query:                       "transactional_tables"
+        listingColumns: [ "name" ,"tbl_type", "param_value", "count" ]
+        resultMessageHeader:         "\n## Transactional Table Parameter Summary\n"
+        resultMessageDetailHeader:   "| Database | Table Type | Transaction Flag | Count|\n|:---|:---|:---|:---|"
+        resultMessageDetailTemplate: "|%1$s|%2$s|%3$s|%4$s|"
+      - query:                       "serde_table_type_use_summary"
+        listingColumns: [ "tbl_type" ,"input_format", "output_format", "count" ]
+        resultMessageHeader:         "\n## SERDE Table Type Use Summary\n"
+        resultMessageDetailHeader:   "| Table Type | Input Format | Output Format | Count |\n|:---|:---|:---|:---|"
+        resultMessageDetailTemplate: "|%1$s|%2$s|%3$s|%4$s|"
+      - query:                       "serde_use_by_db_tbl_summary"
+        listingColumns: [ "name" , "tbl_type" ,"input_format", "output_format", "count" ]
+        resultMessageHeader:         "\n## Serde by Database / Table Type Summary\n"
+        resultMessageDetailHeader:   "| Database | Table Type | Input Format | Output Format | Count |\n|:---|:---|:---|:---|:---|"
+        resultMessageDetailTemplate: "|%1$s|%2$s|%3$s|%4$s|%5$s|"
+  - type:                     "dbSet"
+    id:                       3
+    active:                   true
+    displayName:              "Table and Partition Scan"
+    title:                    "# Table and Partition Scan - Small Files (v.${Implementation-Version})\n"
+    queryDefinitionReference: "/hive_u3_queries.yaml"
+    dbListingQuery:           "db_tbl_count"
+    listingColumns: [ "name" ,"tbl_name" , "tbl_type" ,"part_name" , "path_location" ]
+    pathsListingQuery:        "tbl_part_locations"
+    commandChecks:
+      - displayName:        "Small Files"
+        title:              "## Small Files Report (<64Mg/File Average Size Threshold)\n"
+        note:               "Small files are the #1 cause of poor table performance in Hive.  Causes can range from ingestion techniques,
+        insert append operations, and excessive partition strategies.  Addressing table with small files that are *READ OFTEN* will
+        reduce compute resources, query times, and most likely space.\n
+        "
+        header:             "| Database | Table | Partition | Path | Dir. Count | File Count | Total Size | Avg. Size(MB) |\n|:---|:---|:---|:---|---:|---:|---:|---:|"
+        invertCheck:        false
+        pathCommand:        "count %5$s"
+        errorDescription:   "Processing Issues"
+        successDescription: "Small Files Report"
+        errorFilename:      small_files_proc_err.txt
+        successFilename:    small_files.md
+        reportOnResults:    false
+        reportOnPath:       false
+        processOnError:     false
+        processOnSuccess:   true
+        checkCalculations:
+          avgFileSizeCheck:
+            RECORDS:
+              test: "if ((%6$s > 0) && (%8$s / %7$s < %10$s)) false; else true;"
+              #              fail: "\"SMALLFILES: %1$s\t%2$s\t[:%4$s]\t%5$s\t%6$s\t%7$s\t%8$s\t\" + java.math.BigDecimal.valueOf((%8$s / %7$s)).divide(new java.math.BigDecimal(1024*1024), 3) + \"Mb\""
+              fail: "\"| %1$s | %2$s | %4$s | %5$s | %6$s | %7$s | %8$s | \" + java.math.BigDecimal.valueOf((%8$s / %7$s)).divide(new java.math.BigDecimal(1024*1024), 3) + \"|\""
+              params: [ "67108864" ]
+  - type:                     "dbSet"
+    id:                       4
+    active:                   true
+    displayName:              "Table and Partition Scan"
+    title:                    "# Table and Partition Scan - Volume Report (v.${Implementation-Version})\n"
+    queryDefinitionReference: "/hive_u3_queries.yaml"
+    dbListingQuery:           "db_tbl_count"
+    listingColumns: [ "name" ,"tbl_name" , "tbl_type" ,"part_name" , "path_location" ]
+    pathsListingQuery:        "tbl_part_locations"
+    commandChecks:
+      - displayName:        "Volume Report"
+        title:              "## Volume Report\n"
+        header:             "| Database | Table | Type | Partition | Path | Dir. Count | File Count | Total Size | \n|:---|:---|:---|:---|:---|---:|---:|---:|"
+        invertCheck:        false
+        pathCommand:        "count -h %5$s"
+        errorDescription:   "Processing Issues"
+        successDescription: "Table Volume Report"
+        errorFilename:      table_volume_err.txt
+        successFilename:    table_volume.md
+        reportOnResults:    false
+        reportOnPath:       false
+        processOnError:     false
+        processOnSuccess:   true
+        checkCalculations:
+          volumeCheck:
+            RECORDS:
+              test: "if ( \"%8$s\".equals(\"0\") || \"%9$s\".startsWith(\"hdfs\")) false; else true;"
+              pass: "\"| %1$s | %2$s | %3$s | %4$s | %5$s | %6$s | %7$s | %8$s %9$s |\""
+              fail: "\"| %1$s | %2$s | %3$s | %4$s | %5$s | %6$s | %7$s | %8$s |\""
+              params: [ "67108864" ]
+  - type:                     "dbSet"
+    id:                       5
+    active:                   true
+    displayName:              "Table and Partition Scan"
+    title:                    "# Table and Partition Scan - Empty Datasets (v.${Implementation-Version})"
+    queryDefinitionReference: "/hive_u3_queries.yaml"
+    dbListingQuery:           "db_tbl_count"
+    listingColumns: [ "name" ,"tbl_name" , "tbl_type" ,"part_name" , "path_location" ]
+    pathsListingQuery:        "tbl_part_locations"
+    commandChecks:
+      - displayName:        "Empty Tables / Partitions"
+        title:              "## Empty Tables / Partitions\n"
+        note:               "Empty Tables, usually the case with abandoned efforts that were cleanup on HDFS but not in the Hive
+        Metastore.\n
+        "
+        header:             "| Database | Table | Type | Partition | Path | \n|:---|:---|:---|:---|:---|"
+        invertCheck:        false
+        pathCommand:        "count -h %5$s"
+        errorDescription:   "Processing Issues"
+        successDescription: "Empty Datasets Report"
+        errorFilename:      empty_datasets_err.txt
+        successFilename:    empty_datasets.md
+        reportOnResults:    false
+        reportOnPath:       false
+        processOnError:     false
+        processOnSuccess:   true
+        checkCalculations:
+          volumeCheck:
+            RECORDS:
+              test: "if ( \"%6$s\".equals(\"1\") & \"%7$s\".equals(\"0\") & \"%8$s\".equals(\"0\") ) true; else false;"
+              pass: "\"| %1$s | %2$s | %3$s | %4$s | %5$s |\""
+              params: [ "67108864" ]
+  - type:                     "dbSet"
+    id:                       6
+    active:                   true
+    displayName:              "Hive Compaction Check"
+    title:                    "-- Hive Compaction Check (v.${Implementation-Version})"
+    queryDefinitionReference: "/hive_u3_queries.yaml"
+    dbListingQuery:           "db_tbl_count"
+    listingColumns: [ "name" ,"tbl_name" , "tbl_type" ,"part_name", "path_location" ]
+    pathsListingQuery:        "managed_tbl_locations"
+    commandChecks:
+      - displayName:        "Compaction Check"
+        note:               "-- Hive will compact managed tables under normal HIVE Standard Operations.  Those compactions are triggered
+        on tables/partitions once they've reached certain thresholds.  But sometimes, tables/partitions that haven't reached
+        those limits and are static, could benefit from a MAJOR compaction.
+        "
+        invertCheck:        false
+        pathCommand:        "lsp -R -F .*delta_.* -t -sp -f path \"%5$s\""
+        #        onSuccessPathCommand: "ALTER TABLE %1$s.%2$s COMPACT 'MAJOR'; TODO: Need to account for Partitions."
+        errorDescription:   "Issues"
+        successDescription: "Compaction SQL Script"
+        errorFilename:      "compactions_issues.txt"
+        successFilename:    "compactions.sql"
+        reportOnResults:    false
+        reportOnPath:       true
+        processOnError:     false
+        processOnSuccess:   true
+        checkCalculations:
+          partitionCheck:
+            PATH:
+              test: "if (\"%4$s\".trim().length() == 0) true; else false;"
+              pass: "\"ALTER TABLE `%1$s`.`%2$s` COMPACT \\\"MAJOR\\\";\""
+              fail: "\"ALTER TABLE `%1$s`.`%2$s` PARTITION (\" + com.streever.hive.sre.Utils.dirToPartitionSpec('%4$s') + \") COMPACT \\\"MAJOR\\\"\\;\""
+              params: [ "hive" ]
+  - type:                     "metastore.report"
+    id:                       7
+    active:                   false
+    skip:                     true
+    displayName:              "Hive ACID Tables"
+    title:                    "# Hive ACID Tables (v.${Implementation-Version})"
+    note:                     "Post Upgrade from Hive 1/2 to Hive 3 may result in statistics that are wrong.  Actually, the statistics were
+    wrong in Hive 1/2, but the CBO wasn't using them as it should and recalculating plans.  In Hive 3, these statistics when
+    wrong and picked up by the CBO, could cause datasets to be disregarded.  If you are experience data issues with any
+    tables that were ACID tables BEFORE the upgrade, you should run 'ANALYZE' on them to fix those statistics.\n
+    "
+    queryDefinitionReference: "/hive_sre_queries.yaml"
+    errorDescription:         "Processing Issues"
+    successDescription:       "Hive Metastore"
+    errorFilename:            "acid_analyze_tables_err.txt"
+    successFilename:          "acid_analyze_tables.md"
+    metastoreQueryDefinitions:
+      - query:                       "acid_table_list"
+        listingColumns: [ "name" ,"tbl_name", "part_name" ]
+        resultMessageHeader:         "## Statistics Rebuild"
+        resultMessageDetailHeader:   "| DB | Table | Partitions | Hive SQL |\n|:---|:---|:---|:---|"
+        check:
+          test: "if (\"%3$s\".equals(\"null\")) true; else false;"
+          pass: "\"| %1$s | %2$s | %3$s | ALTER TABLE `%1$s`.`%2$s` COMPUTE STATISTICS FOR COLUMNS;|\""
+          fail: "\"| %1$s | %2$s | %3$s | ALTER TABLE `%1$s`.`%2$s` PARTITION (\" + com.streever.hive.sre.Utils.dirToPartitionSpec('%3$s') + \") COMPUTE STATISTICS FOR COLUMNS;\""
+  - type:                     "dbSet"
+    id:                       8
+    active:                   false
+    skip:                     true
+    displayName:              "Analyze Hive ACID Tables"
+    title:                    "# Analyze Hive ACID Tables (v.${Implementation-Version})\n"
+    note:                     "Post Upgrade from Hive 1/2 to Hive 3 may result in statistics that are wrong.  Actually, the statistics were
+    wrong in Hive 1/2, but the CBO wasn't using them as it should and recalculating plans.  In Hive 3, these statistics when
+    wrong and picked up by the CBO, could cause datasets to be disregarded.  If you are experience data issues with any
+    tables that were ACID tables BEFORE the upgrade, you should run 'ANALYZE' on them to fix those statistics.\n\n
+    *NOTE*: Markdown Renders WILL distort the commands listed.  Copy from the source file to ensure the commands are
+    correct.\n
+    "
+    header:  "| DB | Table | Partitions | Hive SQL |\n|:---|:---|:---|:---|"
+    queryDefinitionReference: "/hive_sre_queries.yaml"
+    errorDescription:         "Processing Issues"
+    successDescription:       "Hive Metastore"
+    errorFilename:            "acid_analyze_tables_err.txt"
+    successFilename:          "acid_analyze_tables.md"
+    dbListingQuery:           "db_tbl_count"
+    listingColumns: [ "name" ,"tbl_name", "partition_keys" ]
+    pathsListingQuery:        "acid_table_list"
+    calculationCheck:
+      test: "if (\"%3$s\" == null || \"%3$s\".trim().length() == 0) true; else false;"
+      pass: "\"| %1$s | %2$s | %3$s | ANALYZE TABLE `%1$s`.`%2$s` COMPUTE STATISTICS;|\""
+      fail: "\"| %1$s | %2$s | %3$s | ANALYZE TABLE `%1$s`.`%2$s` PARTITION (%3$s) COMPUTE STATISTICS;\""
+  - type:                     "dbSet"
+    id:                       9
+    active:                   false
+    skip:                     true
+    displayName:              "Analyze Hive ACID Tables - Detailed"
+    title:                    "# Analyze Hive ACID Tables - Detailed (v.${Implementation-Version})\n"
+    note:                     "Post Upgrade from Hive 1/2 to Hive 3 may result in statistics that are wrong.  Actually, the statistics were
+    wrong in Hive 1/2, but the CBO wasn't using them as it should and recalculating plans.  In Hive 3, these statistics when
+    wrong and picked up by the CBO, could cause datasets to be disregarded.  If you are experience data issues with any
+    tables that were ACID tables BEFORE the upgrade, you should run 'ANALYZE' on them to fix those statistics.\n\n
+    *NOTE*: Markdown Renders WILL distort the commands listed.  Copy from the source file to ensure the commands are
+    correct.\n
+    "
+    header:  "| DB | Table | Partitions | Hive SQL |\n|:---|:---|:---|:---|"
+    queryDefinitionReference: "/hive_sre_queries.yaml"
+    errorDescription:         "Processing Issues"
+    successDescription:       "Hive Metastore"
+    errorFilename:            "acid_analyze_tables_detailed_err.txt"
+    successFilename:          "acid_analyze_tables_detailed.md"
+    dbListingQuery:           "db_tbl_count"
+    listingColumns: [ "name" ,"tbl_name", "part_name" ]
+    pathsListingQuery:        "acid_table_list_detail"
+    calculationCheck:
+      test: "if (\"%3$s\" == null || \"%3$s\".trim().length() == 0) true; else false;"
+      pass: "\"| %1$s | %2$s | %3$s | ANALYZE TABLE `%1$s`.`%2$s` COMPUTE STATISTICS;|\""
+      fail: "\"| %1$s | %2$s | %3$s | ANALYZE TABLE `%1$s`.`%2$s` PARTITION (\" + com.streever.hive.sre.Utils.dirToPartitionSpec('%3$s') + \") COMPUTE STATISTICS;\""

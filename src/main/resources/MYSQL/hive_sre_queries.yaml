@@ -1,0 +1,331 @@
+query_definitions:
+  notification_log_count:
+    statement: "
+      SELECT COUNT(*) as count FROM NOTIFICATION_LOG
+    "
+  hive_standard_authorization:
+    statement: "
+      SELECT COUNT(*) as count FROM ROLES
+    "
+  dbs_count:
+    statement: "
+      SELECT COUNT(*) as count FROM DBS
+    "
+  dbs_parameters:
+    statement: "
+      SELECT
+        D.NAME, DP.PARAM_KEY, DP.PARAM_VALUE
+      FROM
+        DBS D INNER JOIN DATABASE_PARAMS DP
+               ON D.DB_ID = DP.DB_ID
+    "
+  dbs_table_type_estate:
+    statement: "
+      SELECT TBL_TYPE, COUNT(*) as count FROM TBLS GROUP BY TBL_TYPE
+    "
+  dbs_table_type_count:
+    statement: "
+      SELECT
+        D.NAME, T.TBL_TYPE, COUNT(*) as count
+      FROM
+        TBLS T JOIN DBS D on T.DB_ID = D.DB_ID
+      GROUP BY D.NAME, T.TBL_TYPE
+      ORDER BY D.NAME, T.TBL_TYPE
+    "
+  total_column_count:
+    statement: "
+      SELECT COUNT(*) as count FROM COLUMNS_V2
+    "
+  table_column_by_type_count:
+    statement: "
+      SELECT
+          T.TBL_TYPE,
+          COUNT(*) as count
+      FROM
+          COLUMNS_V2 C
+      JOIN
+          SDS S
+      ON
+          S.CD_ID = C.CD_ID
+      JOIN
+          TBLS T
+      ON
+          T.SD_ID = S.SD_ID
+      GROUP BY
+          T.TBL_TYPE
+    "
+  table_column_count:
+    statement: "
+      SELECT
+          D.NAME,
+          T.TBL_NAME,
+          T.TBL_TYPE,
+          COUNT(*) as count
+      FROM
+          COLUMNS_V2 C
+      JOIN
+          SDS S
+      ON
+          S.CD_ID = C.CD_ID
+      JOIN
+          TBLS T
+      ON
+          T.SD_ID = S.SD_ID
+      JOIN
+        DBS D
+      ON
+        T.DB_ID = D.DB_ID
+      GROUP BY
+          D.NAME,
+          T.TBL_NAME,
+          T.TBL_TYPE
+      ORDER BY
+          COUNT DESC
+    "
+  partition_count:
+    statement: "
+      SELECT
+          COUNT(*) as count
+      FROM
+          PARTITIONS P
+      JOIN
+          TBLS T
+      ON
+          P.TBL_ID = T.TBL_ID
+    "
+  partition_count_by_type:
+    statement: "
+    SELECT
+      T.TBL_TYPE,
+      COUNT(*) as count
+    FROM
+      PARTITIONS P
+    JOIN
+      TBLS T
+    ON
+      P.TBL_ID = T.TBL_ID
+    GROUP BY
+      T.TBL_TYPE
+    "
+  partition_count_by_table:
+    statement: "
+    SELECT DISTINCT
+        db_name,
+        tbl_name,
+        tbl_type,
+        COUNT(DISTINCT part_id) AS num_of_partitions
+    FROM
+        (SELECT
+             D.NAME             AS DB_NAME,
+             T.TBL_NAME         AS TBL_NAME,
+             T.TBL_TYPE         AS TBL_TYPE,
+             P.PART_ID          AS PART_ID
+         FROM
+             DBS D
+                 INNER JOIN
+                 TBLS T
+                 ON
+                     D.DB_ID = T.DB_ID
+                 LEFT OUTER JOIN
+                 SDS S
+                 ON
+                     T.SD_ID = S.SD_ID
+                 LEFT OUTER JOIN
+                 SERDES SER
+                 ON
+                     S.SERDE_ID = SER.SERDE_ID
+                 LEFT OUTER JOIN
+                 TABLE_PARAMS PARAMS
+                 ON
+                     T.TBL_ID = PARAMS.TBL_ID
+                 LEFT OUTER JOIN
+                 PARTITIONS P
+                 ON
+                     T.TBL_ID = P.TBL_ID
+                 LEFT OUTER JOIN
+                 SDS PS
+                 ON
+                     P.SD_ID = PS.SD_ID
+                 LEFT OUTER JOIN
+                 SERDES PSER
+                 ON
+                     PS.SERDE_ID = PSER.SERDE_ID
+        ) BASE
+    GROUP BY
+        db_name,
+        tbl_name,
+        tbl_type
+    HAVING
+        COUNT(part_id) > 0
+    ORDER BY
+        num_of_partitions DESC
+"
+  tbl_param_summary:
+    statement: "
+      SELECT
+        PARAM_KEY,
+        COUNT(*) as count
+      FROM
+        TABLE_PARAMS
+      GROUP BY
+        PARAM_KEY
+    "
+  transactional_param_use:
+    statement: "
+      SELECT
+        T.TBL_TYPE,
+        TP.PARAM_VALUE,
+        COUNT(*) as count
+      FROM
+        TBLS T
+      JOIN
+        TABLE_PARAMS TP
+      ON
+        T.TBL_ID = TP.TBL_ID
+      WHERE
+        TP.PARAM_KEY = 'transactional'
+      GROUP BY
+        T.TBL_TYPE,
+        TP.PARAM_VALUE
+      ORDER BY
+        count DESC
+    "
+  transactional_tables:
+    statement: "
+      SELECT
+        D.NAME,
+        T.TBL_TYPE,
+        TP.PARAM_VALUE AS TRANSACTIONAL,
+        COUNT(*) as count
+      FROM
+        DBS D
+      INNER JOIN
+        TBLS T
+      ON
+        D.DB_ID = T.DB_ID
+      JOIN
+        TABLE_PARAMS TP
+      ON
+        T.TBL_ID = TP.TBL_ID
+      WHERE
+        TP.PARAM_KEY = 'transactional'
+      GROUP BY
+        D.NAME,
+        T.TBL_TYPE,
+        TP.PARAM_VALUE
+    "
+  serde_table_type_use_summary:
+    statement: "
+      SELECT
+        T.TBL_TYPE,
+        S.INPUT_FORMAT,
+        S.OUTPUT_FORMAT,
+        COUNT(*) as count
+      FROM
+        SDS S
+      JOIN
+        TBLS T
+      ON
+        T.SD_ID = S.SD_ID
+      GROUP BY
+        T.TBL_TYPE,
+        S.INPUT_FORMAT,
+        S.OUTPUT_FORMAT
+    "
+  serde_use_by_db_tbl_summary:
+    statement: "
+      SELECT
+        D.NAME,
+        T.TBL_TYPE,
+        S.INPUT_FORMAT,
+        S.OUTPUT_FORMAT,
+        COUNT(*) as count
+      FROM
+        SDS S
+      JOIN
+        TBLS T
+      ON
+        T.SD_ID = S.SD_ID
+      JOIN
+        DBS D
+      ON
+        T.DB_ID = D.DB_ID
+      GROUP BY
+        D.NAME,
+        T.TBL_TYPE,
+        S.INPUT_FORMAT,
+        S.OUTPUT_FORMAT
+    "
+  udf_count:
+    statement: "
+      SELECT COUNT(*) as count FROM FUNCS
+    "
+  db_tbl_count:
+    statement: "SELECT
+                     name,
+                     COUNT(tbl_name) tbl_count
+                 FROM
+                     DBS dbs
+                 INNER JOIN
+                     TBLS tbls
+                 ON
+                     dbs.db_id = tbls.db_id
+                 WHERE
+                     dbs.name LIKE ?
+                 GROUP BY
+                     name"
+    parameters:
+      dbs:
+        initial: "%"
+        sqlType: 12
+        location: 1
+  acid_table_list:
+    statement: "
+SELECT
+    D.NAME,
+    T.TBL_NAME,
+    GROUP_CONCAT(P.PKEY_NAME ORDER BY P.INTEGER_IDX ASC) AS PARTITION_KEYS
+FROM
+    DBS D
+        INNER JOIN TBLS T ON D.DB_ID = T.DB_ID
+        INNER JOIN TABLE_PARAMS TP ON T.TBL_ID = TP.TBL_ID
+        LEFT OUTER JOIN PARTITION_KEYS P
+                   ON T.TBL_ID = P.TBL_ID
+WHERE
+      D.NAME LIKE ?
+  AND T.TBL_TYPE = 'MANAGED_TABLE'
+  AND TP.PARAM_KEY = 'transactional'
+  AND (TP.PARAM_VALUE = 'true' OR TP.PARAM_VALUE = 'TRUE' OR TP.PARAM_VALUE = 'True')
+GROUP BY
+    D.NAME, T.TBL_NAME
+    "
+    parameters:
+      dbs:
+        initial:  "%"
+        sqlType:  12
+        location: 1
+  acid_table_list_detail:
+    statement: "
+SELECT
+    D.NAME,
+    T.TBL_NAME,
+    P.PART_NAME
+FROM
+    DBS D
+        INNER JOIN TBLS T ON D.DB_ID = T.DB_ID
+        INNER JOIN TABLE_PARAMS TP ON T.TBL_ID = TP.TBL_ID
+        INNER JOIN PARTITIONS P
+                        ON T.TBL_ID = P.TBL_ID
+WHERE
+        D.NAME LIKE ?
+  AND T.TBL_TYPE = 'MANAGED_TABLE'
+  AND TP.PARAM_KEY = 'transactional'
+  AND (TP.PARAM_VALUE = 'true' OR TP.PARAM_VALUE = 'TRUE' OR TP.PARAM_VALUE = 'True')
+ORDER BY
+    D.NAME, T.TBL_NAME
+"
+    parameters:
+      dbs:
+        initial:  "%"
+        sqlType:  12
+        location: 1

@@ -1,0 +1,116 @@
+#!/usr/bin/env sh
+
+# Resolve Symlinks of exe
+RESOLVED_EXE_PATH=`readlink -f $0`
+# Find Dir of resolved script
+APP_DIR=$(dirname $RESOLVED_EXE_PATH)
+CURR_DIR=$(pwd)
+
+echo "APP_DIR: $APP_DIR"
+
+if [[ "${APP_DIR}" == "${HOME}/.hive-sre/bin" ]]; then
+  echo "Running from User Local Instance"
+else
+  echo "Running Host instance"
+fi
+
+if [[ ! -d ${HOME}/.hive-sre/aux_libs ]]; then
+  mkdir -p ${HOME}/.hive-sre/aux_libs
+fi
+
+# Location we can use for custom control files
+if [[ ! -d ${HOME}/.hive-sre/cust ]]; then
+  mkdir -p ${HOME}/.hive-sre/cust
+fi
+
+if [ ! -z ${JAVA_HOME} ]; then
+  JAVA="${JAVA_HOME}/bin/java"
+else
+  JAVA=java
+fi
+
+PRG_ARGS=
+CMD_CP=${HOME}/.hive-sre/cust
+
+# Set the default.
+export HADOOP_CONF_DIR="/etc/hadoop/conf"
+
+AUX_LIBS_DIR=${HIVE_SRE_AUX_LIBS:-${HOME}/.hive-sre/aux_libs}
+
+SHOW_CP=
+CMD_DIRECTIVE=
+CMD_ARGS=
+VERBOSE=
+HADOOP_CLASSPATH=
+APP_JAVA_OPTS=${JAVA_OPTS:-"-Xms1024m -Xmx2048m -XX:+UseG1GC"}
+#APP_JAVA_OPTS=${JAVA_OPTS:-}
+
+if [[ ! -d ${AUX_LIBS_DIR} ]]; then
+    mkdir -p ${AUX_LIBS_DIR}
+fi
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -D*)
+      APP_JAVA_OPTS="${APP_JAVA_OPTS} ${1}"
+      shift
+      ;;
+#    --hadoop-classpath)
+#      shift
+#      HADOOP_CLASSPATH="true"
+#      ;;
+    --aux-libs)
+      shift
+      export AUX_LIBS_DIR=$1
+      shift
+      ;;
+    --show-cp)
+      shift
+      SHOW_CP="true"
+      ;;
+    *)
+      PRG_ARGS="${PRG_ARGS} \"$1\""
+      shift
+  esac
+done
+
+#echo "Program Args: ${PRG_ARGS}"
+
+if [[ ! -d ${AUX_LIBS_DIR} ]]; then
+    mkdir -p ${AUX_LIBS_DIR}
+fi
+
+if [[ -f $APP_DIR/../lib/hive-sre-shaded.jar ]]; then
+    CMD_CP=$APP_DIR/../lib/hive-sre-shaded.jar:${CMD_CP}
+else
+    echo "Couldn't locate hive-sre Library at: ${APP_DIR}/../lib/hive-sre-shaded.jar " >&2
+    exit -1
+fi
+
+for jarFile in `ls -d ${AUX_LIBS_DIR}/*.jar 2> /dev/null`; do
+    CMD_CP=${CMD_CP}:$jarFile
+done
+
+#if [[ "${HADOOP_CLASSPATH}x" != "x" ]]; then
+#    CMD_CP=${CMD_CP}:`hadoop classpath`
+#fi
+
+CLI_CMD=""
+
+if [[ "${SHOW_CP}x" != "x" ]]; then
+    echo "Classpath: ${CMD_CP}"
+fi
+
+if [[ "${APP_JAVA_OPTS}x" != "x" ]]; then
+    echo "Application JAVA_OPTS=${APP_JAVA_OPTS}" 1>&2
+fi
+
+if [[ "${PRG_ARGS}x" != "x" ]]; then
+    echo "PRG_ARGS=${PRG_ARGS}" 1>&2
+fi
+
+$(${JAVA} -version)
+
+CLI_CMD="${JAVA} -cp ${CMD_CP} ${APP_JAVA_OPTS} com.cloudera.utils.hive.Sre ${PRG_ARGS}"
+
+eval "${CLI_CMD}"

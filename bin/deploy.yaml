@@ -1,0 +1,48 @@
+- hosts: edge
+  become: true
+
+  vars:
+
+
+  tasks:
+    - name: Check Directories
+      file:
+        path: /usr/local/hive-sre/bin
+        state: directory
+
+    - name: Check Directories
+      file:
+        path: /usr/local/hive-sre/lib
+        state: directory
+
+    - name: Copy bin
+      copy:
+        src: hive-sre
+        dest: /usr/local/hive-sre/bin
+        mode: 0755
+
+    - name: Copy bin
+      copy:
+        src: hive-sre-cli
+        dest: /usr/local/hive-sre/bin
+        mode: 0755
+
+    - name: Copy lib
+      copy:
+        src: ../target/hive-sre-shaded.jar
+        dest: /usr/local/hive-sre/lib
+        mode: 0755
+
+    - name: Link executable
+      file:
+        src: /usr/local/hive-sre/bin/hive-sre
+        dest: /usr/local/bin/hive-sre
+        mode: 0755
+        state: link
+
+    - name: Link executable
+      file:
+        src: /usr/local/hive-sre/bin/hive-sre-cli
+        dest: /usr/local/bin/hive-sre-cli
+        mode: 0755
+        state: link

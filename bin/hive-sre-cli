@@ -1,0 +1,183 @@
+#!/usr/bin/env sh
+
+
+# Resolve Symlinks of exe
+RESOLVED_EXE_PATH=`readlink -f $0`
+# Find Dir of resolved script
+APP_DIR=$(dirname $RESOLVED_EXE_PATH)
+CURR_DIR=$(pwd)
+
+echo "APP_DIR: $APP_DIR"
+
+if [[ "${APP_DIR}" == "${HOME}/.hive-sre/bin" ]]; then
+  echo "Running from User Local Instance"
+else
+  echo "Running Host instance"
+fi
+
+PRG_ARGS=
+CMD_CP=
+
+if [ ! -z ${JAVA_HOME} ]; then
+  JAVA="${JAVA_HOME}/bin/java"
+else
+  JAVA=java
+fi
+
+# Set the default.
+export HADOOP_CONF_DIR="/etc/hadoop/conf"
+
+AUX_LIBS_DIR=${HADOOP_CLI_AUX_LIBS:-${HOME}/.hadoop-cli/aux_libs}
+
+SHOW_CP=
+CMD_DIRECTIVE=
+CMD_ARGS=
+VERBOSE=
+ENV_VAR_FILE=
+HADOOP_CLASSPATH=
+APP_JAVA_OPTS=${JAVA_OPTS:-}
+
+if [[ -f ${HOME}/.hadoop-cli/env-var.props || -L ${HOME}/.hadoop-cli/env-var.props ]]; then
+    ENV_VAR_FILE=${HOME}/.hadoop-cli/env-var.props
+fi
+
+if [[ ! -d ${HOME}/.hadoop-cli/aux_libs ]]; then
+    mkdir -p ${HOME}/.hadoop-cli/aux_libs
+fi
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -D*)
+      APP_JAVA_OPTS="${APP_JAVA_OPTS} ${1}"
+      shift
+      ;;
+    -i|--init)
+      shift
+      PRG_ARGS="${PRG_ARGS} -i \"${1}\""
+      shift
+      ;;
+    -f|--file)
+      shift
+      PRG_ARGS="${PRG_ARGS} -f \"${1}\""
+      shift
+      ;;
+    -d|--debug)
+      shift
+      PRG_ARGS="${PRG_ARGS} -d"
+      ;;
+    -t|--template)
+      shift
+      PRG_ARGS="${PRG_ARGS} -t \"${1}\""
+      shift
+      ;;
+    -td|--template-delimiter)
+      shift
+      PRG_ARGS="${PRG_ARGS} -td \"${1}\""
+      shift
+      ;;
+    -stdin)
+      shift
+      PRG_ARGS="${PRG_ARGS} -stdin"
+      ;;
+    -ef|--env-file)
+      shift
+      ENV_VAR_FILE=${1}
+      ;;
+    -h|--help)
+      shift
+      PRG_ARGS="${PRG_ARGS} -h"
+      ;;
+    --config)
+      shift
+      export HADOOP_CONF_DIR=$1
+      shift
+      ;;
+    --aux-libs)
+      shift
+      export AUX_LIBS_DIR=$1
+      shift
+      ;;
+#    --hadoop-classpath)
+#      shift
+#      HADOOP_CLASSPATH="true"
+#      ;;
+    --show-cp)
+      shift
+      SHOW_CP="true"
+      ;;
+    -s|--silent)
+      shift
+      PRG_ARGS="${PRG_ARGS} -s"
+      ;;
+    -v|--verbose)
+      shift
+      PRG_ARGS="${PRG_ARGS} -v"
+      VERBOSE="true"
+      ;;
+    -e|--execute)
+      shift
+      PRG_ARGS="${PRG_ARGS} -e \"${1}\""
+      shift
+      ;;
+    *)
+      PRG_ARGS="${PRG_ARGS} $@"
+      break;
+  esac
+done
+
+if [[ "${ENV_VAR_FILE}x" != "x" ]]; then
+    PRG_ARGS="${PRG_ARGS} -ef \"${ENV_VAR_FILE}\""
+fi
+
+#echo "Program Args: ${PRG_ARGS}"
+
+if [[ ! -d ${AUX_LIBS_DIR} ]]; then
+    mkdir -p ${AUX_LIBS_DIR}
+fi
+
+SHADED=
+# Choose to use embedded libs (Hadoop 3+) or get Hadoop Classpath locally
+if [[ "${HADOOP_CLASSPATH}x" != "x" ]]; then
+  echo "Picking up local Hadoop Classpath Libs."
+  SHADED=shaded-no-hadoop
+  CMD_CP=${CMD_CP}:$(hadoop classpath)
+  echo "hive-sre-cli with local Hadoop Classpath Libs not supported"
+  exit 1
+else
+  SHADED=shaded
+fi
+
+if [[ -f $APP_DIR/../lib/hive-sre-$SHADED.jar ]]; then
+    CMD_CP=$APP_DIR/../lib/hive-sre-$SHADED.jar:${CMD_CP}
+else
+    echo "Couldn't locate Hadoop Cli Library at: ${APP_DIR}/../lib/hive-sre-${SHADED}.jar"
+    exit 1
+fi
+
+for jarFile in `ls -d ${AUX_LIBS_DIR}/*.jar 2> /dev/null`; do
+    CMD_CP=${CMD_CP}:$jarFile
+done
+
+CLI_CMD=""
+
+if [[ "${VERBOSE}x" != "x" ]]; then
+    echo "Passing app Params: ${PRG_ARGS}"
+fi
+
+if [[ "${SHOW_CP}x" != "x" ]]; then
+    echo "Classpath: ${CMD_CP}"
+    echo "Program args: ${PRG_ARGS}"
+fi
+
+if [[ "${APP_JAVA_OPTS}x" != "x" ]]; then
+    echo "Application JAVA_OPTS=${APP_JAVA_OPTS}"
+fi
+
+JV=$(${JAVA} -version)
+
+echo "Using Java Version: "
+echo $JV
+
+CLI_CMD="${JAVA} -cp ${CMD_CP} ${APP_JAVA_OPTS} com.streever.hadoop.HadoopShell ${PRG_ARGS}"
+
+eval "${CLI_CMD}"

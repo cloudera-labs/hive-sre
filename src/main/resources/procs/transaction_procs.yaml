@@ -1,0 +1,164 @@
+processes:
+  - type:                     "metastore.report"
+    id:                       1
+    active:                   true
+    name:                     "Hive Metastore Summary Report"
+    header:                   "# Hive Metastore Summary Report\n\n| Summary | Count |\n|:---|:---|"
+    queryDefinitionReference: "/hive_sre_queries.yaml"
+    errorDescription:         "Processing Issues"
+    successDescription:       "Hive Metastore Summary"
+    errorFilename:            hms_report_summary_err.txt
+    successFilename:          hms_report_summary.md
+    metastoreQueryDefinitions:
+      - query:                       "notification_log_count"
+        listingColumns: ["count"]
+        resultMessageDetailTemplate: "|Notification Log Entries|%1$s|"
+      - query:                       "hive_standard_authorization"
+        listingColumns: ["count"]
+        resultMessageDetailTemplate: "|Hive Standard Authorization Count|%1$s|"
+      - query:                       "dbs_count"
+        listingColumns: ["count"]
+        resultMessageDetailTemplate: "|Databases|%1$s|"
+      - query:                       "total_column_count"
+        listingColumns: ["count"]
+        resultMessageDetailTemplate: "|Table Columns|%1$s|"
+      - query:                       "partition_count"
+        listingColumns: ["count"]
+        resultMessageDetailTemplate: "|Partitions|%1$s|"
+      - query:                       "udf_count"
+        listingColumns: ["count"]
+        resultMessageDetailTemplate: "|UDF's|%1$s|"
+  - type:                     "metastore.report"
+    id:                       2
+    active:                   true
+    name:                     "Hive Metastore Details"
+    header:                   "# Hive Metastore Details"
+    queryDefinitionReference: "/hive_sre_queries.yaml"
+    errorDescription:         "Processing Issues"
+    successDescription:       "Hive Metastore"
+    errorFilename:            hms_report_detail_err.txt
+    successFilename:          hms_report_detail.md
+    metastoreQueryDefinitions:
+      - query:                       "dbs_parameters"
+        listingColumns: ["name" ,"param_key", "param_value"]
+        resultMessageHeader:         "## Database Parameters"
+        resultMessageDetailHeader:   "| DB | Key | Value |\n|:---|:---|:---|"
+        resultMessageDetailTemplate: "|%1$s|%2$s|%3$s|"
+      - query:                       "partition_count_by_type"
+        listingColumns: ["tbl_type", "count"]
+        resultMessageHeader:         "## Partition Count by Table Type"
+        resultMessageDetailHeader:   "| Table Type | Count |\n|:---|:---|"
+        resultMessageDetailTemplate: "|%1$s|%2$s|"
+      - query:                       "partition_count_by_table"
+        listingColumns: ["db_name" ,"tbl_name", "tbl_type", "num_of_partitions"]
+        resultMessageHeader:         "## Partition Count by Table"
+        resultMessageDetailHeader:   "| Database | Table | Type | Num of Partitions|\n|:---|:---|:---|:---|"
+        resultMessageDetailTemplate: "|%1$s|%2$s|%3$s|%4$s|"
+      - query:                       "tbl_param_summary"
+        listingColumns: ["param_key", "count"]
+        resultMessageHeader:         "## Table Parameter Summary"
+        resultMessageDetailHeader:   "| Parameter | Count |\n|:---|:---|"
+        resultMessageDetailTemplate: "|%1$s|%2$s|"
+      - query:                       "transactional_param_use"
+        listingColumns: ["tbl_type" ,"param_value", "count"]
+        resultMessageHeader:         "## Table Parameter Use Summary"
+        resultMessageDetailHeader:   "| Table Type | Parameter | Count |\n|:---|:---|:---|"
+        resultMessageDetailTemplate: "|%1$s|%2$s|%3$s|"
+      - query:                       "transactional_tables"
+        listingColumns: ["name" ,"tbl_type", "param_value", "count"]
+        resultMessageHeader:         "## Transactional Table Parameter Summary"
+        resultMessageDetailHeader:   "| Database | Table Type | Transaction Flag | Count|\n|:---|:---|:---|:---|"
+        resultMessageDetailTemplate: "|%1$s|%2$s|%3$s|%4$s|"
+      - query:                       "serde_table_type_use_summary"
+        listingColumns: ["tbl_type" ,"input_format", "output_format", "count"]
+        resultMessageHeader:         "## SERDE Table Type Use Summary"
+        resultMessageDetailHeader:   "| Table Type | Input Format | Output Format | Count |\n|:---|:---|:---|:---|"
+        resultMessageDetailTemplate: "|%1$s|%2$s|%3$s|%4$s|"
+      - query:                       "serde_use_by_db_tbl_summary"
+        listingColumns: ["name" , "tbl_type" ,"input_format", "output_format", "count"]
+        resultMessageHeader:         "## Serde by Database / Table Type Summary"
+        resultMessageDetailHeader:   "| Database | Table Type | Input Format | Output Format | Count |\n|:---|:---|:---|:---|:---|"
+        resultMessageDetailTemplate: "|%1$s|%2$s|%3$s|%4$s|%5$s|"
+  - type:                     "dbSet"
+    id:                       3
+    active:                   true
+    name:                     "Table and Partition Scan for Small Files"
+    queryDefinitionReference: "/hive_u3_queries.yaml"
+    dbListingQuery:           "db_tbl_count"
+    listingColumns: ["name" ,"tbl_name" , "tbl_type" ,"part_name" , "path_location"]
+    pathsListingQuery:        "tbl_part_locations"
+    checks:
+      - name:                     "Small Files"
+        header:                   "# Hive Small Files Check\n| Database | Table | Partition | Path | Dir. Count | File Count | Total Size | Avg. Size(MB) |\n|:---|:---|:---|:---|---:|---:|---:|---:|"
+        invertCheck:              false
+        pathCommand:              "count %5$s"
+        errorDescription:         "Processing Issues"
+        successDescription:       "Small Files Report"
+        errorFilename:            small_files_proc_err.txt
+        successFilename:          small_files.md
+        reportOnResults:          false
+        reportOnPath:             false
+        processOnError:           false
+        processOnSuccess:         true
+        checkCalculations:
+          avgFileSizeCheck:
+            RECORDS:
+              test: "if ((%6$s > 0) && (%8$s / %7$s < %10$s)) false; else true;"
+              #              fail: "\"SMALLFILES: %1$s\t%2$s\t[:%4$s]\t%5$s\t%6$s\t%7$s\t%8$s\t\" + java.math.BigDecimal.valueOf((%8$s / %7$s)).divide(new java.math.BigDecimal(1024*1024), 3) + \"Mb\""
+              fail: "\"| %1$s | %2$s | %4$s | %5$s | %6$s | %7$s | %8$s | \" + java.math.BigDecimal.valueOf((%8$s / %7$s)).divide(new java.math.BigDecimal(1024*1024), 3) "
+              params: ["67108864"]
+  - type:                     "dbSet"
+    id:                       4
+    active:                   true
+    name:                     "Table and Partition Scan - Volume Report"
+    queryDefinitionReference: "/hive_u3_queries.yaml"
+    dbListingQuery:           "db_tbl_count"
+    listingColumns: ["name" ,"tbl_name" , "tbl_type" ,"part_name" , "path_location"]
+    pathsListingQuery:        "tbl_part_locations"
+    checks:
+      - name:                     "Table / Partition Volume"
+        header:                   "# Table / Partition Volume\n| Database | Table | Type | Partition | Path | Dir. Count | File Count | Total Size | \n|:---|:---|:---|:---|:---|---:|---:|---:|"
+        invertCheck:              false
+        pathCommand:              "count -h %5$s"
+        errorDescription:         "Processing Issues"
+        successDescription:       "Table Volume Report"
+        errorFilename:            table_volume_err.txt
+        successFilename:          table_volume.md
+        reportOnResults:          false
+        reportOnPath:             false
+        processOnError:           false
+        processOnSuccess:         true
+        checkCalculations:
+          volumeCheck:
+            RECORDS:
+              test: "if ( \"%8$s\".equals(\"0\") || \"%9$s\".startsWith(\"hdfs\")) false; else true;"
+              pass: "\"| %1$s | %2$s | %3$s | %4$s | %5$s | %6$s | %7$s | %8$s %9$s |\""
+              fail: "\"| %1$s | %2$s | %3$s | %4$s | %5$s | %6$s | %7$s | %8$s |\""
+              params: ["67108864"]
+  - type:                     "dbSet"
+    id:                       5
+    active:                   true
+    name:                     "Table and Partition Scan - Empty Datasets"
+    queryDefinitionReference: "/hive_u3_queries.yaml"
+    dbListingQuery:           "db_tbl_count"
+    listingColumns: ["name" ,"tbl_name" , "tbl_type" ,"part_name" , "path_location"]
+    pathsListingQuery:        "tbl_part_locations"
+    checks:
+      - name:                     "Empty Tables / Partitions"
+        header:                   "# Empty Datasets\n| Database | Table | Type | Partition | Path | \n|:---|:---|:---|:---|:---|"
+        invertCheck:              false
+        pathCommand:              "count -h %5$s"
+        errorDescription:         "Processing Issues"
+        successDescription:       "Empty Datasets Report"
+        errorFilename:            empty_datasets_err.txt
+        successFilename:          empty_datasets.md
+        reportOnResults:          false
+        reportOnPath:             false
+        processOnError:           false
+        processOnSuccess:         true
+        checkCalculations:
+          volumeCheck:
+            RECORDS:
+              test: "if ( \"%6$s\".equals(\"1\") & \"%7$s\".equals(\"0\") & \"%8$s\".equals(\"0\") ) true; else false;"
+              pass: "\"| %1$s | %2$s | %3$s | %4$s | %5$s |\""
+              params: ["67108864"]
