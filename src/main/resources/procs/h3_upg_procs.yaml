@@ -41,7 +41,7 @@ processes:
             RECORDS:
               test: "if (\"%4$s\".equals(\" \")) true; else false;"
               pass: "\"| %1$s.%2$s | DROP TABLE IF EXISTS `%1$s`.`%2$s`; | mkdir -p \\\"%5$s\\\" |\""
-              fail: "\"| %1$s.%2$s:\" + com.streever.hive.sre.Utils.dirToPartitionSpec('%4$s') + \" | ALTER TABLE `%1$s`.`%2$s` DROP IF EXISTS PARTITION (\" + com.streever.hive.sre.Utils.dirToPartitionSpec('%4$s') + \"); | mkdir -p \\\"%5$s\\\" |\""
+              fail: "\"| %1$s.%2$s:\" + com.cloudera.utils.hive.sre.Utils.dirToPartitionSpec('%4$s') + \" | ALTER TABLE `%1$s`.`%2$s` DROP IF EXISTS PARTITION (\" + com.cloudera.utils.hive.sre.Utils.dirToPartitionSpec('%4$s') + \"); | mkdir -p \\\"%5$s\\\" |\""
               params: [ "hive" ]
 
   - type:                     "dbSet"
@@ -110,7 +110,7 @@ processes:
         you are in control of the migration process.\n\n"
         invertCheck:            false
         pathCommand:            "lsp -f user -self \"%4$s\""
-        onSuccessPathCommand:   "\"Rewrite database table: %1$s.%2$s [Partition: \" + com.streever.hive.sre.Utils.dirToPartitionSpec('%4$s') + \"]"
+        onSuccessPathCommand:   "\"Rewrite database table: %1$s.%2$s [Partition: \" + com.cloudera.utils.hive.sre.Utils.dirToPartitionSpec('%4$s') + \"]"
         onSuccessRecordCommand: "# Bad filename %2$s in directory: %1$s "
         reportOnResults:        false
         reportOnPath:           false
@@ -170,7 +170,7 @@ processes:
             PATH:
               test: "if (\"%4$s\".trim().length() == 0) true; else false;"
               pass: "\"ALTER TABLE %1$s.%2$s COMPACT 'MAJOR';\""
-              fail: "\"ALTER TABLE %1$s.%2$s PARTITION (\" + com.streever.hive.sre.Utils.dirToPartitionSpec('%4$s') + \") COMPACT \\\"MAJOR\\\"\\;\""
+              fail: "\"ALTER TABLE %1$s.%2$s PARTITION (\" + com.cloudera.utils.hive.sre.Utils.dirToPartitionSpec('%4$s') + \") COMPACT \\\"MAJOR\\\"\\;\""
               params: [ "hive" ]
   - type:                     "metastore.report"
     id:                       5

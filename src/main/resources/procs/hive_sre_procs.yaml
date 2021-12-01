@@ -209,7 +209,7 @@ processes:
             PATH:
               test: "if (\"%4$s\".trim().length() == 0) true; else false;"
               pass: "\"ALTER TABLE `%1$s`.`%2$s` COMPACT \\\"MAJOR\\\";\""
-              fail: "\"ALTER TABLE `%1$s`.`%2$s` PARTITION (\" + com.streever.hive.sre.Utils.dirToPartitionSpec('%4$s') + \") COMPACT \\\"MAJOR\\\"\\;\""
+              fail: "\"ALTER TABLE `%1$s`.`%2$s` PARTITION (\" + com.cloudera.utils.hive.sre.Utils.dirToPartitionSpec('%4$s') + \") COMPACT \\\"MAJOR\\\"\\;\""
               params: [ "hive" ]
   - type:                     "metastore.report"
     id:                       7
@@ -235,7 +235,7 @@ processes:
         check:
           test: "if (\"%3$s\".equals(\"null\")) true; else false;"
           pass: "\"| %1$s | %2$s | %3$s | ALTER TABLE `%1$s`.`%2$s` COMPUTE STATISTICS FOR COLUMNS;|\""
-          fail: "\"| %1$s | %2$s | %3$s | ALTER TABLE `%1$s`.`%2$s` PARTITION (\" + com.streever.hive.sre.Utils.dirToPartitionSpec('%3$s') + \") COMPUTE STATISTICS FOR COLUMNS;\""
+          fail: "\"| %1$s | %2$s | %3$s | ALTER TABLE `%1$s`.`%2$s` PARTITION (\" + com.cloudera.utils.hive.sre.Utils.dirToPartitionSpec('%3$s') + \") COMPUTE STATISTICS FOR COLUMNS;\""
   - type:                     "dbSet"
     id:                       8
     active:                   false
@@ -287,4 +287,4 @@ processes:
     calculationCheck:
       test: "if (\"%3$s\" == null || \"%3$s\".trim().length() == 0) true; else false;"
       pass: "\"| %1$s | %2$s | %3$s | ANALYZE TABLE `%1$s`.`%2$s` COMPUTE STATISTICS;|\""
-      fail: "\"| %1$s | %2$s | %3$s | ANALYZE TABLE `%1$s`.`%2$s` PARTITION (\" + com.streever.hive.sre.Utils.dirToPartitionSpec('%3$s') + \") COMPUTE STATISTICS;\""
+      fail: "\"| %1$s | %2$s | %3$s | ANALYZE TABLE `%1$s`.`%2$s` PARTITION (\" + com.cloudera.utils.hive.sre.Utils.dirToPartitionSpec('%3$s') + \") COMPUTE STATISTICS;\""
