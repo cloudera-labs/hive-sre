@@ -20,9 +20,6 @@ import com.cloudera.utils.hive.perf.JDBCPerfTest;
 
 import java.util.Arrays;
 
-/**
- * Hello world!
- */
 public class Sre {
 
     public static void main(String[] args) {

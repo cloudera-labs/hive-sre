@@ -27,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
+import javax.validation.valueextraction.Unwrapping;
 import java.io.FileNotFoundException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -48,6 +49,7 @@ public class DbSetProcess extends SreProcessBase {
     //    private List<DbPaths> dbPaths;
     private List<CommandReturnCheck> commandChecks;
     private CheckCalculation calculationCheck;
+    private SkipCommandCheck skipCommandCheck;
 
     // HiveStrictManagedMigration Output Config
     private HiveStrictManagedMigrationElements hsmmElements;
@@ -81,6 +83,14 @@ public class DbSetProcess extends SreProcessBase {
 
     public void setCalculationCheck(CheckCalculation calculationCheck) {
         this.calculationCheck = calculationCheck;
+    }
+
+    public SkipCommandCheck getSkipCommandCheck() {
+        return skipCommandCheck;
+    }
+
+    public void setSkipCommandCheck(SkipCommandCheck skipCommandCheck) {
+        this.skipCommandCheck = skipCommandCheck;
     }
 
     public String getDbListingQuery() {
@@ -224,8 +234,10 @@ public class DbSetProcess extends SreProcessBase {
         counterGroup = new CounterGroup(getUniqueName());
 
         // Add Report Counters.
-        for (CommandReturnCheck crr : getCommandChecks()) {
-            getParent().getReporter().addCounter(counterGroup, crr.getCounter());
+        if (getCommandChecks() != null) {
+            for (CommandReturnCheck crr : getCommandChecks()) {
+                getParent().getReporter().addCounter(counterGroup, crr.getCounter());
+            }
         }
     }
 
@@ -302,7 +314,11 @@ public class DbSetProcess extends SreProcessBase {
         }
 
         if (getCommandChecks() == null) {
-            this.success.println("Command Checks Skipped.  Rules Processing Skipped.");
+            if (getSkipCommandCheck() != null) {
+                this.success.println("-- Basic Processing (Skip Command Check specified)");
+            } else {
+                this.success.println("Command Checks Skipped.  Rules Processing Skipped.");
+            }
         }
 
         setInitializing(Boolean.FALSE);
@@ -325,6 +341,11 @@ public class DbSetProcess extends SreProcessBase {
                     sb.append("\t" + check.getErrorDescription() + " -> " + getOutputDirectory() + System.getProperty("file.separator") +
                             check.getErrorFilename());
                 }
+            }
+        } else {
+            // Check if option for default result is there.  IE: SkipCommandChecks...
+            if (getSkipCommandCheck() != null) {
+
             }
         }
         return sb.toString();

@@ -41,6 +41,8 @@ public class DbPaths extends SRERunnable {
     private CounterGroup counterGroup;
 
     private List<CommandReturnCheck> commandChecks = new ArrayList<CommandReturnCheck>();
+    private SkipCommandCheck skipCommandCheck = null;
+
     private CheckCalculation calculationCheck = null;
 
     public DbSetProcess getParent() {
@@ -61,6 +63,14 @@ public class DbPaths extends SRERunnable {
 
     public void setCommandChecks(List<CommandReturnCheck> commandChecks) {
         this.commandChecks = commandChecks;
+    }
+
+    public SkipCommandCheck getSkipCommandCheck() {
+        return skipCommandCheck;
+    }
+
+    public void setSkipCommandCheck(SkipCommandCheck skipCommandCheck) {
+        this.skipCommandCheck = skipCommandCheck;
     }
 
     public CheckCalculation getCalculationCheck() {
@@ -166,6 +176,10 @@ public class DbPaths extends SRERunnable {
                                 // Malformed cli request.  Input is missing an element required to complete call.
                                 // Unusual, but not an expection.
                             }
+                        }
+                    } else {
+                        if (getSkipCommandCheck() != null) {
+
                         }
                     }
 

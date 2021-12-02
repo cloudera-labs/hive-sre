@@ -97,7 +97,7 @@ processes:
     displayName:              "Managed Non-ACID to ACID Table Migrations"
     queryDefinitionReference: "/hive_u3_queries.yaml"
     errorDescription:         "Issues"
-    successDescription:       "SQL Conversion Scipt"
+    successDescription:       "SQL Conversion Script"
     errorFilename:            "managed_upgrade_2_acid_issues.txt"
     successFilename:          "managed_upgrade_2_acid.sql"
     dbListingQuery:           "db_tbl_count"
@@ -106,6 +106,25 @@ processes:
     hsmmElements:
       databaseField:          "db_name"
       tableField:             "tbl_name"
+    skipCommandCheck:
+      displayName:            "Hive 3 Upgrade Check - Potential ACID Conversions"
+      title:                  "-- Managed Non - ACID to ACID Table Migrations  (v.${Implementation-Version})\n"
+      note:                   "
+      -- This report highlights classic Managed Non-ACID tables that _could_ be converted to ACID tables by the post hive
+      'strictmigration' process.  This will dramatically change the characteristics of the table and affect the integration
+      methods used by Spark SQL, direct HDFS access, etc..  Many of which will 'fail' and/or 'corrupt' the newly converted
+      Hive ACID table.\n
+
+      -- We recommend that you proactively force these tables to 'EXTERNAL' tables (with purge characteristics) to prevent this
+      conversion.  Changing tables to ACID, post migration is much easier than trying to revert converted ACID tables back
+      to non-ACID tables.\n
+
+      -- Tables that are managed and aren't converted by this program, will be converted to 'EXTERNAL/purge' when they don't
+      meet all the criteria for the conversion, regardless.  Using the 'action' elements of this report simply ensures
+      you are in control of the migration process.\n\n"
+      record:             "\"-- This table 'could' be migrated to an ACID table unless changed.\\n
+                          -- Recommend forcing the manual conversion to ensure table isn't inadvertently migrated.\\n
+                          ALTER TABLE %1$s.%2$s SET TBLPROPERTIES('EXTERNAL'='TRUE', 'external.table.purge'='true')\\;\""
     commandChecks:
       - displayName:            "Hive 3 Upgrade Check - Potential ACID Conversions"
         title:                  "-- Managed Non - ACID to ACID Table Migrations  (v.${Implementation-Version})\n"
