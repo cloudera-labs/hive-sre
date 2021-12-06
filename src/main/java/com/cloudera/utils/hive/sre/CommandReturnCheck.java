@@ -525,7 +525,6 @@ public class CommandReturnCheck {
         clone.setSuccessDescription(this.successDescription);
         clone.setSuccessFilename(this.successFilename);
         return clone;
-
     }
 
 }

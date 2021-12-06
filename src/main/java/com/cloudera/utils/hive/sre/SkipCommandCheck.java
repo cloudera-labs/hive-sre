@@ -33,6 +33,7 @@ public class SkipCommandCheck {
 
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+        this.counter = new ReportCounter(this.displayName);
     }
 
     public String getTitle() {
@@ -89,5 +90,26 @@ public class SkipCommandCheck {
 
     public void setCounter(ReportCounter counter) {
         this.counter = counter;
+    }
+
+    public void onSuccess(String[] args) {
+        String action = null;
+        try {
+            action = String.format(getRecord(), args);
+        } catch (Throwable t) {
+            throw new RuntimeException("Bad string format in 'successRecord' action command of CommandReturnCheck", t);
+        }
+        successStream.println(action);
+    }
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        SkipCommandCheck clone = (SkipCommandCheck) super.clone();
+        clone.setDisplayName(this.displayName);
+        clone.setTitle(this.title);
+        clone.getCounter().setName(this.displayName);
+        clone.setErrorStream(this.errorStream);
+        clone.setSuccessStream(this.successStream);
+        return clone;
     }
 }

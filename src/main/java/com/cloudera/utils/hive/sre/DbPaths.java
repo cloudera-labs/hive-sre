@@ -142,8 +142,9 @@ public class DbPaths extends SRERunnable {
             }
             // Loop through the paths
             if (columnsArray[0] != null && columnsArray[0].length > 0) {
+                String[] args = new String[columnsArray.length];
                 for (int i = 0; i < columnsArray[0].length; i++) { //String path : columnArray) {
-                    String[] args = new String[columnsArray.length];
+//                    String[] args = new String[columnsArray.length];
                     for (int a = 0; a < columnsArray.length; a++) {
                         if (columnsArray[a][i] != null)
                             args[a] = columnsArray[a][i];
@@ -179,53 +180,14 @@ public class DbPaths extends SRERunnable {
                         }
                     } else {
                         if (getSkipCommandCheck() != null) {
-
+                            getSkipCommandCheck().onSuccess(args);
+                            getSkipCommandCheck().getCounter().incCount(TaskState.SUCCESS, 1);
                         }
                     }
-
-//                    if (calculationCheck != null) {
-////                        for (int j = 0; j < metastoreQueryDefinition.getListingColumns().length; j++) {
-////                            record[j] = metastoreRecords[j][i];
-////                        }
-//
-//                        List combined = new LinkedList(Arrays.asList(args));
-//
-//                        // Configured Params
-////                        if (metastoreQueryDefinition.getCheck().getParams() != null)
-////                            combined.addAll(Arrays.asList(metastoreQueryDefinition.getCheck().getParams()));
-//                        try {
-//                            String testStr = String.format(calculationCheck.getTest(), combined.toArray());
-//                            Boolean checkTest = null;
-//                            checkTest = (Boolean) scriptEngine.eval(testStr);
-//                            if (checkTest) {
-//                                if (calculationCheck.getPass() != null) {
-//                                    String passStr = String.format(calculationCheck.getPass(), combined.toArray());
-//                                    String passResult = (String) scriptEngine.eval(passStr);
-//                                    success.println(passResult);
-//                                }
-//
-//                            } else {
-//                                if (calculationCheck.getFail() != null) {
-//                                    String failStr = String.format(calculationCheck.getFail(), combined.toArray());
-//                                    String failResult = (String) scriptEngine.eval(failStr);
-//                                    success.println(failResult);
-//                                }
-//                            }
-//                            incSuccess(1);
-//
-//                            incProcessed(1);
-//                        } catch (ScriptException e) {
-//                            e.printStackTrace(error);
-//                            System.err.println("Issue with script eval: " + this.getDisplayName());
-//                        } catch (MissingFormatArgumentException mfa) {
-//                            mfa.printStackTrace(error);
-//                            System.err.println("Bad Argument Match up for PATH check rule: " + this.getDisplayName());
-//                        }
-//                    }
                 }
             }
         } catch (SQLException e) {
-            if (getCommandChecks().size() > 0) {
+            if (getCommandChecks() != null && getCommandChecks().size() > 0) {
                 getCommandChecks().get(0).errorStream.println((queryDefinition != null) ? queryDefinition.getStatement() : "Unknown");
                 getCommandChecks().get(0).errorStream.println("Failure in DbPaths" + e.getMessage());
             } else {

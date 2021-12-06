@@ -223,6 +223,11 @@ public class DbSetProcess extends SreProcessBase {
                     check.successStream = this.success;
                 }
             }
+        } else {
+            if (getSkipCommandCheck() != null) {
+                getSkipCommandCheck().successStream = this.success;
+                getSkipCommandCheck().errorStream = this.error;
+            }
         }
     }
 
@@ -237,6 +242,10 @@ public class DbSetProcess extends SreProcessBase {
         if (getCommandChecks() != null) {
             for (CommandReturnCheck crr : getCommandChecks()) {
                 getParent().getReporter().addCounter(counterGroup, crr.getCounter());
+            }
+        } else {
+            if (getSkipCommandCheck() != null) {
+                getParent().getReporter().addCounter(counterGroup, getSkipCommandCheck().getCounter());
             }
         }
     }
@@ -278,6 +287,7 @@ public class DbSetProcess extends SreProcessBase {
         for (String database : dbs) {
             DbPaths paths = new DbPaths(database, this);
             paths.setCommandChecks(this.getCommandChecks());
+            paths.setSkipCommandCheck(this.getSkipCommandCheck());
             paths.setCounterGroup(counterGroup);
 //            paths.error = this.error;
 //            paths.success = this.success;
