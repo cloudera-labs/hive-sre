@@ -44,7 +44,7 @@ USE THE PRE-BUILT BINARY!!!  You won't have the necessary dependencies to build 
 
 _**Don't Build, Download the LATEST binary here!!!**_ 
 
-[![Download the LATEST Binary](./images/download.png)](./releases)
+[![Download the LATEST Binary](./images/download.png)](../hive-sre/releases)
 
 On the edgenode:
 - Remove previous install directory `rm -rf hive-sre-install`
