@@ -378,7 +378,7 @@ query_definitions:
                                     LEFT OUTER JOIN
                                         SERDES PSER
                                     ON
-                                        PS.SERDE_ID = PSER.SERDE_ID ) b2 ) AS sub ) a
+                                        PS.SERDE_ID = PSER.SERDE_ID ) b2 ) sub ) a
             WHERE
                 a.serde IN
                 (   SELECT
@@ -502,7 +502,7 @@ query_definitions:
                                                     LEFT OUTER JOIN
                                                         SERDES PSER
                                                     ON
-                                                        PS.SERDE_ID = PSER.SERDE_ID ) b2 ) AS sub ) a
+                                                        PS.SERDE_ID = PSER.SERDE_ID ) b2 ) sub ) a
                             WHERE
                                 a.serde NOT IN ('org.apache.hadoop.hive.ql.io.orc.OrcSerde',
                                                 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe',
@@ -946,7 +946,7 @@ WHERE
                                     LEFT OUTER JOIN
                                     SERDES PSER
                                     ON
-                                        PS.SERDE_ID = PSER.SERDE_ID) B2) AS SUB) A
+                                        PS.SERDE_ID = PSER.SERDE_ID) B2) SUB) A
              WHERE
                      A.SERDE IN
                      (SELECT *
@@ -1069,7 +1069,7 @@ WHERE
                                                   LEFT OUTER JOIN
                                                   SERDES PSER
                                                   ON
-                                                      PS.SERDE_ID = PSER.SERDE_ID) B2) AS SUB) A
+                                                      PS.SERDE_ID = PSER.SERDE_ID) B2) SUB) A
                            WHERE
                                    A.SERDE IN ( ?
                                    )) SUB2))
