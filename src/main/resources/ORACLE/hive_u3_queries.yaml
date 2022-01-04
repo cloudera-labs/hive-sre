@@ -506,8 +506,7 @@ query_definitions:
                             WHERE
                                 a.serde NOT IN ('org.apache.hadoop.hive.ql.io.orc.OrcSerde',
                                                 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe',
-                                                'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
-                                                ,
+                                                'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe',
                                                 'org.apache.hadoop.hive.hbase.HBaseSerDe',
                                                 'org.apache.hive.storage.jdbc.JdbcSerDe',
                                                 'org.apache.hadoop.hive.druid.DruidStorageHandler',
@@ -516,7 +515,13 @@ query_definitions:
                                                 'org.apache.hadoop.hive.serde2.RegexSerDe',
                                                 'parquet.hive.serde.ParquetHiveSerDe',
                                                 'org.apache.hadoop.hive.serde2.OpenCSVSerde',
-                                                'org.apache.hive.hcatalog.data.JsonSerDe') ) sub2 ) )
+                                                'org.apache.hive.hcatalog.data.JsonSerDe',
+                                                'org.apache.hadoop.hive.kudu.KuduSerDe',
+                                                'org.apache.hadoop.mapred.SequenceFileInputFormat',
+                                                'org.apache.hadoop.mapred.SequenceFileOutputFormat',
+                                                'org.apache.hadoop.hive.ql.io.RCFileInputFormat',
+                                                'org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
+                                                ) ) sub2 ) )
     "
   managed_2_acid:
     statement: "

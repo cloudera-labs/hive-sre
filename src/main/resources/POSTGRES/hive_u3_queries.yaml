@@ -505,17 +505,23 @@ query_definitions:
                                                       \"PS\".\"SERDE_ID\" = \"PSER\".\"SERDE_ID\") \"B2\") AS \"SUB\") \"A\"
                            WHERE
                                    \"A\".\"SERDE\" NOT IN ('org.apache.hadoop.hive.ql.io.orc.OrcSerde',
-                                                       'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe',
-                                                       'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe',
-                                                       'org.apache.hadoop.hive.hbase.HBaseSerDe',
-                                                       'org.apache.hive.storage.jdbc.JdbcSerDe',
-                                                       'org.apache.hadoop.hive.druid.DruidStorageHandler',
-                                                       'org.apache.phoenix.hive.PhoenixStorageHandler',
-                                                       'org.apache.hadoop.hive.serde2.avro.AvroSerDe',
-                                                       'org.apache.hadoop.hive.serde2.RegexSerDe',
-                                                       'parquet.hive.serde.ParquetHiveSerDe',
-                                                       'org.apache.hadoop.hive.serde2.OpenCSVSerde',
-                                                       'org.apache.hive.hcatalog.data.JsonSerDe')) \"SUB2\"))
+                                                'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe',
+                                                'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe',
+                                                'org.apache.hadoop.hive.hbase.HBaseSerDe',
+                                                'org.apache.hive.storage.jdbc.JdbcSerDe',
+                                                'org.apache.hadoop.hive.druid.DruidStorageHandler',
+                                                'org.apache.phoenix.hive.PhoenixStorageHandler',
+                                                'org.apache.hadoop.hive.serde2.avro.AvroSerDe',
+                                                'org.apache.hadoop.hive.serde2.RegexSerDe',
+                                                'parquet.hive.serde.ParquetHiveSerDe',
+                                                'org.apache.hadoop.hive.serde2.OpenCSVSerde',
+                                                'org.apache.hive.hcatalog.data.JsonSerDe',
+                                                'org.apache.hadoop.hive.kudu.KuduSerDe',
+                                                'org.apache.hadoop.mapred.SequenceFileInputFormat',
+                                                'org.apache.hadoop.mapred.SequenceFileOutputFormat',
+                                                'org.apache.hadoop.hive.ql.io.RCFileInputFormat',
+                                                'org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
+                                                )) \"SUB2\"))
     "
   managed_2_acid:
     statement: "
