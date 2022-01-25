@@ -175,7 +175,7 @@ query_definitions:
                     WHERE
                         t.TBL_TYPE = 'MANAGED_TABLE'
                     AND tp.PARAM_KEY = 'transactional'
-                    AND to_char(tp.PARAM_VALUE)='true' ) MANAGED_TBL)
+                    AND LOWER(to_char(tp.PARAM_VALUE))='true' ) MANAGED_TBL)
     GROUP BY
         b.db_name,
         b.tbl_id,
