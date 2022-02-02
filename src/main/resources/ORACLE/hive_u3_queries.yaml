@@ -755,8 +755,8 @@ WHERE
                S.CD_ID = C.CD_ID
                WHERE
                D.NAME LIKE ?
-               AND SER.SLIB LIKE '%OrcSerde'
-               AND C.TYPE_NAME = 'decimal'"
+               AND to_char(SER.SLIB) LIKE '%OrcSerde'
+               AND to_char(C.TYPE_NAME) = 'decimal'"
     parameters:
       dbs:
         initial: "%"
