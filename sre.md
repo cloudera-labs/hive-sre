@@ -24,14 +24,26 @@ For a while during the evolution of Hive 3, there was a separate 'catalog' for S
 
 ```
 Launching: sre
+v.2.4.0.8-SNAPSHOT
 usage: Sre
- -cfg,--config <arg>     Config with details for the Sre Job.  Must match
-                         the either sre or u3 selection.
- -db,--database <arg>    Comma separated list of Databases.  Will override
-                         config. (upto 100)
- -i,--include <arg>      Comma separated list of process id's to run.
-                         When not specified, ALL processes are run.
- -o,--output-dir <arg>   Output Directory to save results from Sre.
+ -cfg,--config <arg>               Config with details for the Sre Job.
+                                   Must match the either sre or u3
+                                   selection. Default:
+                                   $HOME/.hive-sre/cfg/default.yaml
+ -db,--database <arg>              Comma separated list of Databases.
+                                   Will override config. (upto 100)
+ -dbRegEx,--database-regex <arg>   A RegEx to match databases to process
+ -h,--help                         Help
+ -hfw,--hive-framework <arg>       The custom HiveFramework check
+                                   configuration. Needs to be in the
+                                   'Classpath'.
+ -i,--include <arg>                Comma separated list of process id's to
+                                   run.  When not specified, ALL processes
+                                   are run.
+ -o,--output-dir <arg>             Output Directory to save results from
+                                   Sre.
+ -scc,--skip-command-checks        Don't process the command checks for
+                                   the process.
 ```
 
 The `-db` parameter is optional.  When specified, it will limit the search to the databases listed as a parameter.  IE: `-db my_db,test_db`
