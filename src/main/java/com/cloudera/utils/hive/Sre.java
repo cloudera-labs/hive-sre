@@ -60,16 +60,16 @@ public class Sre {
                 sreApp = new JDBCPerfTest();
                 break;
             case "sre":
-                sreApp = new HiveFrameworkCheck("/procs/hive_sre_procs.yaml");
+                sreApp = new HiveFrameworkCheck("sre", "/procs/hive_sre_procs.yaml");
                 break;
             case "u3":
-                sreApp = new HiveFrameworkCheck("/procs/h3_upg_procs.yaml");
+                sreApp = new HiveFrameworkCheck("u3", "/procs/h3_upg_procs.yaml");
                 break;
             case "cust":
                 sreApp = new HiveFrameworkCheck();
                 break;
             case "tc":
-                sreApp = new HiveFrameworkCheck("/procs/transaction_procs.yaml");
+                sreApp = new HiveFrameworkCheck("tc", "/procs/transaction_procs.yaml");
                 break;
         }
 

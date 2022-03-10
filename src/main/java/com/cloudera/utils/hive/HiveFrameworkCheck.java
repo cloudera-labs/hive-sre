@@ -39,10 +39,19 @@ import java.util.List;
  * Hello world!
  */
 public class HiveFrameworkCheck implements SreSubApp {
+    private String name;
     private String stackResource;
     private ProcessContainer processContainer;
     private String[] dbsOverride;
     private String outputDirectory;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public String[] getDbsOverride() {
         return dbsOverride;
@@ -68,7 +77,8 @@ public class HiveFrameworkCheck implements SreSubApp {
         this.stackResource = stackResource;
     }
 
-    public HiveFrameworkCheck(String stackResource) {
+    public HiveFrameworkCheck(String name, String stackResource) {
+        this.name = name;
         this.stackResource = stackResource;
     }
 
@@ -130,6 +140,7 @@ public class HiveFrameworkCheck implements SreSubApp {
         } catch (ParseException pe) {
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp("Sre", options);
+            System.err.println(pe.getMessage());
             System.exit(-1);
         }
 
@@ -200,10 +211,62 @@ public class HiveFrameworkCheck implements SreSubApp {
         setProcessContainer(procContainer);
 
         // If specified, skip command checks.
-        if (cmd.hasOption("scc")) {
+        if (cmd.hasOption("scc") && !cmd.hasOption("cdh")) {
             for (SreProcessBase processBase: procContainer.getProcesses()) {
                 if (processBase instanceof DbSetProcess) {
                     ((DbSetProcess)processBase).setCommandChecks(null);
+                }
+            }
+        }
+
+        /*
+        THE FOLLOWING SHOULD BE MOVED TO CONFIGS IF MORE CONFIGS ARE CREATED.
+        THIS IS A QUICK FIX FOR USABILITY in 'u3'. ;)
+         */
+        if (cmd.hasOption("cdh") && this.getName().equalsIgnoreCase("u3")) {
+            String[] includeIds = {"1","3","5"};
+            List<String> includes = Arrays.asList(includeIds);
+            for (SreProcessBase proc : procContainer.getProcesses()) {
+                if (includes.contains(proc.getId())) {
+                    proc.setActive(Boolean.TRUE);
+                    proc.setSkip(Boolean.FALSE);
+                    if (proc.getId().equals("3")) {
+                        ((DbSetProcess)proc).setCommandChecks(null);
+                    }
+                } else {
+                    proc.setActive(Boolean.FALSE);
+                    proc.setSkip(Boolean.TRUE);
+                }
+            }
+        }
+
+        if (cmd.hasOption("hdp2") && this.getName().equalsIgnoreCase("u3")) {
+            String[] includeIds = {"1", "2", "3", "4", "5"};
+            List<String> includes = Arrays.asList(includeIds);
+            for (SreProcessBase proc : procContainer.getProcesses()) {
+                if (includes.contains(proc.getId())) {
+                    proc.setActive(Boolean.TRUE);
+                    proc.setSkip(Boolean.FALSE);
+                    if (proc.getId().equals("3")) {
+                        ((DbSetProcess)proc).setCommandChecks(null);
+                    }
+                } else {
+                    proc.setActive(Boolean.FALSE);
+                    proc.setSkip(Boolean.TRUE);
+                }
+            }
+        }
+
+        if (cmd.hasOption("hdp3") && this.getName().equalsIgnoreCase("u3")) {
+            String[] includeIds = {"1","5"};
+            List<String> includes = Arrays.asList(includeIds);
+            for (SreProcessBase proc : procContainer.getProcesses()) {
+                if (includes.contains(proc.getId())) {
+                    proc.setActive(Boolean.TRUE);
+                    proc.setSkip(Boolean.FALSE);
+                } else {
+                    proc.setActive(Boolean.FALSE);
+                    proc.setSkip(Boolean.TRUE);
                 }
             }
         }
@@ -244,6 +307,14 @@ public class HiveFrameworkCheck implements SreSubApp {
         dbOption.setRequired(false);
         dbOptionGroup.addOption(dbOption);
 
+//        OptionGroup dbOptionGroup = new OptionGroup();
+        Option edbOption = new Option("edb", "exclude-database", true,
+                "Comma separated list of Databases to 'exclude' from run.  Will override config. (upto 100)");
+        edbOption.setValueSeparator(',');
+        edbOption.setArgs(100);
+        edbOption.setRequired(false);
+        dbOptionGroup.addOption(edbOption);
+
         Option dbRegExOption = new Option("dbRegEx", "database-regex", true,
                 "A RegEx to match databases to process");
         dbRegExOption.setRequired(false);
@@ -252,12 +323,31 @@ public class HiveFrameworkCheck implements SreSubApp {
 
         options.addOptionGroup(dbOptionGroup);
 
+        OptionGroup procOptions = new OptionGroup();
+
+        Option cdhOption = new Option("cdh", "cloudera-data-hub", false,
+                "Run processes that make sense for CDH.");
+        cdhOption.setRequired(false);
+        procOptions.addOption(cdhOption);
+
+        Option hdp2Option = new Option("hdp2", "hortonworks-data-platfrom-v2", false,
+                "Run processes that make sense for HDP2.");
+        hdp2Option.setRequired(false);
+        procOptions.addOption(hdp2Option);
+
+        Option hdp3Option = new Option("hdp3", "hortonworks-data-platfrom-v3", false,
+                "Run processes that make sense for HDP3.");
+        hdp3Option.setRequired(false);
+        procOptions.addOption(hdp3Option);
+
         Option includeOption = new Option("i", "include", true,
                 "Comma separated list of process id's to run.  When not specified, ALL processes are run.");
         includeOption.setValueSeparator(',');
         includeOption.setArgs(100);
         includeOption.setRequired(false);
-        options.addOption(includeOption);
+        procOptions.addOption(includeOption);
+
+        options.addOptionGroup(procOptions);
 
         Option cfgOption = new Option("cfg", "config", true,
                 "Config with details for the Sre Job.  Must match the either sre or u3 selection. Default: $HOME/.hive-sre/cfg/default.yaml");
