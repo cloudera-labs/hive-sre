@@ -47,7 +47,7 @@ import java.util.concurrent.*;
 The 'ProcessContainer' is the definition and runtime structure
  */
 @JsonIgnoreProperties({"config", "reporter", "taskThreadPool", "procThreadPool", "processThreads", "cliPool",
-        "connectionPools", "outputDirectory"})
+        "connectionPools", "outputDirectory", "dbsOverride", "includeFilter", "excludeFilter"})
 public class ProcessContainer implements Runnable {
     private static Logger LOG = LogManager.getLogger(ProcessContainer.class);
 
@@ -64,6 +64,10 @@ public class ProcessContainer implements Runnable {
     private List<Integer> includes = new ArrayList<Integer>();
 
     private HadoopSessionPool cliPool;
+
+    private String[] dbsOverride = null;
+    private String includeFilter = null;
+    private String excludeFilter = null;
 
     public HadoopSessionPool getCliPool() {
         return cliPool;
@@ -211,8 +215,46 @@ public class ProcessContainer implements Runnable {
         }
     }
 
-    public String init(String config, String outputDirectory, String[] dbsOverride) {
-//        String realizedOutputDir = null;
+    public String initToInclude(String config, String outputDirectory, String includeRegEx) {
+        this.includeFilter = includeRegEx;
+        this.excludeFilter = null;
+        this.dbsOverride = null;
+        return init(config, outputDirectory);
+    }
+
+    public String initToExclude(String config, String outputDirectory, String excludeRegEx) {
+        this.includeFilter = null;
+        this.excludeFilter = excludeRegEx;
+        this.dbsOverride = null;
+        return init(config, outputDirectory);
+    }
+
+    public String initToDBSet(String config, String outputDirectory, String[] dbsOverride) {
+        this.includeFilter = null;
+        this.excludeFilter = null;
+        this.dbsOverride = dbsOverride;
+        return init(config, outputDirectory);
+    }
+
+    public String initToNoFilters(String config, String outputDirectory) {
+        this.includeFilter = null;
+        this.excludeFilter = null;
+        this.dbsOverride = null;
+        return init(config, outputDirectory);
+    }
+
+
+    private void setFilter(SreProcessBase process) {
+        if (dbsOverride != null) {
+            process.setDbsOverride(dbsOverride);
+        } else if (includeFilter != null) {
+            process.setIncludeRegEx(includeFilter);
+        } else if (excludeFilter != null) {
+            process.setExcludeRegEx(excludeFilter);
+        }
+    }
+
+    protected String init(String config, String outputDirectory) {
         initializing = Boolean.TRUE;
         String job_run_dir = null;
         if (config == null || outputDirectory == null) {
@@ -254,7 +296,8 @@ public class ProcessContainer implements Runnable {
 
             for (SreProcessBase process : getProcesses()) {
                 if (process.isActive()) {
-                    process.setDbsOverride(dbsOverride);
+                    setFilter(process);
+//                    process.setDbsOverride(dbsOverride);
                     // Set the dbType here.
                     if (getConfig().getMetastoreDirect().getType() != null) {
                         switch (getConfig().getMetastoreDirect().getType()) {

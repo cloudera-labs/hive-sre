@@ -21,6 +21,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 import static java.sql.Types.*;
@@ -29,16 +30,40 @@ import static java.sql.Types.TIMESTAMP;
 public class ResultArray {
 
     private String[] header;
+    private int columnCount = 0;
     private List<String[]> records = new ArrayList<String[]>();
+
 
     public ResultArray(ResultSet source) {
         build(source);
     }
 
+    public void remove(String removeFilter, int index) {
+        Pattern rPat = Pattern.compile(removeFilter);
+        List<String[]> newRecordsList = new ArrayList<String[]>();
+        for (String[] item: records) {
+            if (!rPat.matcher(item[index]).find()) {
+                newRecordsList.add(item);
+            }
+        }
+        records = newRecordsList;
+    }
+
+    public void keep(String keepFilter, int index) {
+        Pattern rPat = Pattern.compile(keepFilter);
+        List<String[]> newRecordsList = new ArrayList<String[]>();
+        for (String[] item: records) {
+            if (rPat.matcher(item[index]).find()) {
+                newRecordsList.add(item);
+            }
+        }
+        records = newRecordsList;
+    }
+
     private void build(ResultSet resultSet) {
         try {
             ResultSetMetaData metadata = resultSet.getMetaData();
-            int columnCount = metadata.getColumnCount();
+            columnCount = metadata.getColumnCount();
             header = new String[columnCount];
             Map<String, Integer> fields = new LinkedHashMap<String, Integer>();
             for (int i = 1;i <= columnCount; i++) {

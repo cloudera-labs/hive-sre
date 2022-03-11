@@ -33,7 +33,7 @@ import java.io.*;
 import java.net.URL;
 import java.util.concurrent.Callable;
 
-@JsonIgnoreProperties({"parent", "config", "queryDefinitions", "dbsOverride", "dbType", "outputDirectory", "success", "error", "counterGroup"})
+@JsonIgnoreProperties({"parent", "config", "queryDefinitions", "dbsOverride", "includeRegEx", "excludeRegEx", "dbType", "outputDirectory", "success", "error", "counterGroup"})
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.PROPERTY,
         property = "type")
@@ -59,6 +59,8 @@ public abstract class SreProcessBase implements Callable<String> {
     private String queryDefinitionReference = null;
 
     private String[] dbsOverride = {};
+    private String includeRegEx = null;
+    private String excludeRegEx = null;
     private String header = null;
     private String errorDescription = null;
     private String successDescription = null;
@@ -83,7 +85,7 @@ public abstract class SreProcessBase implements Callable<String> {
     private SreProcessesConfig config = null;
 
     public String getDisplayName() {
-        return displayName;
+        return "\"" + displayName + "\"";
     }
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
@@ -199,6 +201,28 @@ public abstract class SreProcessBase implements Callable<String> {
 
     public void setDbsOverride(String[] dbsOverride) {
         this.dbsOverride = dbsOverride;
+        this.includeRegEx = null;
+        this.excludeRegEx = null;
+    }
+
+    public String getIncludeRegEx() {
+        return includeRegEx;
+    }
+
+    public void setIncludeRegEx(String includeRegEx) {
+        this.includeRegEx = includeRegEx;
+        this.dbsOverride = null;
+        this.excludeRegEx = null;
+    }
+
+    public String getExcludeRegEx() {
+        return excludeRegEx;
+    }
+
+    public void setExcludeRegEx(String excludeRegEx) {
+        this.excludeRegEx = excludeRegEx;
+        this.dbsOverride = null;
+        this.includeRegEx = null;
     }
 
     public String getErrorDescription() {

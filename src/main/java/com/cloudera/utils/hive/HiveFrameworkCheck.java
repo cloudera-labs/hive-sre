@@ -42,7 +42,7 @@ public class HiveFrameworkCheck implements SreSubApp {
     private String name;
     private String stackResource;
     private ProcessContainer processContainer;
-    private String[] dbsOverride;
+//    private String[] dbsOverride;
     private String outputDirectory;
 
     public String getName() {
@@ -53,14 +53,14 @@ public class HiveFrameworkCheck implements SreSubApp {
         this.name = name;
     }
 
-    public String[] getDbsOverride() {
-        return dbsOverride;
-    }
-
-    public void setDbsOverride(String[] dbsOverride) {
-        this.dbsOverride = dbsOverride;
-    }
-
+//    public String[] getDbsOverride() {
+//        return dbsOverride;
+//    }
+//
+//    public void setDbsOverride(String[] dbsOverride) {
+//        this.dbsOverride = dbsOverride;
+//    }
+//
     public ProcessContainer getProcessContainer() {
         return processContainer;
     }
@@ -160,9 +160,9 @@ public class HiveFrameworkCheck implements SreSubApp {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         mapper.enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        if (cmd.hasOption("db")) {
-            dbsOverride = cmd.getOptionValues("db");
-        }
+//        if (cmd.hasOption("db")) {
+//            dbsOverride = cmd.getOptionValues("db");
+//        }
 
         // Should be set by now. If 'cust' option used, then it's set above with the -hfw option.  If that wasn't
         // present, this gets triggered.
@@ -280,7 +280,16 @@ public class HiveFrameworkCheck implements SreSubApp {
         }
         outputDirectory = cmd.getOptionValue("o");
         // HERE: determine output dir and setup a place to write out the hsmm includelist config.
-        outputDirectory = getProcessContainer().init(configFile, outputDirectory, getDbsOverride());
+        if (cmd.hasOption("db")) {
+            String[] dbsOverride = cmd.getOptionValues("db");
+            outputDirectory = getProcessContainer().initToDBSet(configFile, outputDirectory, dbsOverride);
+        } else if (cmd.hasOption("dbRegEx")) {
+            outputDirectory = getProcessContainer().initToInclude(configFile, outputDirectory, cmd.getOptionValue("dbRegEx"));
+        } else if (cmd.hasOption("edbRegEx")) {
+            outputDirectory = getProcessContainer().initToExclude(configFile, outputDirectory, cmd.getOptionValue("edbRegEx"));
+        } else {
+            outputDirectory = getProcessContainer().initToNoFilters(configFile, outputDirectory);
+        }
 
     }
 
@@ -308,15 +317,15 @@ public class HiveFrameworkCheck implements SreSubApp {
         dbOptionGroup.addOption(dbOption);
 
 //        OptionGroup dbOptionGroup = new OptionGroup();
-        Option edbOption = new Option("edb", "exclude-database", true,
-                "Comma separated list of Databases to 'exclude' from run.  Will override config. (upto 100)");
+        Option edbOption = new Option("edbRegEx", "exclude-database-regex", true,
+                "A RegEx that will filter OUT matching databases from processing");
         edbOption.setValueSeparator(',');
         edbOption.setArgs(100);
         edbOption.setRequired(false);
         dbOptionGroup.addOption(edbOption);
 
         Option dbRegExOption = new Option("dbRegEx", "database-regex", true,
-                "A RegEx to match databases to process");
+                "A RegEx of databases to process");
         dbRegExOption.setRequired(false);
         dbOptionGroup.setRequired(false);
         dbOptionGroup.addOption(dbRegExOption);

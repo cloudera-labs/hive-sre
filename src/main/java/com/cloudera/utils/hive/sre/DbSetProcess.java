@@ -267,11 +267,23 @@ public class DbSetProcess extends SreProcessBase {
                 ResultSet check = preparedStatement.executeQuery();
                 // Convert Result to an array
                 ResultArray rarray = new ResultArray(check);
+                if (getIncludeRegEx() != null) {
+                    LOG.info(getDisplayName() + " will include DB(s) that 'match' RegEx: " + getIncludeRegEx());
+                    rarray.keep(getIncludeRegEx(), 0);
+                } else if (getExcludeRegEx() != null) {
+                    LOG.info(getDisplayName() + " will include DB(s) that do 'NOT' match RegEx: " + getExcludeRegEx());
+                    rarray.remove(getExcludeRegEx(), 0);
+                }
                 // Close ResultSet
                 check.close();
                 // build array of tables.
                 dbs = rarray.getColumn("name");
                 System.out.println(getDisplayName() + " - found " + dbs.length + " databases to process.");
+                StringBuilder sb = new StringBuilder();
+                for (String db: dbs) {
+                    sb.append(db).append(";");
+                }
+                LOG.info(getDisplayName() + " will process DB(s): " + sb.toString());
             } catch (SQLException e) {
                 throw new RuntimeException("Issue getting 'databases' to process.", e);
             }
@@ -304,7 +316,7 @@ public class DbSetProcess extends SreProcessBase {
 //            paths.setStatus(WAITING);
 //            counters.add(paths.getCounter());
             i++;
-            LOG.info("Adding paths for db: " + database);
+            LOG.info(getDisplayName() + " adding paths for db: " + database);
 //            getParent().getReporter().addCounter(getId() + ":" + getDisplayName(), paths.getCounter());
             // Add Runnable to Main ThreadPool
             Future<String> sf = getParent().getTaskThreadPool().submit(paths);
