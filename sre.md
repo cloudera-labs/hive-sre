@@ -8,7 +8,7 @@ This process is driven by a control file.  A template is [here](configs/default.
 
 ### Known Issues
 
-For a while during the evolution of Hive 3, there was a separate 'catalog' for Spark.  The queries in this process do NOT consider this alternate catalog and may yield cross products in some areas if the 'spark' catalog was used at any point.  Do to the nature of this tool and an attempt to use it across multiple versions of Hive, we do NOT include criteria regarding the 'catalog'.
+For a while during the evolution of Hive 3, there was a separate 'catalog' for Spark.  The queries in this process do NOT consider this alternate catalog and may yield cross products in some areas if the 'spark' catalog was used at any point.  Due to the nature of this tool and an attempt to use it across multiple versions of Hive, we do NOT include criteria regarding the 'catalog'.
 
 ### Assumptions
 
