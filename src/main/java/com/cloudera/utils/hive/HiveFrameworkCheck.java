@@ -241,7 +241,7 @@ public class HiveFrameworkCheck implements SreSubApp {
         }
 
         if (cmd.hasOption("hdp2") && this.getName().equalsIgnoreCase("u3")) {
-            String[] includeIds = {"1", "2", "3", "4", "5"};
+            String[] includeIds = {"1", "3", "4", "5"};
             List<String> includes = Arrays.asList(includeIds);
             for (SreProcessBase proc : procContainer.getProcesses()) {
                 if (includes.contains(proc.getId())) {

@@ -594,7 +594,7 @@ WHERE
                 AND \"T\".\"TBL_TYPE\" = 'MANAGED_TABLE') \"MA\"
          WHERE
                \"MA\".TBL_PARAM_KEY = 'transactional'
-           AND \"MA\".TBL_PARAM_VALUE = 'true'
+           AND LOWER(\"MA\".\"TBL_PARAM_VALUE\") = 'true'
            AND \"B\".DB_NAME = \"MA\".DB_NAME
            AND \"B\".TBL_NAME = \"MA\".TBL_NAME)
     "
@@ -721,7 +721,7 @@ ORDER BY
           \"D\".\"NAME\" LIKE ?
       AND \"T\".\"TBL_TYPE\" = 'MANAGED_TABLE'
       AND \"PARAMS\".\"PARAM_KEY\" = 'transactional'
-      AND \"PARAMS\".\"PARAM_VALUE\" = 'true'
+      AND LOWER(\"PARAMS\".\"PARAM_VALUE\") = 'true'
     ORDER BY
         \"D\".\"NAME\", \"T\".\"TBL_NAME\"
     "

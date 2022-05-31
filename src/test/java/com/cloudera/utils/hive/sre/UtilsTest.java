@@ -65,4 +65,19 @@ public class UtilsTest {
             System.out.println(spec);
         }
     }
+
+    @Test
+    public void partitionCheck_001() {
+        String[] testSet = {"ingest_partition=20200411123432"};
+
+        for (String test: testSet) {
+            String spec = null;
+            try {
+                spec = Utils.dirToPartitionSpec(test);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            System.out.println(spec);
+        }
+    }
 }

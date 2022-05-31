@@ -594,7 +594,7 @@ WHERE
                 AND T.TBL_TYPE = 'MANAGED_TABLE') ma
          WHERE
                ma.TBL_PARAM_KEY = 'transactional'
-           AND ma.TBL_PARAM_VALUE = 'true'
+           AND LOWER(ma.TBL_PARAM_VALUE) = 'true'
            AND b.db_name = ma.db_name
            AND b.tbl_name = ma.tbl_name)
     "
@@ -720,7 +720,7 @@ WHERE
                   D.NAME LIKE ?
                   AND T.TBL_TYPE = 'MANAGED_TABLE'
                   AND PARAMS.PARAM_KEY = 'transactional'
-                  AND PARAMS.PARAM_VALUE= 'true'
+                  AND LOWER(PARAMS.PARAM_VALUE) = 'true'
                   ORDER BY D.NAME, T.TBL_NAME"
     parameters:
       dbs:
