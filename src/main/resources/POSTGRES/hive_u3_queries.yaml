@@ -15,21 +15,21 @@
 query_definitions:
   db_tbl_part_count:
     statement: "SELECT
-                    D.\"NAME\",
-                    COUNT(DISTINCT T.\"TBL_NAME\") tbl_count,
-                    COUNT(P.\"PART_NAME\")           part_count
+                    \"D\".\"NAME\",
+                    COUNT(DISTINCT \"T\".\"TBL_NAME\") tbl_count,
+                    COUNT(\"P\".\"PART_NAME\")           part_count
                 FROM
                     \"DBS\" D
                         INNER JOIN
                         \"TBLS\" T
                         ON
-                            D.\"DB_ID\" = T.\"DB_ID\"
+                            \"D\".\"DB_ID\" = \"T\".\"DB_ID\"
                         LEFT OUTER JOIN
                         \"PARTITIONS\" P
                         ON
-                            T.\"TBL_ID\" = P.\"TBL_ID\"
+                            \"T\".\"TBL_ID\" = \"P\".\"TBL_ID\"
                 GROUP BY
-                    D.\"NAME\""
+                    \"D\".\"NAME\""
   tbl_part_locations:
     statement: "SELECT DISTINCT
                     \"D\".\"NAME\",
@@ -526,22 +526,22 @@ query_definitions:
   managed_2_acid:
     statement: "
 SELECT DISTINCT
-    DB_NAME,
-    TBL_NAME,
-    TBL_TYPE,
-    TBL_LOCATION
+    \"DB_NAME\",
+    \"TBL_NAME\",
+    \"TBL_TYPE\",
+    \"TBL_LOCATION\"
 FROM
     (SELECT
-         \"D\".\"NAME\"             AS DB_NAME,
-         \"D\".\"DB_LOCATION_URI\"  AS DB_DEFAULT_LOC,
-         \"D\".\"OWNER_NAME\"       AS DB_OWNER,
-         \"T\".\"TBL_ID\"           AS TBL_ID,
-         \"T\".\"TBL_NAME\"         AS TBL_NAME,
-         \"T\".\"OWNER\"            AS TBL_OWNER,
-         \"T\".\"TBL_TYPE\"         AS TBL_TYPE,
-         \"S\".\"LOCATION\"         AS TBL_LOCATION,
-         \"PARAMS\".\"PARAM_KEY\"   AS TBL_PARAM_KEY,
-         \"PARAMS\".\"PARAM_VALUE\" AS TBL_PARAM_VALUE
+         \"D\".\"NAME\"             AS \"DB_NAME\",
+         \"D\".\"DB_LOCATION_URI\"  AS \"DB_DEFAULT_LOC\",
+         \"D\".\"OWNER_NAME\"       AS \"DB_OWNER\",
+         \"T\".\"TBL_ID\"           AS \"TBL_ID\",
+         \"T\".\"TBL_NAME\"         AS \"TBL_NAME\",
+         \"T\".\"OWNER\"            AS \"TBL_OWNER\",
+         \"T\".\"TBL_TYPE\"         AS \"TBL_TYPE\",
+         \"S\".\"LOCATION\"         AS \"TBL_LOCATION\",
+         \"PARAMS\".\"PARAM_KEY\"   AS \"TBL_PARAM_KEY\",
+         \"PARAMS\".\"PARAM_VALUE\" AS \"TBL_PARAM_VALUE\"
      FROM
          \"DBS\" \"D\"
              INNER JOIN
@@ -565,17 +565,17 @@ WHERE
              1
          FROM
              (SELECT
-                  \"D\".\"NAME\"             AS DB_NAME,
-                  \"D\".\"DB_LOCATION_URI\"  AS DB_DEFAULT_LOC,
-                  \"D\".\"OWNER_NAME\"       AS DB_OWNER,
-                  \"T\".\"TBL_ID\"           AS TBL_ID,
-                  \"T\".\"TBL_NAME\"         AS TBL_NAME,
-                  \"T\".\"OWNER\"            AS TBL_OWNER,
-                  \"T\".\"TBL_TYPE\"         AS TBL_TYPE,
-                  \"S\".\"LOCATION\"         AS TBL_LOCATION,
-                  \"PARAMS\".\"PARAM_KEY\"   AS TBL_PARAM_KEY,
-                  \"PARAMS\".\"PARAM_VALUE\" AS TBL_PARAM_VALUE
-              FROM
+                  \"D\".\"NAME\"             AS \"DB_NAME\",
+                  \"D\".\"DB_LOCATION_URI\"  AS \"DB_DEFAULT_LOC\",
+                  \"D\".\"OWNER_NAME\"       AS \"DB_OWNER\",
+                  \"T\".\"TBL_ID\"           AS \"TBL_ID\",
+                  \"T\".\"TBL_NAME\"         AS \"TBL_NAME\",
+                  \"T\".\"OWNER\"            AS \"TBL_OWNER\",
+                  \"T\".\"TBL_TYPE\"         AS \"TBL_TYPE\",
+                  \"S\".\"LOCATION\"         AS \"TBL_LOCATION\",
+                  \"PARAMS\".\"PARAM_KEY\"   AS \"TBL_PARAM_KEY\",
+                  \"PARAMS\".\"PARAM_VALUE\" AS \"TBL_PARAM_VALUE\"
+              FROM\"
                   \"DBS\" \"D\"
                       INNER JOIN
                       \"TBLS\" \"T\"
@@ -593,10 +593,10 @@ WHERE
                     \"D\".\"NAME\" LIKE ?
                 AND \"T\".\"TBL_TYPE\" = 'MANAGED_TABLE') \"MA\"
          WHERE
-               \"MA\".TBL_PARAM_KEY = 'transactional'
+               \"MA\".\"TBL_PARAM_KEY\" = 'transactional'
            AND LOWER(\"MA\".\"TBL_PARAM_VALUE\") = 'true'
-           AND \"B\".DB_NAME = \"MA\".DB_NAME
-           AND \"B\".TBL_NAME = \"MA\".TBL_NAME)
+           AND \"B\".\"DB_NAME\" = \"MA\".\"DB_NAME\"
+           AND \"B\".\"TBL_NAME\" = \"MA\".\"TBL_NAME\")
     "
     parameters:
       dbs:
@@ -610,19 +610,19 @@ WHERE
   managed_tbl_shadows:
     statement: "
 SELECT
-    \"B1\".DB_NAME,
-    \"B1\".TBL_NAME,
-    \"S\".TBL_LOCATION
+    \"B1\".\"DB_NAME\",
+    \"B1\".\"TBL_NAME\",
+    \"S\".\"TBL_LOCATION\"
 FROM
     (SELECT
-         \"D\".\"NAME\"            AS DB_NAME,
-         \"D\".\"DB_LOCATION_URI\" AS DB_DEFAULT_LOC,
-         \"D\".\"OWNER_NAME\"      AS DB_OWNER,
-         \"T\".\"TBL_ID\"          AS TBL_ID,
-         \"T\".\"TBL_NAME\"        AS TBL_NAME,
-         \"T\".\"OWNER\"           AS TBL_OWNER,
-         \"T\".\"TBL_TYPE\"        AS TBL_TYPE,
-         \"S\".\"LOCATION\"        AS TBL_LOCATION
+         \"D\".\"NAME\"            AS \"DB_NAME\",
+         \"D\".\"DB_LOCATION_URI\" AS \"DB_DEFAULT_LOC\",
+         \"D\".\"OWNER_NAME\"      AS \"DB_OWNER\",
+         \"T\".\"TBL_ID\"          AS \"TBL_ID\",
+         \"T\".\"TBL_NAME\"        AS \"TBL_NAME\",
+         \"T\".\"OWNER\"           AS \"TBL_OWNER\",
+         \"T\".\"TBL_TYPE\"        AS \"TBL_TYPE\",
+         \"S\".\"LOCATION\"        AS \"TBL_LOCATION\"
      FROM
          \"DBS\" \"D\"
              INNER JOIN
@@ -638,18 +638,18 @@ FROM
        AND \"T\".\"TBL_TYPE\" = 'MANAGED_TABLE') \"B1\"
         INNER JOIN
         (SELECT
-             \"B1\".TBL_LOCATION,
+             \"B1\".\"TBL_LOCATION\",
              COUNT(*) AS SHARES
          FROM
              (SELECT
-                  \"D\".\"NAME\"            AS DB_NAME,
-                  \"D\".\"DB_LOCATION_URI\" AS DB_DEFAULT_LOC,
-                  \"D\".\"OWNER_NAME\"      AS DB_OWNER,
-                  \"T\".\"TBL_ID\"          AS TBL_ID,
-                  \"T\".\"TBL_NAME\"        AS TBL_NAME,
-                  \"T\".\"OWNER\"           AS TBL_OWNER,
-                  \"T\".\"TBL_TYPE\"        AS TBL_TYPE,
-                  \"S\".\"LOCATION\"        AS TBL_LOCATION
+                  \"D\".\"NAME\"            AS \"DB_NAME\",
+                  \"D\".\"DB_LOCATION_URI\" AS \"DB_DEFAULT_LOC\",
+                  \"D\".\"OWNER_NAME\"      AS \"DB_OWNER\",
+                  \"T\".\"TBL_ID\"          AS \"TBL_ID\",
+                  \"T\".\"TBL_NAME\"        AS \"TBL_NAME\",
+                  \"T\".\"OWNER\"           AS \"TBL_OWNER\",
+                  \"T\".\"TBL_TYPE\"        AS \"TBL_TYPE\",
+                  \"S\".\"LOCATION\"        AS \"TBL_LOCATION\"
               FROM
                   \"DBS\" \"D\"
                       INNER JOIN
@@ -668,7 +668,7 @@ FROM
          HAVING
              COUNT(*) > 1) \"S\"
         ON
-            \"B1\".TBL_LOCATION = \"S\".TBL_LOCATION
+            \"B1\".\"TBL_LOCATION\" = \"S\".\"TBL_LOCATION\"
 ORDER BY
     TBL_LOCATION,
     DB_NAME,
