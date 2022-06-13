@@ -575,7 +575,7 @@ WHERE
                   \"S\".\"LOCATION\"         AS \"TBL_LOCATION\",
                   \"PARAMS\".\"PARAM_KEY\"   AS \"TBL_PARAM_KEY\",
                   \"PARAMS\".\"PARAM_VALUE\" AS \"TBL_PARAM_VALUE\"
-              FROM\"
+              FROM
                   \"DBS\" \"D\"
                       INNER JOIN
                       \"TBLS\" \"T\"
