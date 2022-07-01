@@ -22,7 +22,7 @@
 
     <groupId>com.cloudera.utils.hive</groupId>
     <artifactId>hive-sre</artifactId>
-    <version>2.4.0.13.3-SNAPSHOT</version>
+    <version>2.4.0.14-SNAPSHOT</version>
 
     <name>hive-sre</name>
 

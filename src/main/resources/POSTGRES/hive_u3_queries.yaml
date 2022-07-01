@@ -520,7 +520,9 @@ query_definitions:
                                                 'org.apache.hadoop.mapred.SequenceFileInputFormat',
                                                 'org.apache.hadoop.mapred.SequenceFileOutputFormat',
                                                 'org.apache.hadoop.hive.ql.io.RCFileInputFormat',
-                                                'org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
+                                                'org.apache.hadoop.hive.ql.io.RCFileOutputFormat',
+                                                'org.apache.hadoop.hive.contrib.serde2.MultiDelimitSerDe',
+                                                'org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe'                                      
                                                 )) \"SUB2\"))
     "
   managed_2_acid:
