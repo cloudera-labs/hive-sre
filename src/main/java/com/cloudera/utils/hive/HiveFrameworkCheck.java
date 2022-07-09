@@ -151,11 +151,11 @@ public class HiveFrameworkCheck implements SreSubApp {
             System.exit(-1);
         }
 
-        if (getStackResource() == null) {
+//        if (getStackResource() == null) {
             if (cmd.hasOption("hfw")) {
                 setStackResource(cmd.getOptionValue("hfw"));
             }
-        }
+//        }
 
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         mapper.enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
