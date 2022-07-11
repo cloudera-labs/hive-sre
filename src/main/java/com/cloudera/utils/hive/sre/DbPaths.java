@@ -141,7 +141,7 @@ public class DbPaths extends SRERunnable {
                 }
             }
             // Loop through the paths
-            if (columnsArray[0] != null && columnsArray[0].length > 0) {
+            if (columnsArray != null && columnsArray[0] != null && columnsArray[0].length > 0) {
                 String[] args = new String[columnsArray.length];
                 for (int i = 0; i < columnsArray[0].length; i++) { //String path : columnArray) {
 //                    String[] args = new String[columnsArray.length];

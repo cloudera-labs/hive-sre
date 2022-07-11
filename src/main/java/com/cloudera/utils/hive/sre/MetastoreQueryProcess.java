@@ -69,7 +69,7 @@ public class MetastoreQueryProcess extends MetastoreProcess {
             return;
         }
 
-        if (metastoreRecords[0] != null && metastoreRecords[0].length > 0) {
+        if (metastoreRecords != null && metastoreRecords[0] != null && metastoreRecords[0].length > 0) {
             if (getTitle() != null)
                 success.println(ReportingConf.substituteVariables(getTitle()));
             if (getHeader() != null)

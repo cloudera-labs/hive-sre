@@ -144,18 +144,21 @@ public class ResultArray {
 
     public String[][] getColumns(String[] columns) {
         int[] columnIndexes = new int[columns.length];
-        String[][] rtn = new String[columns.length][records.size()];
+        String[][] rtn = null;
+        if (columns.length > 0) {
+            rtn = new String[columns.length][records.size()];
 
-        for (int i=0;i<columns.length;i++) {
-            columnIndexes[i] = find(header, columns[i]);
-        }
-
-        int i = 0;
-        for (String[] record: records) {
-            for (int c = 0;c < columnIndexes.length;c++) {
-                rtn[c][i] = record[columnIndexes[c]];
+            for (int i = 0; i < columns.length; i++) {
+                columnIndexes[i] = find(header, columns[i]);
             }
-            i++;
+
+            int i = 0;
+            for (String[] record : records) {
+                for (int c = 0; c < columnIndexes.length; c++) {
+                    rtn[c][i] = record[columnIndexes[c]];
+                }
+                i++;
+            }
         }
         return rtn;
     }

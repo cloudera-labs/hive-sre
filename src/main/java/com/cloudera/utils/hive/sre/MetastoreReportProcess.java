@@ -99,7 +99,7 @@ public class MetastoreReportProcess extends MetastoreProcess {
 
                 metastoreRecords = rarray.getColumns(metastoreQueryDefinition.getListingColumns());
 
-                if (metastoreRecords[0] != null && metastoreRecords[0].length > 0) {
+                if (metastoreRecords != null && metastoreRecords[0] != null && metastoreRecords[0].length > 0) {
                     if (metastoreQueryDefinition.getResultMessageHeader() != null) {
                         success.println(metastoreQueryDefinition.getResultMessageHeader());
                     }
