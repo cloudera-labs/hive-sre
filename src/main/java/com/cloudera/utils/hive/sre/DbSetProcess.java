@@ -290,10 +290,6 @@ public class DbSetProcess extends SreProcessBase {
         }
 
         // Build an Element Path for each database.  This will be use to divide the work.
-//        int threadCount = getParent().getConfig().getParallelism();
-
-
-//        List<ReportCounter> counters = new ArrayList<ReportCounter>();
         int i = 0;
         counterGroup.addAndGetTaskState(TaskState.CONSTRUCTED, dbs.length);
         for (String database : dbs) {
@@ -301,38 +297,17 @@ public class DbSetProcess extends SreProcessBase {
             paths.setCommandChecks(this.getCommandChecks());
             paths.setSkipCommandCheck(this.getSkipCommandCheck());
             paths.setCounterGroup(counterGroup);
-//            paths.error = this.error;
-//            paths.success = this.success;
             if (paths.init()) {
-//                paths.setStatus(CONSTRUCTED);
-//                pathsList.add(paths);
             } else {
                 throw new RuntimeException("Issue establishing a connection to HDFS.  " +
                         "Check credentials(kerberos), configs(/etc/hadoop/conf), " +
                         "and/or availability of the HDFS service. " +
                         "Can you run an 'hdfs' cli command successfully?");
             }
-
-//            paths.setStatus(WAITING);
-//            counters.add(paths.getCounter());
             i++;
             LOG.info(getDisplayName() + " adding paths for db: " + database);
-//            getParent().getReporter().addCounter(getId() + ":" + getDisplayName(), paths.getCounter());
             // Add Runnable to Main ThreadPool
             Future<String> sf = getParent().getTaskThreadPool().submit(paths);
-//            ScheduledFuture<String> sf = getParent().getThreadPool().schedule(paths, 10, MILLISECONDS);
-//            getParent().addProcess(sf);
-//            try {s
-//                while (getParent().getProcessThreads().size() > 100) {
-//                    try {
-//                        Thread.sleep(1000);
-//                    } catch (InterruptedException ie) {
-//                        //
-//                    }
-//                }
-//            } catch (ConcurrentModificationException cme) {
-//                //
-//            }
         }
 
         if (getCommandChecks() == null) {
