@@ -39,7 +39,7 @@ processes:
          always a good practice.\n\n
          This process should be run frequently, up to the point of the upgrade, to ensure all items have been addressed.  Before
          the upgrade can succeed, this report should be *empty*.\n\n"
-        header:             "| DB.Table:Partition Spec | Hive SQL (recommended) | HDFS |\n|:---|:---|:---|"
+        header:             "| DB.Table:Partition Spec | Hive SQL (recommended) | HDFS | Hive MSCK (Post Upgrade) |\n|:---|:---|:---|:---|"
         errorDescription:   "Scan Actions"
         successDescription: "Issues"
         errorFilename:      loc_scan_missing_dirs.md
@@ -54,8 +54,8 @@ processes:
           partitionCheck:
             RECORDS:
               test: "if (\"%4$s\".equals(\" \")) true; else false;"
-              pass: "\"| %1$s.%2$s | DROP TABLE IF EXISTS `%1$s`.`%2$s`; | mkdir -p \\\"%5$s\\\" |\""
-              fail: "\"| %1$s.%2$s:\" + com.cloudera.utils.hive.sre.Utils.dirToPartitionSpec('%4$s') + \" | ALTER TABLE `%1$s`.`%2$s` DROP IF EXISTS PARTITION (\" + com.cloudera.utils.hive.sre.Utils.dirToPartitionSpec('%4$s') + \"); | mkdir -p \\\"%5$s\\\" |\""
+              pass: "\"| %1$s.%2$s | DROP TABLE IF EXISTS `%1$s`.`%2$s`; | mkdir -p \\\"%5$s\\\" | MSCK REPAIR TABLE `%1$s`.`%2$s` SYNC PARTITIONS; |\""
+              fail: "\"| %1$s.%2$s:\" + com.cloudera.utils.hive.sre.Utils.dirToPartitionSpec('%4$s') + \" | ALTER TABLE `%1$s`.`%2$s` DROP IF EXISTS PARTITION (\" + com.cloudera.utils.hive.sre.Utils.dirToPartitionSpec('%4$s') + \"); | mkdir -p \\\"%5$s\\\" | |\""
               params: [ "hive" ]
 
   - type:                     "dbSet"
@@ -270,7 +270,9 @@ processes:
         resultMessageDetailTemplate: "| %1$s | %2$s | %3$s | %4$s | %5$s | %6$s |"
       - query:                       "managed_tbl_shadows"
         listingColumns: [ "db_name" ,"tbl_name", "tbl_location" ]
-        resultMessageHeader:         "\n## Managed Shadow Tables"
+        resultMessageHeader:         "\n## Managed Shadow Tables\n\nThese are current managed non-transactional tables that under 
+        certain conditions could be converted to ACID tables by HSMM.  When two tables share a location for data, those tables can NOT 
+        be ACID tables.  Hence, these intersections could cause issues converting these tables to ACID tables.\n"
         resultMessageDetailHeader:   "| Database | Table | Path |\n|:---|:---|:---|"
         resultMessageDetailTemplate: "| %1$s | %2$s | %3$s |"
       - query:                       "db_tbl_part_count"
