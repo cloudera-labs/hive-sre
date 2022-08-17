@@ -353,3 +353,71 @@ WHERE
         initial:  "%"
         sqlType:  12
         location: 1
+  table_catagory_count:
+    statement: "
+WITH WPARAMS AS (
+    SELECT
+        SP.TBL_ID,
+        SP.PARAM_KEY,
+        SP.PARAM_VALUE
+    FROM TABLE_PARAMS SP
+    WHERE LOWER(SP.PARAM_KEY) = 'transactional'
+       OR LOWER(SP.PARAM_KEY) = 'external'
+),
+     WCAT AS (
+         SELECT
+             DB.NAME AS DB_NAME
+           , TBL.TBL_NAME
+           , CASE CONCAT(LOWER(TBL_TYPE), LOWER(P.PARAM_KEY), LOWER(P.PARAM_VALUE))
+                 WHEN 'external_tableexternaltrue' THEN 'EXTERNAL'
+                 WHEN 'managed_tabletransactionaltrue' THEN 'ACID'
+                 ELSE 'LEGACY_MANAGED'
+                 END AS TABLE_TYPE
+         FROM DBS DB
+                  JOIN
+              TBLS TBL ON
+                  DB.DB_ID = TBL.DB_ID
+                  LEFT OUTER JOIN WPARAMS P
+                                  ON TBL.TBL_ID = P.TBL_ID
+     )
+SELECT
+    TABLE_TYPE
+  , COUNT(1) AS COUNT
+FROM WCAT
+GROUP BY TABLE_TYPE
+"
+  table_catagory_count_by_db:
+    statement: "
+WITH WPARAMS AS (
+    SELECT
+        SP.TBL_ID,
+        SP.PARAM_KEY,
+        SP.PARAM_VALUE
+    FROM TABLE_PARAMS SP
+    WHERE LOWER(SP.PARAM_KEY) = 'transactional'
+       OR LOWER(SP.PARAM_KEY) = 'external'
+),
+     WCAT AS (
+         SELECT
+             DB.NAME AS DB_NAME
+           , TBL.TBL_NAME
+           , CASE CONCAT(LOWER(TBL_TYPE), LOWER(P.PARAM_KEY), LOWER(P.PARAM_VALUE))
+                 WHEN 'external_tableexternaltrue' THEN 'EXTERNAL'
+                 WHEN 'managed_tabletransactionaltrue' THEN 'ACID'
+                 ELSE 'LEGACY_MANAGED'
+                 END AS TABLE_TYPE
+         FROM DBS DB
+                  JOIN
+              TBLS TBL ON
+                  DB.DB_ID = TBL.DB_ID
+                  LEFT OUTER JOIN WPARAMS P
+                                  ON TBL.TBL_ID = P.TBL_ID
+     )
+SELECT DISTINCT
+    DB_NAME,
+    TABLE_TYPE,
+    COUNT(1) AS COUNT
+FROM WCAT
+GROUP BY DB_NAME, TABLE_TYPE
+ORDER BY DB_NAME, TABLE_TYPE
+      "

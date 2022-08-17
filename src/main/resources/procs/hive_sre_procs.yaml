@@ -61,6 +61,16 @@ processes:
         resultMessageHeader:         "\n## Database Parameters\n"
         resultMessageDetailHeader:   "| DB | Key | Value |\n|:---|:---|:---|"
         resultMessageDetailTemplate: "|%1$s|%2$s|%3$s|"
+      - query:                       "table_catagory_count"
+        listingColumns: [ "table_type" ,"count" ]
+        resultMessageHeader:         "\n## Table Type Counts\n"
+        resultMessageDetailHeader:   "| Table Type | Count |\n|:---|:---|"
+        resultMessageDetailTemplate: "|%1$s|%2$s|"
+      - query:                       "table_catagory_count_by_db"
+        listingColumns: [ "db_name" ,"table_type", "count" ]
+        resultMessageHeader:         "\n## Table Type Count by Database\n"
+        resultMessageDetailHeader:   "| DB | Table Type | Count |\n|:---|:---|:---|"
+        resultMessageDetailTemplate: "|%1$s|%2$s|%3$s|"
       - query:                       "partition_count_by_type"
         listingColumns: [ "tbl_type", "count" ]
         resultMessageHeader:         "\n## Partition Count by Table Type\n"
