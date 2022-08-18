@@ -393,10 +393,6 @@ WHERE t.tbl_serde_slib IN
         initial: "%"
         sqlType: 12
         location: 1
-      dbs2:
-        initial: "%"
-        sqlType: 12
-        location: 2
   managed_tbl_shadows:
     statement: "
     SELECT
@@ -677,3 +673,64 @@ WHERE T.TBL_SERDE_SLIB IN
         initial: "com.cloudera.kudu.hive.KuduStorageHandler"
         sqlType: 12
         location: 2
+  acid_bucket_version:
+    statement: "
+      WITH
+          TPARAMS AS (
+          SELECT
+              SP.TBL_ID
+            , SP.PARAM_KEY
+            , SP.PARAM_VALUE
+          FROM TABLE_PARAMS SP
+          WHERE
+               LOWER(SP.PARAM_KEY) = 'transactional'
+              AND LOWER(SP.PARAM_VALUE) = 'true'
+          ),
+          BPARAMS AS (
+          SELECT
+              SP.TBL_ID
+            , SP.PARAM_KEY
+            , SP.PARAM_VALUE
+          FROM TABLE_PARAMS SP
+          WHERE
+                LOWER(SP.PARAM_KEY) = 'bucketing_version'
+            AND SP.PARAM_VALUE = '2'
+          ),
+          WCAT AS (
+          SELECT
+              DB.NAME AS DB_NAME
+            , TBL.TBL_NAME
+            , TBL.TBL_ID
+          FROM DBS DB
+                   JOIN
+               TBLS TBL ON
+                   DB.DB_ID = TBL.DB_ID
+                   INNER JOIN SDS S ON TBL.SD_ID = S.SD_ID
+                   INNER JOIN TPARAMS P
+                                   ON TBL.TBL_ID = P.TBL_ID
+          WHERE
+              DB.NAME LIKE ?
+          ),
+          ACIDV1 AS (
+          SELECT DISTINCT
+              DB_NAME
+            , TBL_NAME
+            , TBL_ID
+          FROM WCAT
+          )
+      SELECT
+          DB_NAME
+        , TBL_NAME
+        , TBL_ID
+      FROM ACIDV1 AV1
+      WHERE
+              AV1.TBL_ID NOT IN (
+                                SELECT
+                                    TBL_ID
+                                FROM BPARAMS)    
+    "
+    parameters:
+      dbs:
+        initial:  "%"
+        sqlType:  12
+        location: 1

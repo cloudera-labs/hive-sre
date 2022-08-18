@@ -280,3 +280,25 @@ processes:
         resultMessageHeader:         "\n## Table Partition Count"
         resultMessageDetailHeader:   "| Database | Tables | Partitions |\n|:---|:---|:---|"
         resultMessageDetailTemplate: "| %1$s | %2$s | %3$s |"
+  - type:                     "dbSet"
+    id:                       6
+    active:                   true
+    displayName:              "Hive ACID tables missing 'bucketing_version'='2' tblproperties"
+    queryDefinitionReference: "/hive_u3_queries.yaml"
+    errorDescription:         "Issues"
+    successDescription:       "SQL Conversion Script"
+    errorFilename:            "acid_bucketing_update_issues.txt"
+    successFilename:          "acid_bucketing_update.sql"
+    dbListingQuery:           "db_tbl_count"
+    listingColumns:           [ "db_name" ,"tbl_name" , "tbl_id"]
+    pathsListingQuery:        "acid_bucket_version"
+    hsmmElements:
+      databaseField:          "db_name"
+      tableField:             "tbl_name"
+    skipCommandCheck:
+      displayName:            "Hive ACID tables missing 'bucketing_version'='2' tblproperties"
+      title:                  "-- Hive ACID tables missing 'bucketing_version'='2' tblproperties  (v.${Implementation-Version})\n"
+      note:                   "-- This report will show the ACID tables that don't contain the required 'bucketing_version=2' tblproperties configuration.\n
+      -- Without this setting, you will have issues access/reading/processing the upgraded ACID table.\n
+      -- We recommend that you run the script to add this configuration value to the tables.\n\n"
+      record:             "ALTER TABLE %1$s.%2$s SET TBLPROPERTIES('bucketing_version'='2');"
