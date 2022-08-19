@@ -209,7 +209,7 @@ query_definitions:
       SELECT
         D.NAME,
         T.TBL_TYPE,
-        to_char(TP.PARAM_VALUE) AS TRANSACTIONAL,
+        to_char(TP.PARAM_VALUE) AS param_value,
         COUNT(*) as count
       FROM
         DBS D

@@ -14,22 +14,20 @@
 
 query_definitions:
   db_tbl_part_count:
-    statement: "SELECT
-                    \"D\".\"NAME\",
-                    COUNT(DISTINCT \"T\".\"TBL_NAME\") tbl_count,
-                    COUNT(\"P\".\"PART_NAME\")           part_count
-                FROM
-                    \"DBS\" D
-                        INNER JOIN
-                        \"TBLS\" T
-                        ON
-                            \"D\".\"DB_ID\" = \"T\".\"DB_ID\"
-                        LEFT OUTER JOIN
-                        \"PARTITIONS\" P
-                        ON
-                            \"T\".\"TBL_ID\" = \"P\".\"TBL_ID\"
-                GROUP BY
-                    \"D\".\"NAME\""
+    statement: "SELECT \"D\".\"NAME\",
+                         COUNT(DISTINCT \"T\".\"TBL_NAME\") \"TBL_COUNT\",
+                         COUNT(\"P\".\"PART_NAME\")         \"PART_COUNT\"
+                  FROM \"DBS\" \"D\"
+                           INNER JOIN
+                       \"TBLS\" \"T\"
+                       ON
+                           \"D\".\"DB_ID\" = \"T\".\"DB_ID\"
+                           LEFT OUTER JOIN
+                       \"PARTITIONS\" \"P\"
+                       ON
+                           \"T\".\"TBL_ID\" = \"P\".\"TBL_ID\"
+                  GROUP BY \"D\".\"NAME\"
+                "
   tbl_part_locations:
     statement: "SELECT DISTINCT
                     \"D\".\"NAME\",
@@ -441,18 +439,18 @@ FROM
                       ON
                           \"T\".\"SD_ID\" = \"S\".\"SD_ID\"
               WHERE
-                    \"D\".\"NAME\" LIKE ?
+                    \"D\".\"NAME\"  LIKE ?
                 AND \"T\".\"TBL_TYPE\" = 'MANAGED_TABLE') \"B1\"
          GROUP BY
-             TBL_LOCATION
+             \"TBL_LOCATION\"
          HAVING
              COUNT(*) > 1) \"S\"
         ON
             \"B1\".\"TBL_LOCATION\" = \"S\".\"TBL_LOCATION\"
 ORDER BY
-    TBL_LOCATION,
-    DB_NAME,
-    TBL_NAME
+    \"TBL_LOCATION\",
+    \"DB_NAME\",
+    \"TBL_NAME\"
         "
     parameters:
       dbs:

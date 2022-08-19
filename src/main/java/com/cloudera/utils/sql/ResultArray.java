@@ -155,7 +155,11 @@ public class ResultArray {
             int i = 0;
             for (String[] record : records) {
                 for (int c = 0; c < columnIndexes.length; c++) {
-                    rtn[c][i] = record[columnIndexes[c]];
+                    try {
+                        rtn[c][i] = record[columnIndexes[c]];
+                    } catch (ArrayIndexOutOfBoundsException aiobe) {
+                        throw new RuntimeException(Arrays.toString(record) + ":" + Arrays.toString(columnIndexes), aiobe);
+                    }
                 }
                 i++;
             }
