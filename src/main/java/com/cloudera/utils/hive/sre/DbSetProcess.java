@@ -312,9 +312,9 @@ public class DbSetProcess extends SreProcessBase {
 
         if (getCommandChecks() == null) {
             if (getSkipCommandCheck() != null) {
-                this.success.println("-- Basic Processing (Skip Command Check specified)");
+//                this.success.println("-- Basic Processing (Skip Command Check specified)");
                 if (getSkipCommandCheck().getTitle() != null) {
-                    this.success.println(getSkipCommandCheck().getTitle());
+                    this.success.println(ReportingConf.substituteVariables(getSkipCommandCheck().getTitle()));
                 }
                 if (getSkipCommandCheck().getNote() != null) {
                     this.success.println(getSkipCommandCheck().getNote());

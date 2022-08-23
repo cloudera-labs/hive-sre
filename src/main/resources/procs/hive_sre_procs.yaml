@@ -312,3 +312,50 @@ processes:
       test: "if (\"%3$s\" == null || \"%3$s\".trim().length() == 0) true; else false;"
       pass: "\"| %1$s | %2$s | %3$s | ANALYZE TABLE `%1$s`.`%2$s` COMPUTE STATISTICS;|\""
       fail: "\"| %1$s | %2$s | %3$s | ANALYZE TABLE `%1$s`.`%2$s` PARTITION (\" + com.cloudera.utils.hive.sre.Utils.dirToPartitionSpec('%3$s') + \") COMPUTE STATISTICS;\""
+  - type:                     "dbSet"
+    id:                       10
+    active:                   true
+    displayName:              "Hive Table Type Base Location UNIQUE Count"
+    queryDefinitionReference: "/hive_sre_queries.yaml"
+    errorDescription:         "Issues"
+    successDescription:       "Directory Anti-Pattern"
+    errorFilename:            "hive_tbl_unique_base_dir_count_err.txt"
+    successFilename:          "hive_tbl_unique_base_dir_count.md"
+    dbListingQuery:           "db_tbl_count"
+    listingColumns:           [ "db_name" ,"tbl_type" , "type_count"]
+    pathsListingQuery:        "anti_pattern_base_dir"
+#    header:  "| DB | Table Type | Unique Count |\n|:---|:---|:---|"
+    skipCommandCheck:
+      displayName:            "Hive Table Type Base Location Unique Count"
+      title:                  "# Hive Table Location - Anti-Pattern (v.${Implementation-Version})\n"
+      note:                   "This report will show which databases have more than 1 base directory per table type.\n\n
+      This is important to identify because the replication process for 'external' data will increase in complexity with each unique instance.\n\n
+      When there's more than one 'managed' location per database, this is probably the result of legacy locations.  Hive 3 doesn't allow locations
+      for managed tables to be set, the database (MANAGEDLOCATION) or the metastore warehouse directory will dictate the location.  It is possible to change the
+      'MANAGEDLOCATION' for a database which will change 'newly' created tables only.\n\n
+      Further ACL's need to be maintained at the FS level to manage the unique locations.\n\n
+      Best practices encourage table type datasets to share a common base location to reduce complexity and administrative ACL overhead and 
+      reduce the number of file system replication policies required to manage a 'dr' solution.\n\n| DB | Table Type | Unique Count |\n|:---|:---|:---|
+      "
+      record:             "| %1$s | %2$s | %3$s |"
+  - type:                     "dbSet"
+    id:                       11
+    active:                   true
+    displayName:              "Hive Table Type Base Location Count Detail"
+    queryDefinitionReference: "/hive_sre_queries.yaml"
+    errorDescription:         "Issues"
+    successDescription:       "Database Directory Base Locations"
+    errorFilename:            "hive_tbl_anti_pattern_base_dir_count_err.txt"
+    successFilename:          "hive_tbl_anti_pattern_base_dir_count.md"
+    dbListingQuery:           "db_tbl_count"
+    listingColumns:           [ "db_name" ,"tbl_type" , "base_dir", "base_dir_count"]
+    pathsListingQuery:        "anti_pattern_base_dir_detail"
+#    header:  "| DB | Table Type | Base Directory | Instance Count |\n|:---|:---|:---|:---|"
+    skipCommandCheck:
+      displayName:            "Hive Table Type Base Location Count Detail"
+      title:                  "# Hive Table Location - Unique Base Location w/ Counts (v.${Implementation-Version})\n"
+      note:                   "This report will show the unique base directories for table type in a database with an instance count for each.\n
+      This should give you a good idea on the scope of the deviation.  If there is only a single base directory for a table in a database (regardless of count), 
+      then the table all share a common base directory.\n\n| DB | Table Type | Base Directory | Instance Count |\n|:---|:---|:---|:---|
+      "
+      record:             "| %1$s | %2$s | %3$s | %4$s |"
