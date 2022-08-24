@@ -77,8 +77,10 @@ See the [config docs](./config.md) for details.
 To ease the launch of the application below, configure these core environment variables.
 
 ```
-hive-sre sre -db priv_dstreev -cfg /tmp/test.yaml -o ./sre-out` 
+hive-sre sre -db priv_dstreev -o ./sre-out` 
 ```
+
+**NOTE** It is NOT necessary to use the `-cfg` option if your config is `$HOME/.hive-sre/cfg/default`.
 
 ### Output
 

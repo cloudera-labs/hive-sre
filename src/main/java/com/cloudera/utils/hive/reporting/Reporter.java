@@ -16,7 +16,9 @@
 
 package com.cloudera.utils.hive.reporting;
 
+import com.cloudera.utils.hive.config.NoProgressException;
 import com.cloudera.utils.hive.sre.ProcessContainer;
+import com.cloudera.utils.hive.sre.SreMessages;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
@@ -183,9 +185,12 @@ public class Reporter implements Runnable {
             } catch (ArithmeticException ae) {
 
             }
-        } catch (Throwable t) {
-            pushLine("Calculating Tasks");
-            t.printStackTrace();
+        } catch (NoProgressException npe) {
+//            pushLine("Calculating Tasks");
+//            System.err.println(npe.getMessage());
+            npe.printStackTrace();
+            System.exit(-1);
+//            t.printStackTrace();
         }
         tictoc = !tictoc;
         return rtn;
@@ -223,13 +228,15 @@ public class Reporter implements Runnable {
         return prefix + StringUtils.leftPad(ctrStr, WIDTH - prefix.length() - indent, filler);
     }
 
-    protected String progressCount(CounterGroup counterGroup) {
+    protected String progressCount(CounterGroup counterGroup) throws NoProgressException {
         StringBuilder sb = new StringBuilder();
         long constructed = counterGroup.getTaskStateValue(TaskState.CONSTRUCTED);
         long processed = counterGroup.getTaskStateValue(TaskState.PROCESSED);
         sb.append(ReportingConf.ANSI_BLUE).append("[").append(ReportingConf.ANSI_GREEN);
         sb.append(constructed).append("/").append(processed);
         sb.append(ReportingConf.ANSI_BLUE).append("]");
+
+        counterGroup.checkInitialized();
 
         String ctrStr = sb.toString();
         String prefix = ReportingConf.ANSI_GREEN + StringUtils.leftPad(counterGroup.getName(), counterGroup.getName().length());

@@ -16,6 +16,8 @@
 
 package com.cloudera.utils.hive.reporting;
 
+import com.cloudera.utils.hive.config.NoProgressException;
+import com.cloudera.utils.hive.sre.SreMessages;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -26,6 +28,9 @@ import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class CounterGroup {
+    private int initCheckRetry = 0;
+    private static final int initCheckRetryThreshold = 5;
+
     private static Logger LOG = LogManager.getLogger(CounterGroup.class);
 
     private String name = null;
@@ -40,6 +45,16 @@ public class CounterGroup {
 
     public String getName() {
         return name;
+    }
+
+    public void checkInitialized() throws NoProgressException {
+        long constructed = getTaskStateValue(TaskState.CONSTRUCTED);
+        if (constructed == 0) {
+            initCheckRetry++;
+            if (initCheckRetry > initCheckRetryThreshold) {
+                throw new NoProgressException(SreMessages.INIT_ISSUE);
+            }
+        }
     }
 
     public long addAndGetTaskState(TaskState state, long value) {

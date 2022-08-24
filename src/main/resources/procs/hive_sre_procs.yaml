@@ -341,7 +341,7 @@ processes:
   - type:                     "dbSet"
     id:                       11
     active:                   true
-    displayName:              "Hive Table Type Base Location Count Detail"
+    displayName:              "Hive Table Type Base Location Count Detail - Anti Pattern"
     queryDefinitionReference: "/hive_sre_queries.yaml"
     errorDescription:         "Issues"
     successDescription:       "Database Directory Base Locations"
