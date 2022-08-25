@@ -52,6 +52,8 @@ The `-o` parameter is *required*.
 
 To limit which process runs, use the `-i` (include) option at the command line with a comma separated list of ids (below) of desired processes.
 
+### `sre` Processes
+
 | id (link to sample report)                                   | process |
 |:-------------------------------------------------------------|:---|
 | [1](./sample_reports/sre/hms_report_summary.md)              | Hive Metastore Summary<br/> - Numerous HMS reports outlining summary information about databases and tables |
