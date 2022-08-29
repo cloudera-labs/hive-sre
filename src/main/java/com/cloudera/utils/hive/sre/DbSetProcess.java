@@ -250,6 +250,38 @@ public class DbSetProcess extends SreProcessBase {
         }
     }
 
+    @Override
+    public Boolean testSQLScript() {
+        Boolean rtn = Boolean.TRUE;
+        String targetQueryDef = this.dbListingQuery;
+        QueryDefinition queryDefinition = getQueryDefinitions().getQueryDefinition(targetQueryDef);
+        LOG.info("Testing SQL Definition: " + targetQueryDef);
+        LOG.info("Testing SQL: " + queryDefinition.getStatement());
+        try (Connection conn = getParent().getConnectionPools().getMetastoreDirectConnection()) {
+            // build prepared statement for targetQueryDef
+            PreparedStatement preparedStatement = JDBCUtils.getPreparedStatement(conn, queryDefinition);
+            // apply any overrides from the user configuration.
+            QueryDefinition queryOverride = getQueryOverride(targetQueryDef);
+            JDBCUtils.setPreparedStatementParameters(preparedStatement, queryDefinition, queryOverride);
+            // Run
+            ResultSet check = preparedStatement.executeQuery();
+            // Convert Result to an array
+            ResultArray rarray = new ResultArray(check);
+            // Close ResultSet
+            check.close();
+        } catch (SQLException e) {
+            rtn = Boolean.FALSE;
+            LOG.error("Test Failure for SQL Definition: " + targetQueryDef, e);
+            error.println(targetQueryDef);
+            error.println("> Processing Issue: " + e.getMessage());
+            e.printStackTrace(error);
+        } finally {
+            LOG.info("Testing Complete for SQL Definition: " + targetQueryDef);
+        }
+        setInitializing(Boolean.FALSE);
+        return rtn;
+    }
+
     protected void doIt() {
         String[] dbs = null;
         if (getDbsOverride() != null && getDbsOverride().length > 0) {
@@ -280,7 +312,7 @@ public class DbSetProcess extends SreProcessBase {
                 dbs = rarray.getColumn("name");
                 System.out.println(getDisplayName() + " - found " + dbs.length + " databases to process.");
                 StringBuilder sb = new StringBuilder();
-                for (String db: dbs) {
+                for (String db : dbs) {
                     sb.append(db).append(";");
                 }
                 LOG.info(getDisplayName() + " will process DB(s): " + sb.toString());
@@ -356,7 +388,11 @@ public class DbSetProcess extends SreProcessBase {
 
     @Override
     public String call() throws Exception {
-        doIt();
+        if (isTestSQL()) {
+            testSQLScript();
+        } else {
+            doIt();
+        }
         return "done";
     }
 

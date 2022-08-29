@@ -22,7 +22,7 @@
 
     <groupId>com.cloudera.utils.hive</groupId>
     <artifactId>hive-sre</artifactId>
-    <version>2.4.0.21.1-SNAPSHOT</version>
+    <version>2.4.0.21.2-SNAPSHOT</version>
 
     <name>hive-sre</name>
 
@@ -120,28 +120,26 @@
         </dependency>
 
         <!-- DB Libraries -->
-        <dependency>
-            <groupId>org.mariadb.jdbc</groupId>
-            <artifactId>mariadb-java-client</artifactId>
-            <version>${mariadb.client.version}</version>
-            <scope>provided</scope>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.mariadb.jdbc</groupId>-->
+<!--            <artifactId>mariadb-java-client</artifactId>-->
+<!--            <version>${mariadb.client.version}</version>-->
+<!--            <scope>provided</scope>-->
+<!--        </dependency>-->
 
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>${postgresql.client.version}</version>
-            <scope>provided</scope>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.postgresql</groupId>-->
+<!--            <artifactId>postgresql</artifactId>-->
+<!--            <version>${postgresql.client.version}</version>-->
+<!--            <scope>provided</scope>-->
+<!--        </dependency>-->
 
-        <!--
-        <dependency>
-          <groupId>oracle</groupId>
-          <artifactId>oracle-jdbc</artifactId>
-          <version>${oracle.client.version}</version>
-          <scope>provided</scope>
-        </dependency>
-        -->
+<!--        <dependency>-->
+<!--          <groupId>oracle</groupId>-->
+<!--          <artifactId>oracle-jdbc</artifactId>-->
+<!--          <version>${oracle.client.version}</version>-->
+<!--          <scope>provided</scope>-->
+<!--        </dependency>-->
 
         <!-- Jackson JSON Libraries -->
         <dependency>

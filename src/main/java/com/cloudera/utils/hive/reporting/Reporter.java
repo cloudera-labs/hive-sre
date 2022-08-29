@@ -40,6 +40,8 @@ public class Reporter implements Runnable {
     private Date startTime = new Date();
     private ProcessContainer processContainer;
 
+    private Boolean testSQL = Boolean.FALSE;
+
     private Map<String, CounterGroup> counterGroups = new TreeMap<String, CounterGroup>();
 
     public String getName() {
@@ -75,6 +77,14 @@ public class Reporter implements Runnable {
 
     public void setProcessContainer(ProcessContainer processContainer) {
         this.processContainer = processContainer;
+    }
+
+    public Boolean isTestSQL() {
+        return testSQL;
+    }
+
+    public void setTestSQL(Boolean testSQL) {
+        this.testSQL = testSQL;
     }
 
     private void pushLine(String line) {
@@ -188,8 +198,10 @@ public class Reporter implements Runnable {
         } catch (NoProgressException npe) {
 //            pushLine("Calculating Tasks");
 //            System.err.println(npe.getMessage());
-            npe.printStackTrace();
-            System.exit(-1);
+            if (!isTestSQL()) {
+                npe.printStackTrace();
+                System.exit(-1);
+            }
 //            t.printStackTrace();
         }
         tictoc = !tictoc;

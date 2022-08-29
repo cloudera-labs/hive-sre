@@ -21,7 +21,9 @@ import javax.validation.constraints.NotNull;
 import java.util.Properties;
 
 public class Metastore {
-    public enum DB_TYPE { MYSQL, POSTGRES, ORACLE, MSSQL };
+    public enum DB_TYPE { MYSQL, POSTGRES, ORACLE
+//        , MSSQL
+    };
     @NotNull(message = "Missing Metastore JDBC URI")
     private String uri;
     @NotNull(message = "Need to specify one of: MYSQL, ORACLE, POSTGRES, MSSQL")

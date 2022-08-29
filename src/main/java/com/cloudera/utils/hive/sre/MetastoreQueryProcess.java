@@ -20,6 +20,8 @@ import com.cloudera.utils.hive.reporting.ReportingConf;
 import com.cloudera.utils.sql.JDBCUtils;
 import com.cloudera.utils.sql.QueryDefinition;
 import com.cloudera.utils.sql.ResultArray;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -27,6 +29,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class MetastoreQueryProcess extends MetastoreProcess {
+
+    private static Logger LOG = LogManager.getLogger(MetastoreQueryProcess.class);
 
     private MetastoreQuery metastoreQueryDefinition;
 
@@ -37,8 +41,45 @@ public class MetastoreQueryProcess extends MetastoreProcess {
 
     @Override
     public String call() throws Exception {
-        doIt();
+        if (isTestSQL()) {
+            testSQLScript();
+        } else {
+            doIt();
+        }
         return "done";
+    }
+
+    @Override
+    public Boolean testSQLScript() {
+        Boolean rtn = Boolean.TRUE;
+
+        String targetQueryDef = this.getMetastoreQueryDefinition().getQuery();
+        try (Connection conn = getParent().getConnectionPools().getMetastoreDirectConnection()) {
+            // build prepared statement for targetQueryDef
+            LOG.info("Testing Complete for SQL Definition: " + targetQueryDef);
+            QueryDefinition queryDefinition = getQueryDefinitions().getQueryDefinition(targetQueryDef);
+            LOG.info("Testing SQL: " + queryDefinition.getStatement());
+            PreparedStatement preparedStatement = JDBCUtils.getPreparedStatement(conn, queryDefinition);
+            // apply any overrides from the user configuration.
+            QueryDefinition queryOverride = getQueryOverride(targetQueryDef);
+            JDBCUtils.setPreparedStatementParameters(preparedStatement, queryDefinition, queryOverride);
+            // Run
+            ResultSet check = preparedStatement.executeQuery();
+            // Convert Result to an array
+            ResultArray rarray = new ResultArray(check);
+            // Close ResultSet
+            check.close();
+            // build array of columns
+        } catch (SQLException e) {
+            rtn = Boolean.FALSE;
+            LOG.error("Test Failure for SQL Definition: " + targetQueryDef, e);
+            error.println(metastoreQueryDefinition.getQuery());
+            error.println("> Processing Issue: " + e.getMessage());
+        } finally {
+            LOG.info("Testing Complete for SQL Definition: " + targetQueryDef);
+        }
+        setActive(false);
+        return rtn;
     }
 
     public void doIt() {

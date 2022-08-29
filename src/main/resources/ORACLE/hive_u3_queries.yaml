@@ -288,9 +288,7 @@ WHERE t.tbl_serde_slib IN
                                                 'org.apache.hadoop.hive.serde2.MultiDelimitSerDe',
                                                 'org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe'
                              )) b1
-
                    UNION ALL
-
                    SELECT b2.part_serde_slib AS serde
                    FROM (SELECT DISTINCT PSER.SLIB AS PART_SERDE_SLIB
                          FROM DBS D
@@ -342,93 +340,65 @@ WHERE t.tbl_serde_slib IN
                                                  'org.apache.hadoop.hive.ql.io.RCFileOutputFormat',
                                                  'org.apache.hadoop.hive.serde2.MultiDelimitSerDe',
                                                  'org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe'
-                             )) b2) AS sub) a
+                             )) b2) sub) a
       )
-    "
+      "
   managed_2_acid:
     statement: "
-SELECT DISTINCT
-    db_name,
-    tbl_name,
-    tbl_type,
-    tbl_location
-FROM
-    (SELECT
-         D.NAME             AS DB_NAME,
-         D.DB_LOCATION_URI  AS DB_DEFAULT_LOC,
-         D.OWNER_NAME       AS DB_OWNER,
-         T.TBL_ID           AS TBL_ID,
-         T.TBL_NAME         AS TBL_NAME,
-         T.OWNER            AS TBL_OWNER,
-         T.TBL_TYPE         AS TBL_TYPE,
-         S.LOCATION         AS TBL_LOCATION,
-         PARAMS.PARAM_KEY   AS TBL_PARAM_KEY,
-         PARAMS.PARAM_VALUE AS TBL_PARAM_VALUE
-     FROM
-         DBS D
-             INNER JOIN
-             TBLS T
-             ON
-                 D.DB_ID = T.DB_ID
-             LEFT OUTER JOIN
-             SDS S
-             ON
-                 T.SD_ID = S.SD_ID
-             LEFT OUTER JOIN
-             TABLE_PARAMS PARAMS
-             ON
-                 T.TBL_ID = PARAMS.TBL_ID
-     WHERE
-           D.NAME LIKE ?
-       AND T.TBL_TYPE = 'MANAGED_TABLE') b
-WHERE
-    NOT EXISTS
-        (SELECT
-             1
-         FROM
-             (SELECT
-                  D.NAME             AS DB_NAME,
-                  D.DB_LOCATION_URI  AS DB_DEFAULT_LOC,
-                  D.OWNER_NAME       AS DB_OWNER,
-                  T.TBL_ID           AS TBL_ID,
-                  T.TBL_NAME         AS TBL_NAME,
-                  T.OWNER            AS TBL_OWNER,
-                  T.TBL_TYPE         AS TBL_TYPE,
-                  S.LOCATION         AS TBL_LOCATION,
-                  PARAMS.PARAM_KEY   AS TBL_PARAM_KEY,
-                  PARAMS.PARAM_VALUE AS TBL_PARAM_VALUE
-              FROM
-                  DBS D
-                      INNER JOIN
-                      TBLS T
-                      ON
-                          D.DB_ID = T.DB_ID
-                      LEFT OUTER JOIN
-                      SDS S
-                      ON
-                          T.SD_ID = S.SD_ID
-                      LEFT OUTER JOIN
-                      TABLE_PARAMS PARAMS
-                      ON
-                          T.TBL_ID = PARAMS.TBL_ID
-              WHERE
-                    D.NAME LIKE ?
-                AND T.TBL_TYPE = 'MANAGED_TABLE') ma
-         WHERE
-               ma.TBL_PARAM_KEY = 'transactional'
-           AND LOWER(to_char(ma.TBL_PARAM_VALUE)) = 'true'
-           AND b.db_name = ma.db_name
-           AND b.tbl_name = ma.tbl_name)
+      WITH
+          WPARAMS AS (
+          SELECT
+              SP.TBL_ID
+            , SP.PARAM_KEY
+            , SP.PARAM_VALUE
+          FROM TABLE_PARAMS SP
+          WHERE
+               LOWER(SP.PARAM_KEY) = 'transactional'
+            OR LOWER(SP.PARAM_KEY) = 'external'
+          ),
+          WCAT AS (
+          SELECT
+              DB.NAME AS DB_NAME
+            , TBL.TBL_NAME
+            , S.LOCATION AS TBL_LOCATION
+            , CASE LOWER(TBL_TYPE)
+                  WHEN 'external_table' THEN 'EXTERNAL'
+                  WHEN 'managed_table' THEN 
+                    CASE LOWER(P.PARAM_KEY) 
+                      WHEN 'transactional' THEN
+                      CASE LOWER(to_char(P.PARAM_VALUE)) 
+                        WHEN 'true' THEN 'ACID'
+                        ELSE 'LEGACY_MANAGED'
+                      END
+                      ELSE 'LEGACY_MANAGED'
+                    END
+                  ELSE 'LEGACY_MANAGED'
+                  END AS TBL_TYPE
+          FROM DBS DB
+                   JOIN
+               TBLS TBL ON
+                   DB.DB_ID = TBL.DB_ID
+                   INNER JOIN SDS S ON TBL.SD_ID = S.SD_ID
+                   LEFT OUTER JOIN WPARAMS P
+                                   ON TBL.TBL_ID = P.TBL_ID
+          WHERE DB.NAME LIKE ?
+          )
+      SELECT DISTINCT
+          DB_NAME
+        , TBL_NAME
+        , TBL_TYPE
+        , TBL_LOCATION
+      FROM WCAT
+      WHERE
+          TBL_TYPE = 'LEGACY_MANAGED'
+      ORDER BY
+          DB_NAME, TBL_TYPE
     "
     parameters:
       dbs:
         initial: "%"
         sqlType: 12
         location: 1
-      dbs2:
-        initial: "%"
-        sqlType: 12
-        location: 2
   managed_tbl_shadows:
     statement: "
     SELECT
@@ -697,7 +667,7 @@ WHERE T.TBL_SERDE_SLIB IN
                               SERDES PSER
                               ON
                                   PS.SERDE_ID = PSER.SERDE_ID
-                         WHERE PSER.SLIB IN (?)) B2) AS SUB) A
+                         WHERE PSER.SLIB IN (?)) B2) SUB) A
       )
     "
     parameters:

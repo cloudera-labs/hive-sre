@@ -85,45 +85,35 @@ public class HiveFrameworkCheck implements SreSubApp {
     public HiveFrameworkCheck() {
     }
 
-    //    public static void main(String[] args) {
-//        HiveFrameWorkCheck sre = new HiveFrameWorkCheck();
-//        try {
-//            sre.init(args);
-//            sre.start();
-//            System.exit(0);
-//        } catch (Throwable t) {
-//            t.printStackTrace();
-//        }
-//
-//    }
-
     public void start() {
         getProcessContainer().run();
         // Check the Hsmm object for content.  Save to file.
-        HiveStrictManagedMigrationIncludeListConfig hsmm = HiveStrictManagedMigrationIncludeListConfig.getInstance();
-        ObjectMapper mapper;
-        mapper = new ObjectMapper(new YAMLFactory());
-        mapper.enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        String hsmmStr = null;
-        File hsmmFile = null;
-        FileWriter hsmmFileWriter = null;
-        try {
-            hsmmStr = mapper.writeValueAsString(hsmm);
-            hsmmFile = new File(outputDirectory + System.getProperty("file.separator") + "hsmm_includelist.yaml");
-            hsmmFileWriter = new FileWriter(hsmmFile);
-            hsmmFileWriter.write(hsmmStr);
-            System.out.println("HSMM IncludeList File 'saved' to: " + hsmmFile.getPath());
-        } catch (JsonProcessingException jpe) {
-            jpe.printStackTrace();
-            System.err.println("Problem 'reading' HSMM IncludeList object");
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-            System.err.println("Problem 'writing' HSMM IncludeList File");
-        } finally {
+        if (!getProcessContainer().isTestSQL()) {
+            HiveStrictManagedMigrationIncludeListConfig hsmm = HiveStrictManagedMigrationIncludeListConfig.getInstance();
+            ObjectMapper mapper;
+            mapper = new ObjectMapper(new YAMLFactory());
+            mapper.enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+            String hsmmStr = null;
+            File hsmmFile = null;
+            FileWriter hsmmFileWriter = null;
             try {
-                hsmmFileWriter.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+                hsmmStr = mapper.writeValueAsString(hsmm);
+                hsmmFile = new File(outputDirectory + System.getProperty("file.separator") + "hsmm_includelist.yaml");
+                hsmmFileWriter = new FileWriter(hsmmFile);
+                hsmmFileWriter.write(hsmmStr);
+                System.out.println("HSMM IncludeList File 'saved' to: " + hsmmFile.getPath());
+            } catch (JsonProcessingException jpe) {
+                jpe.printStackTrace();
+                System.err.println("Problem 'reading' HSMM IncludeList object");
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
+                System.err.println("Problem 'writing' HSMM IncludeList File");
+            } finally {
+                try {
+                    hsmmFileWriter.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -209,6 +199,10 @@ public class HiveFrameworkCheck implements SreSubApp {
             }
         }
         setProcessContainer(procContainer);
+
+        if (cmd.hasOption("tsql")) {
+            procContainer.setTestSQL(Boolean.TRUE);
+        }
 
         // If specified, skip command checks.
         if (cmd.hasOption("scc") && !cmd.hasOption("cdh")) {
@@ -372,6 +366,10 @@ public class HiveFrameworkCheck implements SreSubApp {
                 "Don't process the command checks for the process.");
         sccOption.setRequired(false);
         options.addOption(sccOption);
+
+        Option testSqlOption = new Option("tsql", "test-sql", false, "Check SQL against target Metastore RDBMS");
+        testSqlOption.setRequired(false);
+        options.addOption(testSqlOption);
 
         return options;
 

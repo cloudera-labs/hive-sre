@@ -33,7 +33,8 @@ import java.io.*;
 import java.net.URL;
 import java.util.concurrent.Callable;
 
-@JsonIgnoreProperties({"parent", "config", "queryDefinitions", "dbsOverride", "includeRegEx", "excludeRegEx", "dbType", "outputDirectory", "success", "error", "counterGroup"})
+@JsonIgnoreProperties({"parent", "config", "queryDefinitions", "dbsOverride", "includeRegEx", "excludeRegEx", "dbType",
+        "outputDirectory", "success", "error", "counterGroup", "testSQL"})
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.PROPERTY,
         property = "type")
@@ -83,6 +84,8 @@ public abstract class SreProcessBase implements Callable<String> {
 
     // Set after construction.
     private SreProcessesConfig config = null;
+
+    private Boolean testSQL = Boolean.FALSE;
 
     public String getDisplayName() {
         return "\"" + displayName + "\"";
@@ -271,6 +274,14 @@ public abstract class SreProcessBase implements Callable<String> {
         }
     }
 
+    public Boolean isTestSQL() {
+        return testSQL;
+    }
+
+    public void setTestSQL(Boolean testSQL) {
+        this.testSQL = testSQL;
+    }
+
     protected PrintStream outputFile(String name) throws FileNotFoundException {
         return new PrintStream(new BufferedOutputStream(new FileOutputStream(name)), true);
     }
@@ -320,5 +331,7 @@ public abstract class SreProcessBase implements Callable<String> {
             throw new RuntimeException("Issue getting configs", e);
         }
     }
+
+    public abstract Boolean testSQLScript();
 
 }

@@ -291,6 +291,11 @@ FROM
                 GROUP BY
                     \"DBS\".\"NAME\"
                  "
+    parameters:
+      dbs:
+        initial: "%"
+        sqlType: 12
+        location: 1
   acid_table_list:
     statement: "
 SELECT

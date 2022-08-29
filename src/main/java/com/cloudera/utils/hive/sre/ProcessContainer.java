@@ -47,7 +47,7 @@ import java.util.concurrent.*;
 The 'ProcessContainer' is the definition and runtime structure
  */
 @JsonIgnoreProperties({"config", "reporter", "taskThreadPool", "procThreadPool", "processThreads", "cliPool",
-        "connectionPools", "outputDirectory", "dbsOverride", "includeFilter", "excludeFilter"})
+        "connectionPools", "outputDirectory", "dbsOverride", "includeFilter", "excludeFilter", "testSQL"})
 public class ProcessContainer implements Runnable {
     private static Logger LOG = LogManager.getLogger(ProcessContainer.class);
 
@@ -68,6 +68,8 @@ public class ProcessContainer implements Runnable {
     private String[] dbsOverride = null;
     private String includeFilter = null;
     private String excludeFilter = null;
+
+    private Boolean testSQL = Boolean.FALSE;
 
     public HadoopSessionPool getCliPool() {
         return cliPool;
@@ -152,6 +154,18 @@ public class ProcessContainer implements Runnable {
         this.parallelism = parallelism;
     }
 
+    public Boolean isTestSQL() {
+        return testSQL;
+    }
+
+    public void setTestSQL(Boolean testSQL) {
+        this.testSQL = testSQL;
+        for (SreProcessBase process: getProcesses()) {
+            process.setTestSQL(this.testSQL);
+        }
+        reporter.setTestSQL(this.testSQL);
+    }
+
     public boolean isInitializing() {
         return initializing;
     }
@@ -207,6 +221,7 @@ public class ProcessContainer implements Runnable {
         }
         LOG.info("Shutting down Thread Pool.");
         getTaskThreadPool().shutdown();
+        getProcThreadPool().shutdown();
         for (SreProcessBase process : getProcesses()) {
             if (!process.isSkip()) {
                 System.out.println(process.getUniqueName());
@@ -310,8 +325,8 @@ public class ProcessContainer implements Runnable {
                             case POSTGRES:
                                 process.setDbType(Metastore.DB_TYPE.POSTGRES);
                                 break;
-                            case MSSQL:
-                                System.err.println("MSSQL hasn't been implemented yet.");
+                            default:
+                                System.err.println("Hasn't been implemented yet.");
                                 throw new NotImplementedException();
                         }
                     }
@@ -323,14 +338,18 @@ public class ProcessContainer implements Runnable {
                     process.setOutputDirectory(job_run_dir);
                     process.init(this);
 //                    getProcessThreads().add(
-                    getProcThreadPool().submit(process);
+                    if (testSQL) {
+                        process.testSQLScript();
+                    } else {
+                        getProcThreadPool().submit(process);
+                    }
 //                    getProcessThreads().add(getThreadPool().schedule(process, 100, MILLISECONDS));
 
                 }
             }
-
-            reporterThread.start();
-
+            if (!isTestSQL()) {
+                reporterThread.start();
+            }
         } catch (
                 IOException e) {
             throw new RuntimeException("Issue getting configs", e);

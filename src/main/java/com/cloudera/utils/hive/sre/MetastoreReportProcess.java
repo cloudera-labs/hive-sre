@@ -60,8 +60,59 @@ public class MetastoreReportProcess extends MetastoreProcess {
 
     @Override
     public String call() throws Exception {
-        doIt();
+        if (isTestSQL()) {
+            testSQLScript();
+        } else {
+            doIt();
+        }
         return "done";
+    }
+
+    @Override
+    public Boolean testSQLScript() {
+        Boolean rtn = Boolean.TRUE;
+
+        for (MetastoreQuery metastoreQueryDefinition: getMetastoreQueryDefinitions()) {
+            String[][] metastoreRecords = null;
+            String targetQueryDef = metastoreQueryDefinition.getQuery();
+            try (Connection conn = getParent().getConnectionPools().getMetastoreDirectConnection()) {
+                LOG.info("Testing SQL Definition: " + targetQueryDef);
+                // build prepared statement for targetQueryDef
+                QueryDefinition queryDefinition = getQueryDefinitions().getQueryDefinition(targetQueryDef);
+                LOG.info("Testing SQL: " + queryDefinition.getStatement());
+                PreparedStatement preparedStatement = JDBCUtils.getPreparedStatement(conn, queryDefinition);
+                // apply any overrides from the user configuration.
+                QueryDefinition queryOverride = getQueryOverride(targetQueryDef);
+                JDBCUtils.setPreparedStatementParameters(preparedStatement, queryDefinition, queryOverride);
+                // Run
+                ResultSet rCheck = preparedStatement.executeQuery();
+                // Convert Result to an array
+                ResultArray rarray = new ResultArray(rCheck);
+                // Close ResultSet
+                rCheck.close();
+                // build array of columns
+                String[] columns = metastoreQueryDefinition.getListingColumns();
+
+                // TODO: Check Columns match rarray?
+
+            } catch (SQLException e) {
+                rtn = Boolean.FALSE;
+                error.println(metastoreQueryDefinition.getQuery());
+                LOG.error("Test Failure for SQL Definition: " + targetQueryDef, e);
+                error.println("> Processing Issue: " + e.getMessage());
+                e.printStackTrace(error);
+            } catch (RuntimeException rte) {
+                rtn = Boolean.FALSE;
+                error.println(metastoreQueryDefinition.getQuery());
+                LOG.error("Test Failure for SQL Definition: " + targetQueryDef, rte);
+                error.println("> Processing Issue: " + rte.getMessage());
+                rte.printStackTrace(error);
+            } finally {
+                LOG.info("Testing Complete for SQL Definition: " + targetQueryDef);
+            }
+        }
+        setInitializing(Boolean.FALSE);
+        return rtn;
     }
 
     public void doIt() {
