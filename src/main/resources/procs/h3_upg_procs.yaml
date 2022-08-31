@@ -101,7 +101,7 @@ processes:
     errorFilename:            "managed_upgrade_2_acid_issues.txt"
     successFilename:          "managed_upgrade_2_acid.sql"
     dbListingQuery:           "db_tbl_count"
-    listingColumns:           [ "db_name" ,"tbl_name" , "tbl_type" ,"tbl_location" ]
+    listingColumns:           [ "db_name" ,"tbl_name" , "created_date", "tbl_type" ,"tbl_location" ]
     pathsListingQuery:        "managed_2_acid"
     hsmmElements:
       databaseField:          "db_name"
@@ -124,6 +124,7 @@ processes:
       you are in control of the migration process.\n\n"
       record:             "-- This table 'could' be migrated to an ACID table unless changed.\n
                           -- Recommend forcing the manual conversion to ensure table isn't inadvertently migrated.\n
+                          -- created date: %3$s\n
                           ALTER TABLE %1$s.%2$s SET TBLPROPERTIES('EXTERNAL'='TRUE', 'external.table.purge'='true');"
     commandChecks:
       - displayName:            "Hive 3 Upgrade Check - Potential ACID Conversions"
@@ -142,8 +143,8 @@ processes:
         meet all the criteria for the conversion, regardless.  Using the 'action' elements of this report simply ensures
         you are in control of the migration process.\n\n"
         invertCheck:            false
-        pathCommand:            "lsp -f user -self \"%4$s\""
-        onSuccessPathCommand:   "\"Rewrite database table: %1$s.%2$s [Partition: \" + com.cloudera.utils.hive.sre.Utils.dirToPartitionSpec('%4$s') + \"]"
+        pathCommand:            "lsp -f user -self \"%5$s\""
+        onSuccessPathCommand:   "\"Rewrite database table: %1$s.%2$s [Partition: \" + com.cloudera.utils.hive.sre.Utils.dirToPartitionSpec('%5$s') + \"]"
         onSuccessRecordCommand: "# Bad filename %2$s in directory: %1$s "
         reportOnResults:        false
         reportOnPath:           false
@@ -155,10 +156,12 @@ processes:
               test: "if (\"%5$s\".equals(\"%6$s\")) true; else false;"
               pass: "\"-- Table is owned by '%5$s' and not currently ACID.\\n
                     -- This table will be migrated unless changed.\\n
+                    -- created date: %3$s\\n
                     ALTER TABLE %1$s.%2$s SET TBLPROPERTIES('EXTERNAL'='TRUE', 'external.table.purge'='true')\\;\""
               fail: "\"-- Table is owned by '%5$s', not '%6$s', and NOT currently ACID.\\n
                     -- This table 'could' be migrated to an ACID table unless changed.\\n
                     -- Recommend forcing the manual conversion to ensure table isn't inadvertently migrated.\\n
+                    -- created date: %3$s\\n
                     ALTER TABLE %1$s.%2$s SET TBLPROPERTIES('EXTERNAL'='TRUE', 'external.table.purge'='true')\\;\""
               params: [ "hive" ]
   - type:                     "dbSet"

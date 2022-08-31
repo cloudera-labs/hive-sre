@@ -345,55 +345,60 @@ WHERE t.tbl_serde_slib IN
       "
   managed_2_acid:
     statement: "
-      WITH
-          WPARAMS AS (
+      WITH WPARAMS AS (
           SELECT
               SP.TBL_ID
             , SP.PARAM_KEY
             , SP.PARAM_VALUE
-          FROM TABLE_PARAMS SP
+          FROM
+              TABLE_PARAMS SP
           WHERE
                LOWER(SP.PARAM_KEY) = 'transactional'
             OR LOWER(SP.PARAM_KEY) = 'external'
-          ),
-          WCAT AS (
-          SELECT
-              DB.NAME AS DB_NAME
-            , TBL.TBL_NAME
-            , S.LOCATION AS TBL_LOCATION
-            , CASE LOWER(TBL_TYPE)
-                  WHEN 'external_table' THEN 'EXTERNAL'
-                  WHEN 'managed_table' THEN 
-                    CASE LOWER(P.PARAM_KEY) 
-                      WHEN 'transactional' THEN
-                      CASE LOWER(to_char(P.PARAM_VALUE)) 
-                        WHEN 'true' THEN 'ACID'
-                        ELSE 'LEGACY_MANAGED'
-                      END
-                      ELSE 'LEGACY_MANAGED'
-                    END
-                  ELSE 'LEGACY_MANAGED'
-                  END AS TBL_TYPE
-          FROM DBS DB
-                   JOIN
-               TBLS TBL ON
-                   DB.DB_ID = TBL.DB_ID
-                   INNER JOIN SDS S ON TBL.SD_ID = S.SD_ID
-                   LEFT OUTER JOIN WPARAMS P
-                                   ON TBL.TBL_ID = P.TBL_ID
-          WHERE DB.NAME LIKE ?
-          )
+      ),
+           WCAT AS (
+               SELECT
+                   DB.NAME    AS                                                                     DB_NAME
+                 , TBL.TBL_NAME
+                 , TO_CHAR(TO_DATE('01-jan-1970', 'dd-mon-yyyy') + TBL.CREATE_TIME / 86400, 'yyyy-mm-dd') CREATED_DATE
+                 , S.LOCATION AS                                                                     TBL_LOCATION
+                 , CASE LOWER(TBL_TYPE)
+                       WHEN 'external_table' THEN 'EXTERNAL'
+                       WHEN 'managed_table' THEN
+                           CASE LOWER(P.PARAM_KEY)
+                               WHEN 'transactional' THEN
+                                   CASE LOWER(TO_CHAR(P.PARAM_VALUE))
+                                       WHEN 'true' THEN 'ACID'
+                                       ELSE 'LEGACY_MANAGED'
+                                       END
+                               ELSE 'LEGACY_MANAGED'
+                               END
+                       ELSE 'LEGACY_MANAGED'
+                       END    AS                                                                     TBL_TYPE
+               FROM
+                   DBS DB
+                       JOIN
+                       TBLS TBL ON
+                           DB.DB_ID = TBL.DB_ID
+                       INNER JOIN SDS S ON TBL.SD_ID = S.SD_ID
+                       LEFT OUTER JOIN WPARAMS P
+                                       ON TBL.TBL_ID = P.TBL_ID
+               WHERE
+                   DB.NAME LIKE ?
+           )
       SELECT DISTINCT
           DB_NAME
         , TBL_NAME
+        , CREATED_DATE
         , TBL_TYPE
         , TBL_LOCATION
-      FROM WCAT
+      FROM
+          WCAT
       WHERE
           TBL_TYPE = 'LEGACY_MANAGED'
       ORDER BY
           DB_NAME, TBL_TYPE
-    "
+        "
     parameters:
       dbs:
         initial: "%"

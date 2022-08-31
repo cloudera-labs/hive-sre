@@ -58,6 +58,8 @@ public class ProcessContainer implements Runnable {
     private ThreadPoolExecutor taskThreadPool;
     private ThreadPoolExecutor procThreadPool;
 
+    private Thread reporterThread;
+
     private List<Future<String>> processThreads;
     private ConnectionPools connectionPools;
     private String outputDirectory;
@@ -222,6 +224,10 @@ public class ProcessContainer implements Runnable {
         LOG.info("Shutting down Thread Pool.");
         getTaskThreadPool().shutdown();
         getProcThreadPool().shutdown();
+        getCliPool().close();
+        if (reporterThread != null) {
+            reporterThread.interrupt();
+        }
         for (SreProcessBase process : getProcesses()) {
             if (!process.isSkip()) {
                 System.out.println(process.getUniqueName());
@@ -307,7 +313,7 @@ public class ProcessContainer implements Runnable {
             this.cliPool = new HadoopSessionPool(new GenericObjectPool<HadoopSession>(new HadoopSessionFactory(), hspCfg));
 
             // Needs to be added first, so it runs the reporter thread.
-            Thread reporterThread = new Thread(getReporter());
+            reporterThread = new Thread(getReporter());
 
             for (SreProcessBase process : getProcesses()) {
                 if (process.isActive()) {

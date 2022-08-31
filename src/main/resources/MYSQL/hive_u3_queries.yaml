@@ -362,6 +362,7 @@ WHERE t.tbl_serde_slib IN
           SELECT
               DB.NAME AS DB_NAME
             , TBL.TBL_NAME
+            , date_format(from_unixtime(TBL.CREATE_TIME),'%Y-%m-%d') AS CREATED_DATE
             , S.LOCATION AS TBL_LOCATION
             , CASE CONCAT(LOWER(TBL_TYPE), LOWER(P.PARAM_KEY), LOWER(P.PARAM_VALUE))
                   WHEN 'external_tableexternaltrue' THEN 'EXTERNAL'
@@ -380,6 +381,7 @@ WHERE t.tbl_serde_slib IN
       SELECT DISTINCT
           DB_NAME
         , TBL_NAME
+        , CREATED_DATE
         , TBL_TYPE
         , TBL_LOCATION
       FROM WCAT

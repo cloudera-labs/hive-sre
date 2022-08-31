@@ -116,6 +116,7 @@ public class HiveFrameworkCheck implements SreSubApp {
                 }
             }
         }
+        System.out.println("\nCleaning up threads.... this will take a few seconds(maybe a minute), please wait...");
     }
 
     public void init(String[] args) {

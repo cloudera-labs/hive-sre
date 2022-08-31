@@ -100,7 +100,7 @@ public class DbPaths extends SRERunnable {
 
         try (Connection conn = getParent().getParent().getConnectionPools().
                 getMetastoreDirectConnection()) {
-
+            LOG.info(this.getDisplayName());
             queryDefinition = getParent().getQueryDefinitions().
                     getQueryDefinition(getParent().getPathsListingQuery());
             PreparedStatement preparedStatement = JDBCUtils.getPreparedStatement(conn, queryDefinition);

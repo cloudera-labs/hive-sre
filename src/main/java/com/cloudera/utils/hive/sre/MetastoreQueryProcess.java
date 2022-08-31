@@ -86,6 +86,7 @@ public class MetastoreQueryProcess extends MetastoreProcess {
 //        setStatus(PROCESSING);
         String[][] metastoreRecords = null;
 //        this.setTotalCount(1);
+        LOG.info(this.getDisplayName());
         try (Connection conn = getParent().getConnectionPools().getMetastoreDirectConnection()) {
             String targetQueryDef = this.getMetastoreQueryDefinition().getQuery();
             // build prepared statement for targetQueryDef

@@ -288,6 +288,7 @@ public class DbSetProcess extends SreProcessBase {
             dbs = getDbsOverride();
         } else {
             try (Connection conn = getParent().getConnectionPools().getMetastoreDirectConnection()) {
+                LOG.info(this.getDisplayName());
                 String targetQueryDef = this.dbListingQuery;
                 // build prepared statement for targetQueryDef
                 QueryDefinition queryDefinition = getQueryDefinitions().getQueryDefinition(targetQueryDef);

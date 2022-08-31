@@ -126,7 +126,7 @@ public class MetastoreReportProcess extends MetastoreProcess {
 
         if (getHeader() != null)
             success.println(getHeader());
-
+        LOG.info(this.getDisplayName());
 //        this.setTotalCount(getMetastoreQueryDefinitions().size());
         for (MetastoreQuery metastoreQueryDefinition: getMetastoreQueryDefinitions()) {
             String[][] metastoreRecords = null;
