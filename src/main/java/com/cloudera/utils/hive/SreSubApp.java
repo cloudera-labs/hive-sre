@@ -17,6 +17,9 @@
 package com.cloudera.utils.hive;
 
 public interface SreSubApp {
-    void init(String[] args);
+    Boolean init(String[] args);
     void start();
+    void report();
+
+    String getName();
 }

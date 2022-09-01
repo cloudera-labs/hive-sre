@@ -31,7 +31,7 @@ public class Metastore {
     // Run for each fetch connection.  Mainly used to help set the DB/Schema for Oracle
     private String initSql;
     @NotNull
-    private Properties connectionProperties;
+    private Properties connectionProperties = new Properties();
     @NotNull
     private ConnectionPool connectionPool;
 

@@ -16,7 +16,9 @@
 
 package com.cloudera.utils.hive.config;
 
+import com.cloudera.utils.Messages;
 import com.cloudera.utils.sql.QueryDefinition;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.LinkedHashMap;
@@ -35,6 +37,11 @@ public class SreProcessesConfig {
 
     @JsonProperty("queries")
     private Map<String, QueryDefinition> queries = new LinkedHashMap<String, QueryDefinition>();
+
+    @JsonIgnore
+    private final Messages errors = new Messages(100);
+    @JsonIgnore
+    private final Messages warnings = new Messages(100);
 
     public QueryDefinition getQuery(String name) {
         return queries.get(name);
@@ -72,8 +79,26 @@ public class SreProcessesConfig {
         this.reportingInterval = reportingInterval;
     }
 
-    public void validate() {
-//        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-//        Set<ConstraintViolation<Metastore>> violations = validator.validate(metastoreDirect);
+    public Messages getErrors() {
+        return errors;
+    }
+
+    public Boolean hasErrors() {
+        if (errors.getReturnCode() > 0) {
+            return Boolean.TRUE;
+        } else {
+            return Boolean.FALSE;
+        }
+    }
+
+    public Messages getWarnings() {
+        return warnings;
+    }
+
+    public Boolean validate() {
+        Boolean rtn = Boolean.TRUE;
+
+
+        return rtn;
     }
 }

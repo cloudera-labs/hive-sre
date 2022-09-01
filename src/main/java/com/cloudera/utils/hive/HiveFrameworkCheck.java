@@ -16,6 +16,9 @@
 
 package com.cloudera.utils.hive;
 
+import com.cloudera.utils.Protect;
+import com.cloudera.utils.hive.config.SreProcessesConfig;
+import com.cloudera.utils.hive.sre.MessageCode;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -27,6 +30,8 @@ import com.cloudera.utils.hive.sre.ProcessContainer;
 import com.cloudera.utils.hive.sre.SreProcessBase;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.IOUtils;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -34,15 +39,17 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * Hello world!
  */
 public class HiveFrameworkCheck implements SreSubApp {
+    private static final Logger LOG = LogManager.getLogger(HiveFrameworkCheck.class);
+
     private String name;
     private String stackResource;
     private ProcessContainer processContainer;
-//    private String[] dbsOverride;
     private String outputDirectory;
 
     public String getName() {
@@ -53,14 +60,6 @@ public class HiveFrameworkCheck implements SreSubApp {
         this.name = name;
     }
 
-//    public String[] getDbsOverride() {
-//        return dbsOverride;
-//    }
-//
-//    public void setDbsOverride(String[] dbsOverride) {
-//        this.dbsOverride = dbsOverride;
-//    }
-//
     public ProcessContainer getProcessContainer() {
         return processContainer;
     }
@@ -85,42 +84,66 @@ public class HiveFrameworkCheck implements SreSubApp {
     public HiveFrameworkCheck() {
     }
 
-    public void start() {
-        getProcessContainer().run();
-        // Check the Hsmm object for content.  Save to file.
-        if (!getProcessContainer().isTestSQL()) {
-            HiveStrictManagedMigrationIncludeListConfig hsmm = HiveStrictManagedMigrationIncludeListConfig.getInstance();
-            ObjectMapper mapper;
-            mapper = new ObjectMapper(new YAMLFactory());
-            mapper.enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-            String hsmmStr = null;
-            File hsmmFile = null;
-            FileWriter hsmmFileWriter = null;
-            try {
-                hsmmStr = mapper.writeValueAsString(hsmm);
-                hsmmFile = new File(outputDirectory + System.getProperty("file.separator") + "hsmm_includelist.yaml");
-                hsmmFileWriter = new FileWriter(hsmmFile);
-                hsmmFileWriter.write(hsmmStr);
-                System.out.println("HSMM IncludeList File 'saved' to: " + hsmmFile.getPath());
-            } catch (JsonProcessingException jpe) {
-                jpe.printStackTrace();
-                System.err.println("Problem 'reading' HSMM IncludeList object");
-            } catch (IOException ioe) {
-                ioe.printStackTrace();
-                System.err.println("Problem 'writing' HSMM IncludeList File");
-            } finally {
-                try {
-                    hsmmFileWriter.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+    @Override
+    public void report() {
+        for (String error : getProcessContainer().getConfig().getErrors().getMessages()) {
+            LOG.error(error);
+            System.err.println(error);
         }
-        System.out.println("\nCleaning up threads.... this will take a few seconds(maybe a minute), please wait...");
+        for (String warning : getProcessContainer().getConfig().getWarnings().getMessages()) {
+            LOG.warn(warning);
+            System.err.println(warning);
+        }
     }
 
-    public void init(String[] args) {
+    public void start() {
+        if (!getProcessContainer().getConfig().hasErrors()) {
+            getProcessContainer().run();
+            // Check the Hsmm object for content.  Save to file.
+            if (!getProcessContainer().isTestSQL()) {
+                HiveStrictManagedMigrationIncludeListConfig hsmm = HiveStrictManagedMigrationIncludeListConfig.getInstance();
+                ObjectMapper mapper;
+                mapper = new ObjectMapper(new YAMLFactory());
+                mapper.enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+                String hsmmStr = null;
+                File hsmmFile = null;
+                FileWriter hsmmFileWriter = null;
+                try {
+                    hsmmStr = mapper.writeValueAsString(hsmm);
+                    hsmmFile = new File(outputDirectory + System.getProperty("file.separator") + "hsmm_includelist.yaml");
+                    hsmmFileWriter = new FileWriter(hsmmFile);
+                    hsmmFileWriter.write(hsmmStr);
+                    System.out.println("HSMM IncludeList File 'saved' to: " + hsmmFile.getPath());
+                } catch (JsonProcessingException jpe) {
+                    jpe.printStackTrace();
+                    System.err.println("Problem 'reading' HSMM IncludeList object");
+                } catch (IOException ioe) {
+                    ioe.printStackTrace();
+                    System.err.println("Problem 'writing' HSMM IncludeList File");
+                } finally {
+                    try {
+                        hsmmFileWriter.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            System.out.println("\nCleaning up threads.... this will take a few seconds(maybe a minute), please wait...");
+        } else {
+            for (String error : getProcessContainer().getConfig().getErrors().getMessages()) {
+                LOG.error(error);
+                System.err.println(error);
+            }
+            for (String warning : getProcessContainer().getConfig().getWarnings().getMessages()) {
+                LOG.warn(warning);
+                System.err.println(warning);
+            }
 
+        }
+    }
+
+    public Boolean init(String[] args) {
+        Boolean rtn = Boolean.TRUE;
         Options options = getOptions();
 
         CommandLineParser parser = new PosixParser();
@@ -130,30 +153,30 @@ public class HiveFrameworkCheck implements SreSubApp {
             cmd = parser.parse(options, args);
         } catch (ParseException pe) {
             HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp("Sre", options);
+            String cmdline = ReportingConf.substituteVariablesFromManifest("hive-sre [u3,sre] <options> \nversion:${Implementation-Version}");
+            formatter.printHelp(100, cmdline, "Hive SRE Utility", options,
+                    "\nVisit https://github.com/cloudera-labs/hive-sre for detailed docs");
             System.err.println(pe.getMessage());
             System.exit(-1);
         }
 
         if (cmd.hasOption("h")) {
             HelpFormatter formatter = new HelpFormatter();
-            System.out.println(ReportingConf.substituteVariables("v.${Implementation-Version}"));
-            formatter.printHelp("Sre", options);
+//            System.out.println(ReportingConf.substituteVariables("v.${Implementation-Version}"));
+            String cmdline = ReportingConf.substituteVariablesFromManifest("hive-sre [u3,sre] <options> \nversion:${Implementation-Version}");
+            formatter.printHelp(100, cmdline, "Hive SRE Utility", options,
+                    "\nVisit https://github.com/cloudera-labs/hive-sre for detailed docs");
+
+//            formatter.printHelp("Sre", options);
             System.exit(-1);
         }
 
-//        if (getStackResource() == null) {
-            if (cmd.hasOption("hfw")) {
-                setStackResource(cmd.getOptionValue("hfw"));
-            }
-//        }
+        if (cmd.hasOption("hfw")) {
+            setStackResource(cmd.getOptionValue("hfw"));
+        }
 
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         mapper.enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-
-//        if (cmd.hasOption("db")) {
-//            dbsOverride = cmd.getOptionValues("db");
-//        }
 
         // Should be set by now. If 'cust' option used, then it's set above with the -hfw option.  If that wasn't
         // present, this gets triggered.
@@ -207,9 +230,9 @@ public class HiveFrameworkCheck implements SreSubApp {
 
         // If specified, skip command checks.
         if (cmd.hasOption("scc") && !cmd.hasOption("cdh")) {
-            for (SreProcessBase processBase: procContainer.getProcesses()) {
+            for (SreProcessBase processBase : procContainer.getProcesses()) {
                 if (processBase instanceof DbSetProcess) {
-                    ((DbSetProcess)processBase).setCommandChecks(null);
+                    ((DbSetProcess) processBase).setCommandChecks(null);
                 }
             }
         }
@@ -219,14 +242,14 @@ public class HiveFrameworkCheck implements SreSubApp {
         THIS IS A QUICK FIX FOR USABILITY in 'u3'. ;)
          */
         if (cmd.hasOption("cdh") && this.getName().equalsIgnoreCase("u3")) {
-            String[] includeIds = {"1","3","5","6"};
+            String[] includeIds = {"1", "3", "5", "6"};
             List<String> includes = Arrays.asList(includeIds);
             for (SreProcessBase proc : procContainer.getProcesses()) {
                 if (includes.contains(proc.getId())) {
                     proc.setActive(Boolean.TRUE);
                     proc.setSkip(Boolean.FALSE);
                     if (proc.getId().equals("3")) {
-                        ((DbSetProcess)proc).setCommandChecks(null);
+                        ((DbSetProcess) proc).setCommandChecks(null);
                     }
                 } else {
                     proc.setActive(Boolean.FALSE);
@@ -243,7 +266,7 @@ public class HiveFrameworkCheck implements SreSubApp {
                     proc.setActive(Boolean.TRUE);
                     proc.setSkip(Boolean.FALSE);
                     if (proc.getId().equals("3")) {
-                        ((DbSetProcess)proc).setCommandChecks(null);
+                        ((DbSetProcess) proc).setCommandChecks(null);
                     }
                 } else {
                     proc.setActive(Boolean.FALSE);
@@ -253,7 +276,7 @@ public class HiveFrameworkCheck implements SreSubApp {
         }
 
         if (cmd.hasOption("hdp3") && this.getName().equalsIgnoreCase("u3")) {
-            String[] includeIds = {"1","5","6"};
+            String[] includeIds = {"1", "5", "6"};
             List<String> includes = Arrays.asList(includeIds);
             for (SreProcessBase proc : procContainer.getProcesses()) {
                 if (includes.contains(proc.getId())) {
@@ -273,7 +296,13 @@ public class HiveFrameworkCheck implements SreSubApp {
         } else {
             configFile = System.getProperty("user.home") + System.getProperty("file.separator") + ".hive-sre/cfg/default.yaml";
         }
-        outputDirectory = cmd.getOptionValue("o");
+
+        if (cmd.hasOption("o")) {
+            outputDirectory = cmd.getOptionValue("o");
+        } else {
+            outputDirectory = "hive-sre-output" + System.getProperty("file.separator") + getName();
+        }
+
         // HERE: determine output dir and setup a place to write out the hsmm includelist config.
         if (cmd.hasOption("db")) {
             String[] dbsOverride = cmd.getOptionValues("db");
@@ -286,6 +315,78 @@ public class HiveFrameworkCheck implements SreSubApp {
             outputDirectory = getProcessContainer().initToNoFilters(configFile, outputDirectory);
         }
 
+        SreProcessesConfig lclConfig = getProcessContainer().getConfig();
+
+        if (cmd.hasOption("p") || cmd.hasOption("dp")) {
+            // Used to generate encrypted password.
+            rtn = Boolean.FALSE;
+            if (cmd.hasOption("pkey")) {
+                Protect protect = new Protect(cmd.getOptionValue("pkey"));
+                // Set to control execution flow.
+//                lclConfig.getErrors().set(MessageCode.PASSWORD_CFG.getCode());
+                if (cmd.hasOption("p")) {
+                    String epassword = null;
+                    try {
+                        epassword = protect.encrypt(cmd.getOptionValue("p"));
+                        lclConfig.getWarnings().set(MessageCode.ENCRYPT_PASSWORD.getCode(), epassword);
+                    } catch (Exception e) {
+                        lclConfig.getErrors().set(MessageCode.ENCRYPT_PASSWORD_ISSUE.getCode());
+                    }
+                } else {
+                    String password = null;
+                    try {
+                        password = protect.decrypt(cmd.getOptionValue("dp"));
+                        lclConfig.getWarnings().set(MessageCode.DECRYPT_PASSWORD.getCode(), password);
+                    } catch (Exception e) {
+                        lclConfig.getErrors().set(MessageCode.DECRYPTING_PASSWORD_ISSUE.getCode());
+                    }
+                }
+            } else {
+                lclConfig.getErrors().set(MessageCode.PKEY_PASSWORD_CFG.getCode());
+            }
+        } else {
+
+            // When the pkey is specified, we assume the config passwords are encrytped and we'll decrypt them before continuing.
+            if (cmd.hasOption("pkey")) {
+                // Loop through the HiveServer2 Configs and decode the password.
+                System.out.println("Password Key specified.  Decrypting config password before submitting.");
+
+                String pkey = cmd.getOptionValue("pkey");
+                Protect protect = new Protect(pkey);
+
+                if (lclConfig.getMetastoreDirect() != null) {
+                    Properties props = lclConfig.getMetastoreDirect().getConnectionProperties();
+                    String password = props.getProperty("password");
+                    if (password != null) {
+                        try {
+                            String decryptedPassword = protect.decrypt(password);
+                            props.put("password", decryptedPassword);
+                        } catch (Exception e) {
+                            lclConfig.getErrors().set(MessageCode.DECRYPTING_PASSWORD_ISSUE.getCode());
+                        }
+                    }
+                }
+
+                if (lclConfig.getHs2() != null) {
+                    Properties props = lclConfig.getHs2().getConnectionProperties();
+                    String password = props.getProperty("password");
+                    if (password != null) {
+                        try {
+                            String decryptedPassword = protect.decrypt(password);
+                            props.put("password", decryptedPassword);
+                        } catch (Exception e) {
+                            lclConfig.getErrors().set(MessageCode.DECRYPTING_PASSWORD_ISSUE.getCode());
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!lclConfig.validate()) {
+            rtn = Boolean.FALSE;
+        }
+
+        return rtn;
     }
 
     private Options getOptions() {
@@ -371,6 +472,29 @@ public class HiveFrameworkCheck implements SreSubApp {
         Option testSqlOption = new Option("tsql", "test-sql", false, "Check SQL against target Metastore RDBMS");
         testSqlOption.setRequired(false);
         options.addOption(testSqlOption);
+
+        OptionGroup pwOptGroup = new OptionGroup();
+        pwOptGroup.setRequired(false);
+
+        Option pwOption = new Option("p", "password", true,
+                "Used this in conjunction with '-pkey' to generate the encrypted password that you'll add to the configs for the JDBC connections.");
+        pwOption.setRequired(Boolean.FALSE);
+        pwOption.setArgName("password");
+        pwOptGroup.addOption(pwOption);
+
+        Option decryptPWOption = new Option("dp", "decrypt-password", true,
+                "Used this in conjunction with '-pkey' to decrypt the generated passcode from `-p`.");
+        decryptPWOption.setRequired(Boolean.FALSE);
+        decryptPWOption.setArgName("encrypted-password");
+        pwOptGroup.addOption(decryptPWOption);
+
+        options.addOptionGroup(pwOptGroup);
+
+        Option pKeyOption = new Option("pkey", "password-key", true,
+                "The key used to encrypt / decrypt the cluster jdbc passwords.  If not present, the passwords will be processed as is (clear text) from the config file.");
+        pKeyOption.setRequired(false);
+        pKeyOption.setArgName("password-key");
+        options.addOption(pKeyOption);
 
         return options;
 

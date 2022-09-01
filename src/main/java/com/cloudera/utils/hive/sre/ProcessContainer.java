@@ -162,7 +162,7 @@ public class ProcessContainer implements Runnable {
 
     public void setTestSQL(Boolean testSQL) {
         this.testSQL = testSQL;
-        for (SreProcessBase process: getProcesses()) {
+        for (SreProcessBase process : getProcesses()) {
             process.setTestSQL(this.testSQL);
         }
         reporter.setTestSQL(this.testSQL);
@@ -195,6 +195,7 @@ public class ProcessContainer implements Runnable {
     }
 
     public void run() {
+        initResources();
         int i = 0;
         while (true) {
             boolean check = true;
@@ -277,14 +278,15 @@ public class ProcessContainer implements Runnable {
 
     protected String init(String config, String outputDirectory) {
         initializing = Boolean.TRUE;
-        String job_run_dir = null;
+        String jobRunDir = null;
         if (config == null || outputDirectory == null) {
             throw new RuntimeException("Config File and Output Directory must be set before init.");
         } else {
             Date now = new Date();
             DateFormat df = new SimpleDateFormat("YY-MM-dd_HH-mm-ss");
-            job_run_dir = outputDirectory + System.getProperty("file.separator") + df.format(now);
-            File jobDir = new File(job_run_dir);
+            jobRunDir = outputDirectory + System.getProperty("file.separator") + df.format(now);
+            setOutputDirectory(jobRunDir);
+            File jobDir = new File(jobRunDir);
             if (!jobDir.exists()) {
                 jobDir.mkdirs();
             }
@@ -305,11 +307,23 @@ public class ProcessContainer implements Runnable {
             sreConfig.validate();
             setConfig(sreConfig);
 
+        } catch (
+                IOException e) {
+            throw new RuntimeException("Issue getting configs", e);
+        }
+
+        initializing = Boolean.FALSE;
+
+        return jobRunDir;
+    }
+
+    protected void initResources() {
+        try {
             this.connectionPools = new ConnectionPools(getConfig());
             this.connectionPools.init();
 
             GenericObjectPoolConfig<HadoopSession> hspCfg = new GenericObjectPoolConfig<HadoopSession>();
-            hspCfg.setMaxTotal(sreConfig.getParallelism() * 2);
+            hspCfg.setMaxTotal(getConfig().getParallelism() * 2);
             this.cliPool = new HadoopSessionPool(new GenericObjectPool<HadoopSession>(new HadoopSessionFactory(), hspCfg));
 
             // Needs to be added first, so it runs the reporter thread.
@@ -318,7 +332,6 @@ public class ProcessContainer implements Runnable {
             for (SreProcessBase process : getProcesses()) {
                 if (process.isActive()) {
                     setFilter(process);
-//                    process.setDbsOverride(dbsOverride);
                     // Set the dbType here.
                     if (getConfig().getMetastoreDirect().getType() != null) {
                         switch (getConfig().getMetastoreDirect().getType()) {
@@ -341,16 +354,13 @@ public class ProcessContainer implements Runnable {
                     // When there's nothing to process, it won't be active.
                     int delay = 100;
                     process.setParent(this);
-                    process.setOutputDirectory(job_run_dir);
+                    process.setOutputDirectory(getOutputDirectory());
                     process.init(this);
-//                    getProcessThreads().add(
                     if (testSQL) {
                         process.testSQLScript();
                     } else {
                         getProcThreadPool().submit(process);
                     }
-//                    getProcessThreads().add(getThreadPool().schedule(process, 100, MILLISECONDS));
-
                 }
             }
             if (!isTestSQL()) {
@@ -360,10 +370,6 @@ public class ProcessContainer implements Runnable {
                 IOException e) {
             throw new RuntimeException("Issue getting configs", e);
         }
-
-        initializing = Boolean.FALSE;
-
-        return job_run_dir;
     }
 
     @Override

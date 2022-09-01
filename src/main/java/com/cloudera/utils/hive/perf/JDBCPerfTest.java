@@ -33,9 +33,23 @@ public class JDBCPerfTest implements SreSubApp {
     private JDBCRecordIterator jri = new JDBCRecordIterator();
     private CollectStatistics stats = null;
 
+    private String name;
 
     private ScheduledExecutorService threadPool;
     private List<ScheduledFuture> processThreads;
+
+    public JDBCPerfTest(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public ScheduledExecutorService getThreadPool() {
         if (threadPool == null) {
@@ -178,9 +192,15 @@ public class JDBCPerfTest implements SreSubApp {
         }
     }
 
-    public void init(String[] args) {
+    public Boolean init(String[] args) {
         Options options = getOptions();
         setOptions(options, args);
+        return Boolean.TRUE;
+    }
+
+    @Override
+    public void report() {
+        //
     }
 
     public void start() {
@@ -212,7 +232,7 @@ public class JDBCPerfTest implements SreSubApp {
     }
 
     public static void main(String[] args) {
-        JDBCPerfTest test = new JDBCPerfTest();
+        JDBCPerfTest test = new JDBCPerfTest("perf");
         test.init(args);
         test.start();
     }

@@ -17,10 +17,13 @@
 package com.cloudera.utils.hive;
 
 import com.cloudera.utils.hive.perf.JDBCPerfTest;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import java.util.Arrays;
 
 public class Sre {
+    private static final Logger LOG = LogManager.getLogger(Sre.class);
 
     public static void main(String[] args) {
         Sre sre = new Sre();
@@ -57,7 +60,7 @@ public class Sre {
         SreSubApp sreApp = null;
         switch (subApp) {
             case "perf":
-                sreApp = new JDBCPerfTest();
+                sreApp = new JDBCPerfTest("perf");
                 break;
             case "sre":
                 sreApp = new HiveFrameworkCheck("sre", "/procs/hive_sre_procs.yaml");
@@ -73,8 +76,13 @@ public class Sre {
                 break;
         }
 
-        sreApp.init(appArgs);
-        sreApp.start();
+        if (sreApp.init(appArgs)) {
+            LOG.info("sre-app: " + sreApp.getName() + " successfully initialized");
+            sreApp.start();
+        } else {
+            LOG.info("sre-app: " + sreApp.getName() + " reporting");
+            sreApp.report();
+        }
 
     }
 
