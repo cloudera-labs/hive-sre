@@ -117,7 +117,14 @@ public class DbPaths extends SRERunnable {
 
             String[][] columnsArray = rarray.getColumns(columns);
 
-            cli = getParent().getParent().getCliPool().borrow();
+            if (getCommandChecks() != null) {
+                cli = getParent().getParent().getCliPool().borrow();
+            }
+
+            if (cli == null && getCommandChecks() != null) {
+                System.err.println("Issue getting dfs client session. Check configurations for DFS.");
+                System.exit(-1);
+            }
 
             Integer[] hsmmElementLoc = null;
             HiveStrictManagedMigrationElements hsmmElements = getParent().getHsmmElements();
@@ -176,6 +183,8 @@ public class DbPaths extends SRERunnable {
                             } catch (RuntimeException t) {
                                 // Malformed cli request.  Input is missing an element required to complete call.
                                 // Unusual, but not an expection.
+                                t.printStackTrace();
+                                throw t;
                             }
                         }
                     } else {
@@ -196,10 +205,13 @@ public class DbPaths extends SRERunnable {
             }
             e.printStackTrace(error);
         } catch (Throwable t) {
-            System.err.println("Failure in DbPaths");
+            error.println("Failure in DbPaths:" + t.getMessage());
             t.printStackTrace(error);
+//            System.exit(-1);
         } finally {
-            getParent().getParent().getCliPool().returnSession(cli);
+            if (cli != null) {
+                getParent().getParent().getCliPool().returnSession(cli);
+            }
             // When completed, increment the processed value.
             counterGroup.addAndGetTaskState(TaskState.PROCESSED, 1);
         }

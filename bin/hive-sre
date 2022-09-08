@@ -48,9 +48,6 @@ fi
 PRG_ARGS=
 CMD_CP=${HOME}/.hive-sre/cust
 
-# Set the default.
-export HADOOP_CONF_DIR="/etc/hadoop/conf"
-
 AUX_LIBS_DIR=${HIVE_SRE_AUX_LIBS:-${HOME}/.hive-sre/aux_libs}
 
 SHOW_CP=

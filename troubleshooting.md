@@ -28,3 +28,19 @@ The application will display the JDK version at startup.  Use this to confirm.
 ### Setting up $JAVA_HOME
 
 If the 'default' jdk isn't the one being used by the cluster, set the `$JAVA_HOME` environment variable BEFORE starting `hive-sre`.  When this is set, `hive-sre` will use that JDK.
+
+### Setting an alternate HADOOP_CONF_DIR
+
+By default, 'hive-sre' uses the `/etc/hadoop/conf` directory to locate the environment configurations.  If you have an alternate directory, you can override this by setting the env variable `HADOOP_CONF_DIR`.
+
+```
+export HADOOP_CONF_DIR=/my/hadoop/conf_dir
+```
+
+If you see the following message, it means the needed configurations we not found.
+
+```
+Invalid URI for NameNode address (check fs.defaultFS): file:/// has no authority. cmd:org.apache.commons.cli.CommandLine...
+```
+
+Ideally, the host should be configured as an **HDFS Gateway** in Cloudera Manager.

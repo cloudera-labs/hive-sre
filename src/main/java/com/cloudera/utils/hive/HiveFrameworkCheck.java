@@ -47,6 +47,8 @@ import java.util.Properties;
 public class HiveFrameworkCheck implements SreSubApp {
     private static final Logger LOG = LogManager.getLogger(HiveFrameworkCheck.class);
 
+    private final String USAGE_CMD = "hive-sre u3|sre|perf -cdh|-hdp2|-hdp3|-all|-i <proc[,proc...]> -o <output-dir> [options]";
+
     private String name;
     private String stackResource;
     private ProcessContainer processContainer;
@@ -153,7 +155,7 @@ public class HiveFrameworkCheck implements SreSubApp {
             cmd = parser.parse(options, args);
         } catch (ParseException pe) {
             HelpFormatter formatter = new HelpFormatter();
-            String cmdline = ReportingConf.substituteVariablesFromManifest("hive-sre [u3,sre] <options> \nversion:${Implementation-Version}");
+            String cmdline = ReportingConf.substituteVariablesFromManifest(USAGE_CMD + "\nversion:${Implementation-Version}");
             formatter.printHelp(100, cmdline, "Hive SRE Utility", options,
                     "\nVisit https://github.com/cloudera-labs/hive-sre for detailed docs");
             System.err.println(pe.getMessage());
@@ -163,7 +165,7 @@ public class HiveFrameworkCheck implements SreSubApp {
         if (cmd.hasOption("h")) {
             HelpFormatter formatter = new HelpFormatter();
 //            System.out.println(ReportingConf.substituteVariables("v.${Implementation-Version}"));
-            String cmdline = ReportingConf.substituteVariablesFromManifest("hive-sre [u3,sre] <options> \nversion:${Implementation-Version}");
+            String cmdline = ReportingConf.substituteVariablesFromManifest(USAGE_CMD + "\nversion:${Implementation-Version}");
             formatter.printHelp(100, cmdline, "Hive SRE Utility", options,
                     "\nVisit https://github.com/cloudera-labs/hive-sre for detailed docs");
 
@@ -293,6 +295,7 @@ public class HiveFrameworkCheck implements SreSubApp {
         String configFile = null;
         if (cmd.hasOption("cfg")) {
             configFile = cmd.getOptionValue("cfg");
+            System.out.println("You've specified a custom config file. Try editing/using the 'default.yaml' in the $HOME/.hive-sre/cfg directory instead.");
         } else {
             configFile = System.getProperty("user.home") + System.getProperty("file.separator") + ".hive-sre/cfg/default.yaml";
         }
@@ -445,6 +448,11 @@ public class HiveFrameworkCheck implements SreSubApp {
         hdp3Option.setRequired(false);
         procOptions.addOption(hdp3Option);
 
+        Option allOption = new Option("all", "all-reports", false,
+                "Run ALL available processes.");
+        allOption.setRequired(false);
+        procOptions.addOption(allOption);
+
         Option includeOption = new Option("i", "include", true,
                 "Comma separated list of process id's to run.  When not specified, ALL processes are run.");
         includeOption.setValueSeparator(',');
@@ -452,6 +460,19 @@ public class HiveFrameworkCheck implements SreSubApp {
         includeOption.setRequired(false);
         procOptions.addOption(includeOption);
 
+        Option pwOption = new Option("p", "password", true,
+                "Used this in conjunction with '-pkey' to generate the encrypted password that you'll add to the configs for the JDBC connections.");
+        pwOption.setRequired(Boolean.FALSE);
+        pwOption.setArgName("password");
+        procOptions.addOption(pwOption);
+
+        Option decryptPWOption = new Option("dp", "decrypt-password", true,
+                "Used this in conjunction with '-pkey' to decrypt the generated passcode from `-p`.");
+        decryptPWOption.setRequired(Boolean.FALSE);
+        decryptPWOption.setArgName("encrypted-password");
+        procOptions.addOption(decryptPWOption);
+
+        procOptions.setRequired(Boolean.TRUE);
         options.addOptionGroup(procOptions);
 
         Option cfgOption = new Option("cfg", "config", true,
@@ -473,22 +494,22 @@ public class HiveFrameworkCheck implements SreSubApp {
         testSqlOption.setRequired(false);
         options.addOption(testSqlOption);
 
-        OptionGroup pwOptGroup = new OptionGroup();
-        pwOptGroup.setRequired(false);
+//        OptionGroup pwOptGroup = new OptionGroup();
+//        pwOptGroup.setRequired(false);
 
-        Option pwOption = new Option("p", "password", true,
-                "Used this in conjunction with '-pkey' to generate the encrypted password that you'll add to the configs for the JDBC connections.");
-        pwOption.setRequired(Boolean.FALSE);
-        pwOption.setArgName("password");
-        pwOptGroup.addOption(pwOption);
+//        Option pwOption = new Option("p", "password", true,
+//                "Used this in conjunction with '-pkey' to generate the encrypted password that you'll add to the configs for the JDBC connections.");
+//        pwOption.setRequired(Boolean.FALSE);
+//        pwOption.setArgName("password");
+//        pwOptGroup.addOption(pwOption);
+//
+//        Option decryptPWOption = new Option("dp", "decrypt-password", true,
+//                "Used this in conjunction with '-pkey' to decrypt the generated passcode from `-p`.");
+//        decryptPWOption.setRequired(Boolean.FALSE);
+//        decryptPWOption.setArgName("encrypted-password");
+//        pwOptGroup.addOption(decryptPWOption);
 
-        Option decryptPWOption = new Option("dp", "decrypt-password", true,
-                "Used this in conjunction with '-pkey' to decrypt the generated passcode from `-p`.");
-        decryptPWOption.setRequired(Boolean.FALSE);
-        decryptPWOption.setArgName("encrypted-password");
-        pwOptGroup.addOption(decryptPWOption);
-
-        options.addOptionGroup(pwOptGroup);
+//        options.addOptionGroup(pwOptGroup);
 
         Option pKeyOption = new Option("pkey", "password-key", true,
                 "The key used to encrypt / decrypt the cluster jdbc passwords.  If not present, the passwords will be processed as is (clear text) from the config file.");
