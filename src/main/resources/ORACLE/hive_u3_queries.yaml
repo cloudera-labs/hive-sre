@@ -385,6 +385,7 @@ WHERE t.tbl_serde_slib IN
                                        ON TBL.TBL_ID = P.TBL_ID
                WHERE
                    DB.NAME LIKE ?
+                   AND TBL.TBL_TYPE = 'MANAGED_TABLE'
            )
       SELECT DISTINCT
           DB_NAME

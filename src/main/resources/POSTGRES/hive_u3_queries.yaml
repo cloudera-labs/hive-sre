@@ -372,6 +372,7 @@ WHERE \"T\".\"TBL_SERDE_SLIB\" IN
                         LEFT OUTER JOIN \"WPARAMS\" \"P\"
                                         ON \"TBL\".\"TBL_ID\" = \"P\".\"TBL_ID\"
                WHERE \"DB\".\"NAME\" LIKE ?
+                  AND \"TBL\".\"TBL_TYPE\" = 'MANAGED_TABLE'
            )
       SELECT DISTINCT \"DB_NAME\"
                     , \"TBL_NAME\"

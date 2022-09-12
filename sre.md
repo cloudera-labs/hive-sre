@@ -24,26 +24,39 @@ For a while during the evolution of Hive 3, there was a separate 'catalog' for S
 
 ```
 Launching: sre
-v.2.4.0.8-SNAPSHOT
-usage: Sre
- -cfg,--config <arg>               Config with details for the Sre Job.
-                                   Must match the either sre or u3
-                                   selection. Default:
-                                   $HOME/.hive-sre/cfg/default.yaml
- -db,--database <arg>              Comma separated list of Databases.
-                                   Will override config. (upto 100)
- -dbRegEx,--database-regex <arg>   A RegEx to match databases to process
- -h,--help                         Help
- -hfw,--hive-framework <arg>       The custom HiveFramework check
-                                   configuration. Needs to be in the
-                                   'Classpath'.
- -i,--include <arg>                Comma separated list of process id's to
-                                   run.  When not specified, ALL processes
-                                   are run.
- -o,--output-dir <arg>             Output Directory to save results from
-                                   Sre.
- -scc,--skip-command-checks        Don't process the command checks for
-                                   the process.
+usage: hive-sre u3|sre|perf -cdh|-hdp2|-hdp3|-all|-i <proc[,proc...]> -o <output-dir> [options]
+                version:2.4.0.24.0-SNAPSHOT
+Hive SRE Utility
+ -all,--all-reports                            Run ALL available processes.
+ -cdh,--cloudera-data-hub                      Run processes that make sense for CDH.
+ -cfg,--config <arg>                           Config with details for the Sre Job.  Must match the
+                                               either sre or u3 selection. Default:
+                                               $HOME/.hive-sre/cfg/default.yaml
+ -db,--database <arg>                          Comma separated list of Databases.  Will override
+                                               config. (upto 100)
+ -dbRegEx,--database-regex <arg>               A RegEx of databases to process
+ -dp,--decrypt-password <encrypted-password>   Used this in conjunction with '-pkey' to decrypt the
+                                               generated passcode from `-p`.
+ -edbRegEx,--exclude-database-regex <arg>      A RegEx that will filter OUT matching databases from
+                                               processing
+ -h,--help                                     Help
+ -hdp2,--hortonworks-data-platfrom-v2          Run processes that make sense for HDP2.
+ -hdp3,--hortonworks-data-platfrom-v3          Run processes that make sense for HDP3.
+ -hfw,--hive-framework <arg>                   The custom HiveFramework check configuration. Needs
+                                               to be in the 'Classpath'.
+ -i,--include <arg>                            Comma separated list of process id's to run.  When
+                                               not specified, ALL processes are run.
+ -o,--output-dir <arg>                         Output Directory to save results from Sre.
+ -p,--password <password>                      Used this in conjunction with '-pkey' to generate the
+                                               encrypted password that you'll add to the configs for
+                                               the JDBC connections.
+ -pkey,--password-key <password-key>           The key used to encrypt / decrypt the cluster jdbc
+                                               passwords.  If not present, the passwords will be
+                                               processed as is (clear text) from the config file.
+ -scc,--skip-command-checks                    Don't process the command checks for the process.
+ -tsql,--test-sql                              Check SQL against target Metastore RDBMS
+
+Visit https://github.com/cloudera-labs/hive-sre for detailed docs
 ```
 
 The `-db` parameter is optional.  When specified, it will limit the search to the databases listed as a parameter.  IE: `-db my_db,test_db`

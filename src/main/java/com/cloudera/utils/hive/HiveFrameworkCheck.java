@@ -397,11 +397,6 @@ public class HiveFrameworkCheck implements SreSubApp {
         // create Options object
         Options options = new Options();
 
-        Option helpOption = new Option("h", "help", false,
-                "Help");
-        helpOption.setRequired(false);
-        options.addOption(helpOption);
-
         Option outputOption = new Option("o", "output-dir", true,
                 "Output Directory to save results from Sre.");
         outputOption.setRequired(false);
@@ -432,6 +427,11 @@ public class HiveFrameworkCheck implements SreSubApp {
         options.addOptionGroup(dbOptionGroup);
 
         OptionGroup procOptions = new OptionGroup();
+
+        Option helpOption = new Option("h", "help", false,
+                "Help");
+        helpOption.setRequired(false);
+        procOptions.addOption(helpOption);
 
         Option cdhOption = new Option("cdh", "cloudera-data-hub", false,
                 "Run processes that make sense for CDH.");
