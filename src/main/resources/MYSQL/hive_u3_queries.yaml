@@ -347,49 +347,46 @@ WHERE t.tbl_serde_slib IN
     "
   managed_2_acid:
     statement: "
-      WITH
-          WPARAMS AS (
-          SELECT
-              SP.TBL_ID
-            , SP.PARAM_KEY
-            , SP.PARAM_VALUE
-          FROM TABLE_PARAMS SP
-          WHERE
-               LOWER(SP.PARAM_KEY) = 'transactional'
-            OR LOWER(SP.PARAM_KEY) = 'external'
-          ),
-          WCAT AS (
-          SELECT
-              DB.NAME AS DB_NAME
-            , TBL.TBL_NAME
-            , date_format(from_unixtime(TBL.CREATE_TIME),'%Y-%m-%d') AS CREATED_DATE
-            , S.LOCATION AS TBL_LOCATION
-            , CASE CONCAT(LOWER(TBL_TYPE), LOWER(P.PARAM_KEY), LOWER(P.PARAM_VALUE))
-                  WHEN 'external_tableexternaltrue' THEN 'EXTERNAL'
-                  WHEN 'managed_tabletransactionaltrue' THEN 'ACID'
-                  ELSE 'LEGACY_MANAGED'
-                  END AS TBL_TYPE
-          FROM DBS DB
-                   JOIN
-               TBLS TBL ON
-                   DB.DB_ID = TBL.DB_ID
-                   INNER JOIN SDS S ON TBL.SD_ID = S.SD_ID
-                   LEFT OUTER JOIN WPARAMS P
-                                   ON TBL.TBL_ID = P.TBL_ID
-          WHERE DB.NAME LIKE ?
-            AND TBL.TBL_TYPE = 'MANAGED_TABLE'
-          )
-      SELECT DISTINCT
-          DB_NAME
-        , TBL_NAME
-        , CREATED_DATE
-        , TBL_TYPE
-        , TBL_LOCATION
-      FROM WCAT
-      WHERE
-          TBL_TYPE = 'LEGACY_MANAGED'
-      ORDER BY
-          DB_NAME, TBL_TYPE
+SELECT DISTINCT
+    DB_NAME
+  , TBL_NAME
+  , CREATED_DATE
+  , TBL_TYPE
+  , TBL_LOCATION
+FROM (
+     SELECT
+         DB.NAME                                                 AS DB_NAME
+       , TBL.TBL_NAME
+       , DATE_FORMAT(FROM_UNIXTIME(TBL.CREATE_TIME), '%Y-%m-%d') AS CREATED_DATE
+       , S.LOCATION                                              AS TBL_LOCATION
+       , CASE CONCAT(LOWER(TBL_TYPE), LOWER(P.PARAM_KEY), LOWER(P.PARAM_VALUE))
+             WHEN 'external_tableexternaltrue' THEN 'EXTERNAL'
+             WHEN 'managed_tabletransactionaltrue' THEN 'ACID'
+             ELSE 'LEGACY_MANAGED'
+             END                                                 AS TBL_TYPE
+     FROM DBS DB
+              JOIN
+          TBLS TBL ON
+              DB.DB_ID = TBL.DB_ID
+              INNER JOIN SDS S ON TBL.SD_ID = S.SD_ID
+              LEFT OUTER JOIN (
+                              SELECT
+                                  SP.TBL_ID
+                                , SP.PARAM_KEY
+                                , SP.PARAM_VALUE
+                              FROM TABLE_PARAMS SP
+                              WHERE
+                                   LOWER(SP.PARAM_KEY) = 'transactional'
+                                OR LOWER(SP.PARAM_KEY) = 'external'
+     ) P
+                              ON TBL.TBL_ID = P.TBL_ID
+     WHERE
+           DB.NAME LIKE ?
+       AND TBL.TBL_TYPE = 'MANAGED_TABLE'
+     ) WCAT
+WHERE
+    TBL_TYPE = 'LEGACY_MANAGED'
+ORDER BY DB_NAME, TBL_TYPE
     "
     parameters:
       dbs:
@@ -678,59 +675,48 @@ WHERE T.TBL_SERDE_SLIB IN
         location: 2
   acid_bucket_version:
     statement: "
-      WITH
-          TPARAMS AS (
-          SELECT
-              SP.TBL_ID
-            , SP.PARAM_KEY
-            , SP.PARAM_VALUE
-          FROM TABLE_PARAMS SP
-          WHERE
-               LOWER(SP.PARAM_KEY) = 'transactional'
-              AND LOWER(SP.PARAM_VALUE) = 'true'
-          ),
-          BPARAMS AS (
-          SELECT
-              SP.TBL_ID
-            , SP.PARAM_KEY
-            , SP.PARAM_VALUE
-          FROM TABLE_PARAMS SP
-          WHERE
-                LOWER(SP.PARAM_KEY) = 'bucketing_version'
-            AND SP.PARAM_VALUE = '2'
-          ),
-          WCAT AS (
-          SELECT
-              DB.NAME AS DB_NAME
-            , TBL.TBL_NAME
-            , TBL.TBL_ID
-          FROM DBS DB
-                   JOIN
-               TBLS TBL ON
-                   DB.DB_ID = TBL.DB_ID
-                   INNER JOIN SDS S ON TBL.SD_ID = S.SD_ID
-                   INNER JOIN TPARAMS P
-                                   ON TBL.TBL_ID = P.TBL_ID
-          WHERE
-              DB.NAME LIKE ?
-          ),
-          ACIDV1 AS (
-          SELECT DISTINCT
-              DB_NAME
-            , TBL_NAME
-            , TBL_ID
-          FROM WCAT
-          )
-      SELECT
-          DB_NAME
-        , TBL_NAME
-        , TBL_ID
-      FROM ACIDV1 AV1
-      WHERE
-              AV1.TBL_ID NOT IN (
+SELECT
+    DB_NAME
+  , TBL_NAME
+  , TBL_ID
+FROM (
+     SELECT DISTINCT
+         DB.NAME AS DB_NAME
+       , TBL.TBL_NAME
+       , TBL.TBL_ID
+     FROM DBS DB
+              JOIN
+          TBLS TBL ON
+              DB.DB_ID = TBL.DB_ID
+              INNER JOIN SDS S ON TBL.SD_ID = S.SD_ID
+              INNER JOIN (
+                         SELECT
+                             SP.TBL_ID
+                           , SP.PARAM_KEY
+                           , SP.PARAM_VALUE
+                         FROM TABLE_PARAMS SP
+                         WHERE
+                               LOWER(SP.PARAM_KEY) = 'transactional'
+                           AND LOWER(SP.PARAM_VALUE) = 'true'
+     ) P
+                         ON TBL.TBL_ID = P.TBL_ID
+     WHERE
+         DB.NAME LIKE ?
+     ) WCAT
+WHERE
+        WCAT.TBL_ID NOT IN (
+                           SELECT
+                               TBL_ID
+                           FROM (
                                 SELECT
-                                    TBL_ID
-                                FROM BPARAMS)    
+                                    SP.TBL_ID
+                                  , SP.PARAM_KEY
+                                  , SP.PARAM_VALUE
+                                FROM TABLE_PARAMS SP
+                                WHERE
+                                      LOWER(SP.PARAM_KEY) = 'bucketing_version'
+                                  AND SP.PARAM_VALUE = '2'
+                                ) BPARAMS)
     "
     parameters:
       dbs:

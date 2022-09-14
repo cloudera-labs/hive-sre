@@ -10,7 +10,7 @@ public class SreSQLTest {
             String cfg = System.getProperty("user.home") + System.getProperty("file.separator") +
                     ".hive-sre/cfg" + System.getProperty("file.separator") +
                     "default-" + Metastore.DB_TYPE.MYSQL + ".yaml";
-            Sre.main(new String[]{"u3", "-tsql", "-cfg", cfg,"-o", "/tmp/sre-sql-test"});
+            Sre.main(new String[]{"u3", "-tsql", "-all", "-cfg", cfg,"-o", "/tmp/sre-sql-test"});
     }
 
     @Test
@@ -18,7 +18,7 @@ public class SreSQLTest {
         String cfg = System.getProperty("user.home") + System.getProperty("file.separator") +
                 ".hive-sre/cfg" + System.getProperty("file.separator") +
                 "default-" + Metastore.DB_TYPE.ORACLE + ".yaml";
-        Sre.main(new String[]{"u3", "-tsql", "-cfg", cfg,"-o", "/tmp/sre-sql-test"});
+        Sre.main(new String[]{"u3", "-tsql", "-all", "-cfg", cfg,"-o", "/tmp/sre-sql-test"});
     }
 
     @Test
@@ -26,7 +26,7 @@ public class SreSQLTest {
         String cfg = System.getProperty("user.home") + System.getProperty("file.separator") +
                 ".hive-sre/cfg" + System.getProperty("file.separator") +
                 "default-" + Metastore.DB_TYPE.POSTGRES + ".yaml";
-        Sre.main(new String[]{"u3", "-tsql", "-cfg", cfg,"-o", "/tmp/sre-sql-test"});
+        Sre.main(new String[]{"u3", "-tsql", "-all", "-cfg", cfg,"-o", "/tmp/sre-sql-test"});
     }
 
     @Test
@@ -34,7 +34,7 @@ public class SreSQLTest {
         String cfg = System.getProperty("user.home") + System.getProperty("file.separator") +
                 ".hive-sre/cfg" + System.getProperty("file.separator") +
                 "default-" + Metastore.DB_TYPE.MYSQL + ".yaml";
-        Sre.main(new String[]{"sre", "-tsql", "-cfg", cfg,"-o", "/tmp/sre-sql-test"});
+        Sre.main(new String[]{"sre", "-tsql", "-all", "-cfg", cfg,"-o", "/tmp/sre-sql-test"});
     }
 
     @Test
@@ -42,7 +42,7 @@ public class SreSQLTest {
         String cfg = System.getProperty("user.home") + System.getProperty("file.separator") +
                 ".hive-sre/cfg" + System.getProperty("file.separator") +
                 "default-" + Metastore.DB_TYPE.ORACLE + ".yaml";
-        Sre.main(new String[]{"sre", "-tsql", "-cfg", cfg,"-o", "/tmp/sre-sql-test"});
+        Sre.main(new String[]{"sre", "-tsql", "-all", "-cfg", cfg,"-o", "/tmp/sre-sql-test"});
     }
 
     @Test
@@ -50,7 +50,7 @@ public class SreSQLTest {
         String cfg = System.getProperty("user.home") + System.getProperty("file.separator") +
                 ".hive-sre/cfg" + System.getProperty("file.separator") +
                 "default-" + Metastore.DB_TYPE.POSTGRES + ".yaml";
-        Sre.main(new String[]{"sre", "-tsql", "-cfg", cfg,"-o", "/tmp/sre-sql-test"});
+        Sre.main(new String[]{"sre", "-tsql", "-all", "-cfg", cfg,"-o", "/tmp/sre-sql-test"});
     }
 
 
