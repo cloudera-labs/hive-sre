@@ -77,7 +77,7 @@ See the [config docs](./config.md) for details.
 To ease the launch of the application below, configure these core environment variables.
 
 ```
-hive-sre sre -db priv_dstreev -o ./sre-out` 
+hive-sre u3|sre -all|-hdp2|-hdp3|-cdh` 
 ```
 
 **NOTE** It is NOT necessary to use the `-cfg` option if your config is `$HOME/.hive-sre/cfg/default`.
@@ -102,7 +102,7 @@ Copy this encrypted password and place it in your configuration file for the con
 
 Using the **same** `-pkey <password-key>` you used to generate the encrypted password, we'll run `hive-sre`
 
-`hive-sre u3 -pkey cloudera ...`
+`hive-sre u3 -all|-hdp2|-hdp3|-cdh -pkey cloudera ...`
 
 When the `-pkey` option is specified **WITHOUT** the `-p` option (used previously), `hive-sre` will understand to **decrypt** the configuration passwords before connecting to the resources.  If you receive jdbc connection exceptions, recheck the `-pkey` and encrypted password from before.
 
