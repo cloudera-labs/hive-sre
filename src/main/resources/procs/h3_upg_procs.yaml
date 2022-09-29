@@ -247,7 +247,7 @@ processes:
       - query:                       "legacy_kudu_storage_handle_class"
         listingColumns: [ "db_name" ,"tbl_name"]
         resultMessageHeader:         "\n## Legacy Kudu Serde's\n
-                              > Listed tables need the Kudu Serde Class upgraded.\n
+                              > List of tables that need the Kudu Serde Class upgraded.\n
                               "
         resultMessageDetailHeader:   "| Database | Table |\n|:---|:---|"
         resultMessageDetailTemplate: "| %1$s | %2$s |"
@@ -342,7 +342,7 @@ processes:
       - query:               "storage_format"
         parameters:
           tableparam:
-            override: "kafka.service.uri"
+            override: "kudu.table_name"
             sqlType:  12
             location: 1
           inputformat:

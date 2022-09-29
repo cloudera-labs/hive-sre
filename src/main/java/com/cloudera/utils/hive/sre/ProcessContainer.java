@@ -325,7 +325,9 @@ public class ProcessContainer implements Runnable {
             GenericObjectPoolConfig<HadoopSession> hspCfg = new GenericObjectPoolConfig<HadoopSession>();
             hspCfg.setMaxTotal(getConfig().getParallelism() * 2);
             this.cliPool = new HadoopSessionPool(new GenericObjectPool<HadoopSession>(new HadoopSessionFactory(), hspCfg));
-
+            if (this.cliPool == null) {
+                throw new RuntimeException("Issue establishing DFS connections.  Check for kerberos ticket and/or dfs client configs");
+            }
             // Needs to be added first, so it runs the reporter thread.
             reporterThread = new Thread(getReporter());
 

@@ -88,8 +88,17 @@ public class DbPaths extends SRERunnable {
 
     @Override
     public Boolean init() {
-        Boolean rtn = Boolean.FALSE;
-        return Boolean.TRUE;
+        Boolean rtn = Boolean.TRUE;
+        if (getCommandChecks() != null) {
+            try {
+                HadoopSession cli = getParent().getParent().getCliPool().borrow();
+                cli.processInput("ls");
+                getParent().getParent().getCliPool().returnSession(cli);
+            } catch (Exception t) {
+                rtn = Boolean.FALSE;
+            }
+        }
+        return rtn;
     }
 
 

@@ -376,12 +376,13 @@ public class DbSetProcess extends SreProcessBase {
             paths.setCommandChecks(this.getCommandChecks());
             paths.setSkipCommandCheck(this.getSkipCommandCheck());
             paths.setCounterGroup(counterGroup);
-            if (paths.init()) {
+            if (paths.init() || this.getCommandChecks() == null) {
             } else {
-                throw new RuntimeException("Issue establishing a connection to HDFS.  " +
+                System.err.println("Issue establishing a connection to HDFS.  " +
                         "Check credentials(kerberos), configs(/etc/hadoop/conf), " +
                         "and/or availability of the HDFS service. " +
                         "Can you run an 'hdfs' cli command successfully?");
+                System.exit(-1);
             }
             i++;
             LOG.info(getDisplayName() + " adding paths for db: " + database);

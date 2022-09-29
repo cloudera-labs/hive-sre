@@ -131,6 +131,9 @@ public class HiveFrameworkCheck implements SreSubApp {
                 }
             }
             System.out.println("\nCleaning up threads.... this will take a few seconds(maybe a minute), please wait...");
+            System.out.println("");
+            System.out.println("\nReview the above 'md|sql' files for actions.  Details about action listed in each of the files...");
+            System.out.println("\nCheck the *_err.txt files for issues during the processing.");
         } else {
             for (String error : getProcessContainer().getConfig().getErrors().getMessages()) {
                 LOG.error(error);
