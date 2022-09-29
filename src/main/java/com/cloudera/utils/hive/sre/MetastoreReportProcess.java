@@ -22,6 +22,7 @@ import com.cloudera.utils.hive.reporting.CounterGroup;
 import com.cloudera.utils.hive.reporting.ReportingConf;
 import com.cloudera.utils.hive.reporting.TaskState;
 import com.cloudera.utils.sql.JDBCUtils;
+import com.cloudera.utils.sql.Parameter;
 import com.cloudera.utils.sql.QueryDefinition;
 import com.cloudera.utils.sql.ResultArray;
 import org.apache.log4j.LogManager;
@@ -82,8 +83,8 @@ public class MetastoreReportProcess extends MetastoreProcess {
                 LOG.info("Testing SQL: " + queryDefinition.getStatement());
                 PreparedStatement preparedStatement = JDBCUtils.getPreparedStatement(conn, queryDefinition);
                 // apply any overrides from the user configuration.
-                QueryDefinition queryOverride = getQueryOverride(targetQueryDef);
-                JDBCUtils.setPreparedStatementParameters(preparedStatement, queryDefinition, queryOverride);
+                Map<String, Parameter> queryOverrides = metastoreQueryDefinition.getParameters();
+                JDBCUtils.setPreparedStatementParameters(preparedStatement, queryDefinition, queryOverrides);
                 // Run
                 ResultSet rCheck = preparedStatement.executeQuery();
                 // Convert Result to an array
@@ -132,13 +133,14 @@ public class MetastoreReportProcess extends MetastoreProcess {
             String[][] metastoreRecords = null;
             try (Connection conn = getParent().getConnectionPools().getMetastoreDirectConnection()) {
                 String targetQueryDef = metastoreQueryDefinition.getQuery();
-                LOG.info("TargetQuery Definition: " + targetQueryDef);
+                LOG.info("Query Definition: " + targetQueryDef);
                 // build prepared statement for targetQueryDef
                 QueryDefinition queryDefinition = getQueryDefinitions().getQueryDefinition(targetQueryDef);
+                LOG.info("Query Statement: " + queryDefinition.getStatement());
                 PreparedStatement preparedStatement = JDBCUtils.getPreparedStatement(conn, queryDefinition);
                 // apply any overrides from the user configuration.
-                QueryDefinition queryOverride = getQueryOverride(targetQueryDef);
-                JDBCUtils.setPreparedStatementParameters(preparedStatement, queryDefinition, queryOverride);
+                Map<String, Parameter> queryOverrides = metastoreQueryDefinition.getParameters();
+                JDBCUtils.setPreparedStatementParameters(preparedStatement, queryDefinition, queryOverrides);
                 // Run
                 ResultSet rCheck = preparedStatement.executeQuery();
                 // Convert Result to an array

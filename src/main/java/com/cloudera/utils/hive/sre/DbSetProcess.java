@@ -21,6 +21,7 @@ import com.cloudera.utils.hive.reporting.CounterGroup;
 import com.cloudera.utils.hive.reporting.ReportingConf;
 import com.cloudera.utils.hive.reporting.TaskState;
 import com.cloudera.utils.sql.JDBCUtils;
+import com.cloudera.utils.sql.Parameter;
 import com.cloudera.utils.sql.QueryDefinition;
 import com.cloudera.utils.sql.ResultArray;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -35,6 +36,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
 
@@ -54,8 +56,11 @@ public class DbSetProcess extends SreProcessBase {
     // HiveStrictManagedMigration Output Config
     private HiveStrictManagedMigrationElements hsmmElements;
     private String dbListingQuery;
+    private Map<String, Parameter> dbListingParameters;
+
     private String[] listingColumns;
     private String pathsListingQuery;
+    private Map<String, Parameter> pathListingParameters;
 
     private List<ScheduledFuture<String>> pathsFutures = new ArrayList<ScheduledFuture<String>>();
 
@@ -101,6 +106,14 @@ public class DbSetProcess extends SreProcessBase {
         this.dbListingQuery = dbListingQuery;
     }
 
+    public Map<String, Parameter> getDbListingParameters() {
+        return dbListingParameters;
+    }
+
+    public void setDbListingParameters(Map<String, Parameter> dbListingParameters) {
+        this.dbListingParameters = dbListingParameters;
+    }
+
     public String[] getListingColumns() {
         return listingColumns;
     }
@@ -115,6 +128,14 @@ public class DbSetProcess extends SreProcessBase {
 
     public void setPathsListingQuery(String pathsListingQuery) {
         this.pathsListingQuery = pathsListingQuery;
+    }
+
+    public Map<String, Parameter> getPathListingParameters() {
+        return pathListingParameters;
+    }
+
+    public void setPathListingParameters(Map<String, Parameter> pathListingParameters) {
+        this.pathListingParameters = pathListingParameters;
     }
 
     public HiveStrictManagedMigrationElements getHsmmElements() {
@@ -255,14 +276,14 @@ public class DbSetProcess extends SreProcessBase {
         Boolean rtn = Boolean.TRUE;
         String targetQueryDef = this.dbListingQuery;
         QueryDefinition queryDefinition = getQueryDefinitions().getQueryDefinition(targetQueryDef);
-        LOG.info("Testing SQL Definition: " + targetQueryDef);
-        LOG.info("Testing SQL: " + queryDefinition.getStatement());
+        LOG.info("Testing DB SQL Definition: " + targetQueryDef);
+        LOG.info("Testing DB SQL: " + queryDefinition.getStatement());
         try (Connection conn = getParent().getConnectionPools().getMetastoreDirectConnection()) {
             // build prepared statement for targetQueryDef
             PreparedStatement preparedStatement = JDBCUtils.getPreparedStatement(conn, queryDefinition);
             // apply any overrides from the user configuration.
-            QueryDefinition queryOverride = getQueryOverride(targetQueryDef);
-            JDBCUtils.setPreparedStatementParameters(preparedStatement, queryDefinition, queryOverride);
+            Map<String, Parameter> queryOverrides = getDbListingParameters();
+            JDBCUtils.setPreparedStatementParameters(preparedStatement, queryDefinition, queryOverrides);
             // Run
             ResultSet check = preparedStatement.executeQuery();
             // Convert Result to an array
@@ -271,12 +292,37 @@ public class DbSetProcess extends SreProcessBase {
             check.close();
         } catch (SQLException e) {
             rtn = Boolean.FALSE;
-            LOG.error("Test Failure for SQL Definition: " + targetQueryDef, e);
+            LOG.error("Test Failure for DB SQL Definition: " + targetQueryDef, e);
             error.println(targetQueryDef);
             error.println("> Processing Issue: " + e.getMessage());
             e.printStackTrace(error);
         } finally {
-            LOG.info("Testing Complete for SQL Definition: " + targetQueryDef);
+            LOG.info("Testing Complete for DB SQL Definition: " + targetQueryDef);
+        }
+        String targetPathQueryDef = this.pathsListingQuery;
+        QueryDefinition queryPathDefinition = getQueryDefinitions().getQueryDefinition(targetPathQueryDef);
+        LOG.info("Testing Path SQL Definition: " + targetPathQueryDef);
+        LOG.info("Testing Path SQL: " + queryPathDefinition.getStatement());
+        try (Connection conn = getParent().getConnectionPools().getMetastoreDirectConnection()) {
+            // build prepared statement for targetQueryDef
+            PreparedStatement preparedStatement = JDBCUtils.getPreparedStatement(conn, queryPathDefinition);
+            // apply any overrides from the user configuration.
+            Map<String, Parameter> queryOverrides = getPathListingParameters();
+            JDBCUtils.setPreparedStatementParameters(preparedStatement, queryPathDefinition, queryOverrides);
+            // Run
+            ResultSet check = preparedStatement.executeQuery();
+            // Convert Result to an array
+            ResultArray rarray = new ResultArray(check);
+            // Close ResultSet
+            check.close();
+        } catch (SQLException e) {
+            rtn = Boolean.FALSE;
+            LOG.error("Test Failure for Path SQL Definition: " + targetQueryDef, e);
+            error.println(targetQueryDef);
+            error.println("> Processing Issue: " + e.getMessage());
+            e.printStackTrace(error);
+        } finally {
+            LOG.info("Testing Complete for Path SQL Definition: " + targetQueryDef);
         }
         setInitializing(Boolean.FALSE);
         return rtn;
@@ -294,8 +340,8 @@ public class DbSetProcess extends SreProcessBase {
                 QueryDefinition queryDefinition = getQueryDefinitions().getQueryDefinition(targetQueryDef);
                 PreparedStatement preparedStatement = JDBCUtils.getPreparedStatement(conn, queryDefinition);
                 // apply any overrides from the user configuration.
-                QueryDefinition queryOverride = getQueryOverride(targetQueryDef);
-                JDBCUtils.setPreparedStatementParameters(preparedStatement, queryDefinition, queryOverride);
+                Map<String, Parameter> queryOverrides = getDbListingParameters();
+                JDBCUtils.setPreparedStatementParameters(preparedStatement, queryDefinition, queryOverrides);
                 // Run
                 ResultSet check = preparedStatement.executeQuery();
                 // Convert Result to an array

@@ -286,12 +286,13 @@ public abstract class SreProcessBase implements Callable<String> {
         return new PrintStream(new BufferedOutputStream(new FileOutputStream(name)), true);
     }
 
-    protected QueryDefinition getQueryOverride(String definitionName) {
-        QueryDefinition rtn = null;
-        rtn = getParent().getConfig().getQuery(definitionName);
-        return rtn;
-    }
-
+//    protected Map<String, Parameter> getQueryOverride(String definitionName) {
+//        Map<String, Parameter> rtn = null;
+//        rtn = getParent().getConfig().getQuery(definitionName);
+//        rtn = getParent().getConfig().getQuery(definitionName);
+//        return rtn;
+//    }
+//
     public String getOutputDetails() {
         StringBuilder sb = new StringBuilder();
         if (getSuccessFilename() != null) {

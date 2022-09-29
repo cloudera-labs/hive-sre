@@ -16,6 +16,9 @@
 
 package com.cloudera.utils.sql;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import java.sql.*;
 import java.util.*;
 
@@ -23,6 +26,8 @@ import static java.sql.Types.*;
 import static java.sql.Types.TIMESTAMP;
 
 public class JDBCUtils {
+
+    private static Logger LOG = LogManager.getLogger(JDBCUtils.class);
 
     public static PreparedStatement getPreparedStatement(Connection conn, QueryDefinition query) {
         PreparedStatement rtn = null;
@@ -59,15 +64,17 @@ public class JDBCUtils {
 
 
     public static void setPreparedStatementParameters(PreparedStatement preparedStatement, QueryDefinition query,
-                                                      QueryDefinition override) {
+                                                      Map<String,Parameter> overrides) {
         try {
             if (query.getParameters() != null) {
                 for (String key : query.getParameters().keySet()) {
                     Parameter param = query.getParameters().get(key);
                     String value = param.getInitial();
-                    if (override != null && override.getParameters().get(key) != null) {
-                        value = override.getParameters().get(key).getOverride();
+                    if (overrides != null && overrides.get(key) != null) {
+                        value = overrides.get(key).getOverride();
+                        LOG.info("Override parameter '" + key + "' found.  Setting value to '" + value + "'");
                     }
+                    // TODO: Complete more SQL Types for Prepared Statements.
                     switch (param.getSqlType()) {
                         case VARCHAR:
                             preparedStatement.setString(param.getLocation(), value);

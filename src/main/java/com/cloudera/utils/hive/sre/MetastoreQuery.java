@@ -17,10 +17,16 @@
 package com.cloudera.utils.hive.sre;
 
 import com.cloudera.utils.hive.config.HiveStrictManagedMigrationElements;
+import com.cloudera.utils.sql.Parameter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.Map;
 
 public class MetastoreQuery {
 
     private String query;
+    @JsonProperty("parameters")
+    private Map<String, Parameter> parameters;
     private String[] listingColumns;
     private String resultMessageHeader;
     private String resultMessageDetailHeader;
@@ -37,6 +43,15 @@ public class MetastoreQuery {
     public void setQuery(String query) {
         this.query = query;
     }
+
+    public Map<String, Parameter> getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(Map<String, Parameter> parameters) {
+        this.parameters = parameters;
+    }
+
 
     public String[] getListingColumns() {
         return listingColumns;

@@ -323,3 +323,111 @@ processes:
       -- Without this setting, you will have issues access/reading/processing the upgraded ACID table.\n
       -- We recommend that you run the script to add this configuration value to the tables.\n\n"
       record:             "ALTER TABLE %1$s.%2$s SET TBLPROPERTIES('bucketing_version'='2');"
+  - type:                     "metastore.report"
+    id:                       7
+    active:                   true
+    displayName:              "Hive Storage Handlers"
+    title:                    "# Hive Storage Handlers  (v.${Implementation-Version})\n\n
+    If any of these storage handlers show up as a 'MANAGED_TABLE' type and you are upgrading from a legacy (Hive 1/2) platform, 
+    the 'Managed Non-ACID to ACID Table Migrations' process will pick them up for conversion.  If the storage handlers location 
+    information is NOT valid or the Hive table is orphaned, the upgrade will fail while attempting to convert the table and 
+    affect your ability to complete the upgrade process for Hive.\n\n Ensure the location for 'MANAGED_TABLE' Storage Handler backed 
+    tables is valid AND available.\n\n"
+    queryDefinitionReference: "/hive_u3_queries.yaml"
+    errorDescription:         "Processing Issues"
+    successDescription:       "Hive Storage Handlers"
+    errorFilename:            hms_storage_handlers_err.txt
+    successFilename:          hms_storage_handlers.md
+    metastoreQueryDefinitions:
+      - query:               "storage_format"
+        parameters:
+          tableparam:
+            override: "kafka.service.uri"
+            sqlType:  12
+            location: 1
+          inputformat:
+            override: "org.apache.hadoop.hive.kudu.KuduInputFormat"
+            sqlType:  12
+            location: 2
+        listingColumns: [ "name" ,"tbl_name", "tbl_type", "param_value", "create_date" ]
+        resultMessageHeader:         "## Kudu Storage Handler\n
+                              > List of tables using Kudu for Storage.\n
+                              > Manage tables in this report will be picked up by the 'Managed Non-ACID to ACID Table Migrations'\n
+                              - If the location or source is NOT available, converting the table to EXTERNAL will fail.\n
+                              \nWe suggest running the [`kudu`](https://kudu.apache.org/docs/hive_metastore.html) utility to clean up abandon tables
+                              in the metastore.\n\n
+                              "
+        resultMessageDetailHeader:   "| Database | Table | Type | Location | Create Date |\n|:---|:---|:---|:---|:---|"
+        resultMessageDetailTemplate: "| %1$s | %2$s | %3$s | %4$s | %5$s |"
+      - query:               "storage_format"
+        parameters:
+          tableparam:
+            override: "hbase.table.name"
+            sqlType:  12
+            location: 1
+          inputformat:
+            override: "org.apache.hadoop.hive.hbase.HBaseStorageHandler"
+            sqlType:  12
+            location: 2
+        listingColumns: [ "name" ,"tbl_name", "tbl_type", "param_value", "create_date" ]
+        resultMessageHeader:  "## HBase Storage Handler\n
+                              > List of tables using HBase for Storage.\n
+                              > Manage tables in this report will be picked up by the 'Managed Non-ACID to ACID Table Migrations'\n
+                              - If the location or source is NOT available, converting the table to EXTERNAL will fail.\n\n
+                              "
+        resultMessageDetailHeader:   "| Database | Table | Type | Location | Create Date |\n|:---|:---|:---|:---|:---|"
+        resultMessageDetailTemplate: "| %1$s | %2$s | %3$s | %4$s | %5$s |"
+      - query:               "storage_format"
+        parameters:
+          tableparam:
+            override: "druid.zk.service.host"
+            sqlType:  12
+            location: 1
+          inputformat:
+            override: "org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat"
+            sqlType:  12
+            location: 2
+        listingColumns: [ "name" ,"tbl_name", "tbl_type", "param_value", "create_date" ]
+        resultMessageHeader:  "## Druid Storage Handler\n
+                              > List of tables using Druid for Storage.\n
+                              > Manage tables in this report will be picked up by the 'Managed Non-ACID to ACID Table Migrations'\n
+                              - If the location or source is NOT available, converting the table to EXTERNAL will fail.\n\n
+                              "
+        resultMessageDetailHeader:   "| Database | Table | Type | Location | Create Date |\n|:---|:---|:---|:---|:---|"
+        resultMessageDetailTemplate: "| %1$s | %2$s | %3$s | %4$s | %5$s |"
+      - query:               "storage_format"
+        parameters:
+          tableparam:
+            override: "phoenix.hbase.table.name"
+            sqlType:  12
+            location: 1
+          inputformat:
+            override: "org.apache.phoenix.hive.HivePhoenixInputFormat"
+            sqlType:  12
+            location: 2
+        listingColumns: [ "name" ,"tbl_name", "tbl_type", "param_value", "create_date" ]
+        resultMessageHeader:  "## Phoenix Storage Handler\n
+                              > List of tables using Phoenix for Storage.\n
+                              > Manage tables in this report will be picked up by the 'Managed Non-ACID to ACID Table Migrations'\n
+                              - If the location or source is NOT available, converting the table to EXTERNAL will fail.\n\n
+                              "
+        resultMessageDetailHeader:   "| Database | Table | Type | Location | Create Date |\n|:---|:---|:---|:---|:---|"
+        resultMessageDetailTemplate: "| %1$s | %2$s | %3$s | %4$s | %5$s |"
+      - query:               "storage_format"
+        parameters:
+          tableparam:
+            override: "hive.sql.jdbc.url"
+            sqlType:  12
+            location: 1
+          inputformat:
+            override: "org.apache.hive.storage.jdbc.JdbcInputFormat"
+            sqlType:  12
+            location: 2
+        listingColumns: [ "name" ,"tbl_name", "tbl_type", "param_value", "create_date" ]
+        resultMessageHeader:  "## JDBC Storage Handler\n
+                              > List of tables using JDBC for Storage.\n
+                              > Manage tables in this report will be picked up by the 'Managed Non-ACID to ACID Table Migrations'\n
+                              - If the location or source is NOT available, converting the table to EXTERNAL will fail.\n\n
+                              "
+        resultMessageDetailHeader:   "| Database | Table | Type | Location | Create Date |\n|:---|:---|:---|:---|:---|"
+        resultMessageDetailTemplate: "| %1$s | %2$s | %3$s | %4$s | %5$s |"

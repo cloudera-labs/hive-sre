@@ -244,7 +244,7 @@ public class HiveFrameworkCheck implements SreSubApp {
         THIS IS A QUICK FIX FOR USABILITY in 'u3'. ;)
          */
         if (cmd.hasOption("cdh") && this.getName().equalsIgnoreCase("u3")) {
-            String[] includeIds = {"1", "3", "5", "6"};
+            String[] includeIds = {"1", "3", "5", "6", "7"};
             List<String> includes = Arrays.asList(includeIds);
             for (SreProcessBase proc : procContainer.getProcesses()) {
                 if (includes.contains(proc.getId())) {
@@ -261,7 +261,7 @@ public class HiveFrameworkCheck implements SreSubApp {
         }
 
         if (cmd.hasOption("hdp2") && this.getName().equalsIgnoreCase("u3")) {
-            String[] includeIds = {"1", "3", "4", "5", "6"};
+            String[] includeIds = {"1", "3", "4", "5", "6", "7"};
             List<String> includes = Arrays.asList(includeIds);
             for (SreProcessBase proc : procContainer.getProcesses()) {
                 if (includes.contains(proc.getId())) {
