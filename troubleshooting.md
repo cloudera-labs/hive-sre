@@ -44,3 +44,9 @@ Invalid URI for NameNode address (check fs.defaultFS): file:/// has no authority
 ```
 
 Ideally, the host should be configured as an **HDFS Gateway** in Cloudera Manager.
+
+### `java.sql.SQLException: The server time zone value '***' is unrecognized or represents more than one time zone.`
+
+This happens when running against *MySQL* and there is a translation issue with the timezone set on the server.  Override this with the client by adding the following to the jdbc connection url: `serverTimezone=UTC`.
+
+For example: `jdbc:mysql://m01.streever.local:3306/hive_50?serverTimezone=UTC`

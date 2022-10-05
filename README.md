@@ -11,28 +11,26 @@ This application has 3 sub-programs:
 
 ## Supported Metastore DB's
 
-| Sub-Program | Database | Version | Tested | Notes |
-|:---|:---|:---|:---|:---|
-| `u3` | MySql | 5.6 | Limited | Recommend upgrading 5.7.  This is the lower MySql supported env for HDP |
-|  |  | 5.7 | Yes |  |
-|  |  | 5.7 | Yes |  |
-|  |  | 8.0 | No | Not supported by HDP |
-|  | MariaDb | 10.1 | No, but should work as 10.2 does |   |
-|  |  | 10.2 | Yes |  |
-|  | Postgresql | 9.6 | No, but should work |  |
-|  |  | 10 | Yes | Field Tested, May still be a few rough edges |
-|  |  | 11 | No, but should work at 10 does |  |
-|  | Oracle | 12 | Yes | Field Tested, May still be a few rough edges |
-| `sre` | MySql | 5.6 | Limited | Recommend upgrading 5.7.  This is the lower MySql supported env for HDP |
-|  |  | 5.7 | Yes |  |
-|  |  | 5.7 | Yes |  |
-|  |  | 8.0 | No | Not supported by HDP |
-|  | MariaDb | 10.1 | No, but should work as 10.2 does |   |
-|  |  | 10.2 | Yes |  |
-|  | Postgresql | 9.6 | No, but should work |  |
-|  |  | 10 | Yes | Field Tested, May still be a few rough edges |
-|  |  | 11 | No, but should work at 10 does |  |
-|  | Oracle | 12 | Yes | Field Tested, May still be a few rough edges |
+| Sub-Program | Database | Version | Tested                           | Notes                                                                                                                            |
+|:---|:---|:---|:---------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+| `u3` | MySql | 5.6 | Limited                          | Recommend upgrading 5.7.  This is the lower MySql supported env for HDP                                                          |
+|  |  | 5.7 | Yes                              |  |
+|  |  | 8.0 | No                               | Not supported by HDP                                                                                                             |
+|  | MariaDb | 10.1 | No, but should work as 10.2 does |                                                                                                                                  |
+|  |  | 10.2 | Yes                              |                                                                                                                                  |
+|  | Postgresql | 9.6 | No, but should work              |                                                                                                                                  |
+|  |  | 10 | Yes                              | Field Tested, May still be a few rough edges                                                                                     |
+|  |  | 11 | No, but should work at 10 does   |                                                                                                                                  |
+|  | Oracle | 12 | Yes                              | Field Tested, May still be a few rough edges                                                                                     |
+| `sre` | MySql | 5.6 | Limited                          | Recommend upgrading 5.7.  This is the lower MySql supported env for HDP                                                          |
+|  |  | 5.7 | Partly                           |   Some `sre` reports use CTE in the SQL, which isn't supported in this version.  Those report will error, the other will run fine.                                                                                                                               |
+|  |  | 8.0 | No                               | Not supported by HDP                                                                                                             |
+|  | MariaDb | 10.1 | No, but should work as 10.2 does |                                                                                                                                  |
+|  |  | 10.2 | Yes                              |                                                                                                                                  |
+|  | Postgresql | 9.6 | No, but should work              |                                                                                                                                  |
+|  |  | 10 | Yes                              | Field Tested, May still be a few rough edges                                                                                     |
+|  |  | 11 | No, but should work at 10 does   |                                                                                                                                  |
+|  | Oracle | 12 | Yes                              | Field Tested, May still be a few rough edges                                                                                     |
 
 Ensure you have the database appropriate driver in the `${HOME}/.hive-sre/aux_libs` directory.
 
