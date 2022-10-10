@@ -375,7 +375,7 @@ processes:
       title:                  "# Hive Nested Table Locations - Unique Base Location w/ Counts (v.${Implementation-Version})\n"
       note:                   "This report will show tables that are in a location that is a subdirectory of another table.\n
       This condition will lead to unexpected behavior in datasets AND will create problems for replication strategies. Note these
-      tables, move their data and rebuild them in a directory that is NOT a sub-directory of another table.\n\n
-      | Database | Nested Table | Table Location | Root Database | Root Table | Root Location |\n|:---|:---|:---|:---|:---|:---|
+      tables, move their data and rebuild them in a directory that is NOT a sub-directory of another table.
+      \n\n| Database | Nested Table | Table Location | Root Database | Root Table | Root Location |\n|:---|:---|:---|:---|:---|:---|
       "
       record:             "| %1$s | %2$s | %3$s | %4$s | %5$s | %6$s |"
