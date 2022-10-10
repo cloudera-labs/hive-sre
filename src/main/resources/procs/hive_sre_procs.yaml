@@ -62,12 +62,12 @@ processes:
         resultMessageDetailHeader:   "| DB | Key | Value |\n|:---|:---|:---|"
         resultMessageDetailTemplate: "|%1$s|%2$s|%3$s|"
       - query:                       "table_catagory_count"
-        listingColumns: [ "table_type" ,"count" ]
+        listingColumns: [ "tbl_type" ,"count" ]
         resultMessageHeader:         "\n## Table Type Counts\n"
         resultMessageDetailHeader:   "| Table Type | Count |\n|:---|:---|"
         resultMessageDetailTemplate: "|%1$s|%2$s|"
       - query:                       "table_catagory_count_by_db"
-        listingColumns: [ "db_name" ,"table_type", "count" ]
+        listingColumns: [ "db_name" ,"tbl_type", "count" ]
         resultMessageHeader:         "\n## Table Type Count by Database\n"
         resultMessageDetailHeader:   "| DB | Table Type | Count |\n|:---|:---|:---|"
         resultMessageDetailTemplate: "|%1$s|%2$s|%3$s|"
@@ -359,3 +359,23 @@ processes:
       then the table all share a common base directory.\n\n| DB | Table Type | Base Directory | Instance Count |\n|:---|:---|:---|:---|
       "
       record:             "| %1$s | %2$s | %3$s | %4$s |"
+  - type:                     "dbSet"
+    id:                       12
+    active:                   true
+    displayName:              "Hive Nested Table Locations - Anti Pattern"
+    queryDefinitionReference: "/hive_sre_queries.yaml"
+    errorDescription:         "Issues"
+    successDescription:       "Nested Table Directory Listing"
+    errorFilename:            "hive_nested_table_locations_err.txt"
+    successFilename:          "hive_nested_table_locations.md"
+    listingQuery:             "nested_table_locations"
+    listingColumns:           [ "name" ,"tbl_name" , "location", "root_db", "root_tbl", "root_location"]
+    skipCommandCheck:
+      displayName:            "Hive Nested Table Locations"
+      title:                  "# Hive Nested Table Locations - Unique Base Location w/ Counts (v.${Implementation-Version})\n"
+      note:                   "This report will show tables that are in a location that is a subdirectory of another table.\n
+      This condition will lead to unexpected behavior in datasets AND will create problems for replication strategies. Note these
+      tables, move their data and rebuild them in a directory that is NOT a sub-directory of another table.\n\n
+      | Database | Nested Table | Table Location | Root Database | Root Table | Root Location |\n|:---|:---|:---|:---|:---|:---|
+      "
+      record:             "| %1$s | %2$s | %3$s | %4$s | %5$s | %6$s |"

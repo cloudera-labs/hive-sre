@@ -122,8 +122,11 @@ public class DbPaths extends SRERunnable {
             ResultArray rarray = new ResultArray(epRs);
             epRs.close();
 
-            String[] columns = getParent().getListingColumns();
+            epRs.close();
+            preparedStatement.close();
 
+            String[] columns = getParent().getListingColumns();
+            LOG.info("Columns: " + Arrays.toString(columns));
             String[][] columnsArray = rarray.getColumns(columns);
 
             if (getCommandChecks() != null) {

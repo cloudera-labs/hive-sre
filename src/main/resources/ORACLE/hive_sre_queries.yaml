@@ -437,36 +437,46 @@ WHERE
       "
   anti_pattern_base_dir:
     statement: "
-    WITH
-    BASE_DIR_COUNT AS (
-    SELECT DISTINCT
-        DBS.NAME                                                                                    AS DB_NAME
-      , TBLS.TBL_TYPE
-      , SUBSTRING_INDEX(S.LOCATION, '/', LENGTH(S.LOCATION) - LENGTH(REPLACE(S.LOCATION, '/', ''))) AS BASE_DIR
-      , COUNT(1)                                                                                    AS BASE_DIR_COUNT
-    FROM DBS DBS
-             INNER JOIN TBLS TBLS ON DBS.DB_ID = TBLS.DB_ID
-             INNER JOIN SDS S ON TBLS.SD_ID = S.SD_ID
-    WHERE
-        DBS.NAME LIKE ?
-    GROUP BY DB_NAME, TBL_TYPE, BASE_DIR
-    ORDER BY DB_NAME, TBL_TYPE, BASE_DIR
-    ),
-    ANTI_PATTERN AS (
-    SELECT
-        DB_NAME
-      , TBL_TYPE
-      , COUNT(1) AS TYPE_COUNT
-    FROM BASE_DIR_COUNT
-    GROUP BY DB_NAME, TBL_TYPE
-    HAVING
-        TYPE_COUNT > 1
-    )
-    SELECT 
-       DB_NAME
-      , TBL_TYPE
-      , TYPE_COUNT
-    FROM ANTI_PATTERN
+      WITH BASE_DIR_COUNT AS (
+          SELECT DISTINCT
+              DBS.NAME                                                 DB_NAME
+            , TBLS.TBL_TYPE
+            , SUBSTR(S.LOCATION, 1,
+                     REGEXP_INSTR(S.LOCATION, '\/', 1,
+                                  REGEXP_COUNT(S.LOCATION, '\/')) - 1) BASE_DIR
+            , COUNT(1)                                                 BASE_DIR_COUNT
+          FROM
+              DBS DBS
+                  INNER JOIN TBLS TBLS ON DBS.DB_ID = TBLS.DB_ID
+                  INNER JOIN SDS S ON TBLS.SD_ID = S.SD_ID
+          WHERE
+              DBS.NAME LIKE ?
+          GROUP BY
+              DBS.NAME, TBL_TYPE, SUBSTR(S.LOCATION, 1,
+                                         REGEXP_INSTR(S.LOCATION, '\/', 1,
+                                                      REGEXP_COUNT(S.LOCATION, '\/')) - 1)
+          ORDER BY
+              DBS.NAME, TBL_TYPE, SUBSTR(S.LOCATION, 1,
+                                         REGEXP_INSTR(S.LOCATION, '\/', 1,
+                                                      REGEXP_COUNT(S.LOCATION, '\/')) - 1)
+      ),
+           ANTI_PATTERN AS (
+               SELECT
+                   DB_NAME
+                 , TBL_TYPE
+                 , COUNT(1) AS TYPE_COUNT
+               FROM
+                   BASE_DIR_COUNT
+               GROUP BY DB_NAME, TBL_TYPE
+               HAVING
+                   COUNT(1) > 1
+           )
+      SELECT
+          DB_NAME
+        , TBL_TYPE
+        , TYPE_COUNT
+      FROM
+          ANTI_PATTERN
     "
     parameters:
       dbs:
@@ -475,30 +485,64 @@ WHERE
         location: 1
   anti_pattern_base_dir_detail:
     statement: "
-WITH
-    BASE_DIR_COUNT AS (
-    SELECT DISTINCT
-        DBS.NAME                                                                                    AS DB_NAME
-      , TBLS.TBL_TYPE
-      , SUBSTRING_INDEX(S.LOCATION, '/', LENGTH(S.LOCATION) - LENGTH(REPLACE(S.LOCATION, '/', ''))) AS BASE_DIR
-      , COUNT(1)                                                                                    AS BASE_DIR_COUNT
-    FROM DBS DBS
-             INNER JOIN TBLS TBLS ON DBS.DB_ID = TBLS.DB_ID
-             INNER JOIN SDS S ON TBLS.SD_ID = S.SD_ID
-    WHERE
-        DBS.NAME LIKE ?
-    GROUP BY DB_NAME, TBL_TYPE, BASE_DIR
-    ORDER BY DB_NAME, TBL_TYPE, BASE_DIR
-    )
-    SELECT 
-        DB_NAME
-      , TBL_TYPE
-      , BASE_DIR
-      , BASE_DIR_COUNT
-    FROM BASE_DIR_COUNT
+      WITH BASE_DIR_COUNT AS (
+          SELECT DISTINCT
+              DBS.NAME                                                 DB_NAME
+            , TBLS.TBL_TYPE
+            , SUBSTR(S.LOCATION, 1,
+                     REGEXP_INSTR(S.LOCATION, '\/', 1,
+                                  REGEXP_COUNT(S.LOCATION, '\/')) - 1) BASE_DIR
+      
+            , COUNT(1)                                                 BASE_DIR_COUNT
+          FROM
+              DBS DBS
+                  INNER JOIN TBLS TBLS ON DBS.DB_ID = TBLS.DB_ID
+                  INNER JOIN SDS S ON TBLS.SD_ID = S.SD_ID
+          WHERE
+              DBS.NAME LIKE ?
+          GROUP BY
+              DBS.NAME, TBL_TYPE, SUBSTR(S.LOCATION, 1,
+                                         REGEXP_INSTR(S.LOCATION, '\/', 1,
+                                                      REGEXP_COUNT(S.LOCATION, '\/')) - 1)
+          ORDER BY
+              DBS.NAME, TBL_TYPE, SUBSTR(S.LOCATION, 1,
+                                         REGEXP_INSTR(S.LOCATION, '\/', 1,
+                                                      REGEXP_COUNT(S.LOCATION, '\/')) - 1)
+      )
+      SELECT
+          DB_NAME
+        , TBL_TYPE
+        , BASE_DIR
+        , BASE_DIR_COUNT
+      FROM
+          BASE_DIR_COUNT
     "
     parameters:
       dbs:
         initial:  "%"
         sqlType:  12
         location: 1
+  nested_table_locations:
+    statement:
+      "
+      SELECT
+          D.NAME
+        , T.TBL_NAME 
+        , S.LOCATION
+        , SUB.ROOT_DB
+        , SUB.ROOT_TBL
+        , SUB.ROOT_LOCATION
+      FROM DBS D
+               INNER JOIN TBLS T ON D.DB_ID = T.DB_ID
+               INNER JOIN SDS S ON T.SD_ID = S.SD_ID
+               INNER JOIN (
+                          SELECT
+                              DB.NAME ROOT_DB
+                            , TBL.TBL_NAME ROOT_TBL
+                            , S.LOCATION               ROOT_LOCATION
+                            , CONCAT(S.LOCATION, \"/%\") SEARCH_LOCATION
+              FROM DBS DB
+              INNER JOIN TBLS TBL ON DB.DB_ID = TBL.DB_ID
+              INNER JOIN SDS S ON TBL.SD_ID = S.SD_ID
+        ) SUB ON S.LOCATION LIKE SUB.SEARCH_LOCATION
+      "

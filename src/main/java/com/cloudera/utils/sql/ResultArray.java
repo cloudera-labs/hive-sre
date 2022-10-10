@@ -16,6 +16,10 @@
 
 package com.cloudera.utils.sql;
 
+import com.cloudera.utils.hive.sre.DbSetProcess;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -28,7 +32,7 @@ import static java.sql.Types.*;
 import static java.sql.Types.TIMESTAMP;
 
 public class ResultArray {
-
+    private static Logger LOG = LogManager.getLogger(ResultArray.class);
     private String[] header;
     private int columnCount = 0;
     private List<String[]> records = new ArrayList<String[]>();
@@ -149,7 +153,15 @@ public class ResultArray {
             rtn = new String[columns.length][records.size()];
 
             for (int i = 0; i < columns.length; i++) {
-                columnIndexes[i] = find(header, columns[i]);
+                int columnIndex = find(header, columns[i]);
+                if (columnIndex == -1) {
+                    LOG.error("Mis-match of columns in Resultset and the (db)ListingColumns: " + Arrays.toString(columns) +
+                            " vs. " + Arrays.toString(header));
+                    throw new RuntimeException("Mis-match of columns in Resultset and the (db)ListingColumns: " + Arrays.toString(columns) +
+                            " vs. " + Arrays.toString(header));
+                } else {
+                    columnIndexes[i] = find(header, columns[i]);
+                }
             }
 
             int i = 0;
@@ -158,6 +170,7 @@ public class ResultArray {
                     try {
                         rtn[c][i] = record[columnIndexes[c]];
                     } catch (ArrayIndexOutOfBoundsException aiobe) {
+                        LOG.error(Arrays.toString(record) + ":" + Arrays.toString(columnIndexes), aiobe);
                         throw new RuntimeException(Arrays.toString(record) + ":" + Arrays.toString(columnIndexes), aiobe);
                     }
                 }
