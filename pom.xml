@@ -72,7 +72,7 @@
         <!--        <hadoop.major>3.1</hadoop.major>-->
         <!--        <hive.version>3.1.1</hive.version>-->
 
-        <hadoop-cli.version>2.4.0.6</hadoop-cli.version>
+        <hadoop-cli.version>2.4.0.7</hadoop-cli.version>
 
     </properties>
 
