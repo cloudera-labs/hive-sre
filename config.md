@@ -48,8 +48,7 @@ The directory `$HOME/.hive-sre/aux_libs` will be scanned for 'jar' files. Each '
 
 The application contains all the necesasry `hdfs` classes already.  You will need to add to the `aux_libs` directory the following:
 - JDBC drivers for Metastore Connectivity
-- JDBC drivers for Hive (Can be the Standalone driver from the cluster or other Hive Driver)
-- AWS S3 Drivers (appropriate versions)
+- AWS S3 Drivers, if s3 is used to store Hive tables. (appropriate versions)
     - `hadoop-aws.jar`
     - `aws-java-sdk-bundle.jar`
     

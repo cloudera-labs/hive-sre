@@ -17,6 +17,7 @@ metastore_direct:
   type: MYSQL | POSTGRES | ORACLE
   # Required for Oracle Connections to Select proper schema
   #initSql: "ALTER SESSION SET CURRENT_SCHEMA=<hive_schema>"
+  # Using apache.commons dbcp2 see: https://commons.apache.org/proper/commons-dbcp/configuration.html
   connectionProperties:
     user: "DB_USER"
     password: "DB_PASSWORD"
