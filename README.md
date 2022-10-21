@@ -4,7 +4,6 @@ This application has 3 sub-programs:
 
 - [`sre`](./sre.md) is used to find potential 'Hive' performance issues caused by small files and excessive partitions.
 - [`u3`](./u3.md) is used to review 'Hive 1/2' environments for Hive3 upgrade planning.
-- [`cli`](https://github.com/dstreev/hadoop-cli/blob/master/README.md) is an hdfs interactive client.  It is a core part of the `hive-sre` application, so we've exposed the shell here via the `hive-sre-cli` executable.
 - [`perf`](./perf.md) is used to check the throughput of a JDBC connection.
 
 ### [Trouble-Shooting](./troubleshooting.md)
@@ -35,6 +34,63 @@ This application has 3 sub-programs:
 Ensure you have the database appropriate driver in the `${HOME}/.hive-sre/aux_libs` directory.
 
 I've tried to match supported DB's for HDP 2.6.5 and 3.1.x as much as I could.
+
+## Hadoop CLI
+
+Running `hive-sre-cli` on the command line is an alias to the `hadoopcli` application [here](https://github.com/dstreev/hadoop-cli).
+
+It is an interactive HDFS Client Command Line tool.
+
+## Ping Performance Tool
+
+Included in this application suite is a `ping` performance tool that you can use to measure cluster host letancy.  It is a MapReduce application that uses a list of hosts and will `ping` those hosts from the MR Map Task and record the results to HDFS.
+
+The MR program take a few options:
+```
+usage: hadoop jar <jar-file> com.cloudera.utils.mapreduce.MRPingTool -d <output-dir> -hl <hdfs_host_list_file> [-c <count>] [-m <num_of_mappers>]
+ -c,--count <arg>        Ping Count (The number of iterations we'll run
+                         ping).  Each ping request makes 5 pings.
+                         So if this value is 3, we'll do 3 sets of 5 pings
+                         (15 total). Default 5
+ -d,--directory <arg>    Output Directory [REQUIRED]
+ -h,--help               Help
+ -hl,--host-list <arg>   The host list file on HDFS. A text file with a
+                         FQHN (full qualified host name) per
+                         line.[REQUIRED]
+ -m,--mappers <arg>      Number of Mappers.  To get coverage, should be
+                         more than the compute node count.  But no
+                         guarantee of even distribution, so best to over
+                         subscribe. Default 2
+```
+
+### Tested OS's
+
+CentOS 7.6 (ping)
+
+The ping output is parsed by the application and other OS/versions may yield different output, which we've not (yet) setup parsing for.
+
+### Let's assume:
+- This has been tested again CentOS 7.
+- The user running the MR job has rights in each compute node to run `ping`.
+- That `ping` is allowed on the network and not blocked between hosts.
+- The MR Job is run with the right user credentials and from an Edgenode configured for the target cluster.
+  - We need the hadoop MR libs to submit the job.
+- The user running the job has ACL's that allow them to write to the EXTERNAL db location you create with `ping_ddl.sql`.
+- Build a 'host list' file with ALL the FQHN (fully qualified hostnames) in the cluster that you want to test.
+    - This is a text file with a single host FQHN per line.  Similar to /etc/hosts.
+    - Place the file (we'll use the name `host_list.txt`) in your HDFS home directory.
+- We are using the standard EXTERNAL and MANAGED Warehouse locations on HDFS
+- PING_DB = ping_perf
+- BATCH_ID = 2022-10-22_01
+
+### Procedure
+1. Run DDL Scripts in Beeline
+   2. `beeline -f ping_ddl.sql --hivevar PING_DB=ping_perf`
+3. Run MR Job, using the expected Partition Directory of the `raw` table as the output. The `-m` parameter controls the number of 'mappers' created.  The intent is to get a map task on every compute node in the cluster.  To do that, with perfect distribution (unlikely), you need at least as many mappers as there are compute nodes.  We recommend 2-3x that incase some nodes get doubled up.  There's no way to ensure every host runs a task, hence the over subscription here.  Use the eval report to determine where the gaps where (if any) and run again.
+   4. `hadoop jar /usr/local/hive-sre/lib/hive-sre-shaded.jar com.cloudera.utils.mapreduce.MRPingTool -m 40 -c 3 -hl host_list.txt -d /warehouse/tablespace/external/hive/ping_perf.db/raw/batch_id=2022-10-21_01`
+5. Run the Ingest script in `beeline`
+   6. `beeline -f ping_ingest.sql --hivevar PING_DB=ping_perf --hivevar BATCH_ID=2022-10-21_01`
+7. Run the [eval scripts](src/main/resources/ping/ping_eval.sql) in `beeline --hivevar PING_DB=ping_perf --hivevar BATCH_ID=2022-10-21_01`
 
 ## Get the Binary
 
