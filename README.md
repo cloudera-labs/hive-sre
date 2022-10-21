@@ -70,6 +70,7 @@ CentOS 7.6 (ping)
 The ping output is parsed by the application and other OS/versions may yield different output, which we've not (yet) setup parsing for.
 
 ### Let's assume:
+- You've downloaded the Hive [setup/ingest/eval scripts](src/main/resources/ping)
 - This has been tested again CentOS 7.
 - The user running the MR job has rights in each compute node to run `ping`.
 - That `ping` is allowed on the network and not blocked between hosts.
