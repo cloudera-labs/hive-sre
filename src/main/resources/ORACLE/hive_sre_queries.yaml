@@ -442,8 +442,8 @@ WHERE
               DBS.NAME                                                 DB_NAME
             , TBLS.TBL_TYPE
             , SUBSTR(S.LOCATION, 1,
-                     REGEXP_INSTR(S.LOCATION, '\/', 1,
-                                  REGEXP_COUNT(S.LOCATION, '\/')) - 1) BASE_DIR
+                     REGEXP_INSTR(S.LOCATION, '\\/', 1,
+                                  REGEXP_COUNT(S.LOCATION, '\\/')) - 1) BASE_DIR
             , COUNT(1)                                                 BASE_DIR_COUNT
           FROM
               DBS DBS
@@ -453,12 +453,12 @@ WHERE
               DBS.NAME LIKE ?
           GROUP BY
               DBS.NAME, TBL_TYPE, SUBSTR(S.LOCATION, 1,
-                                         REGEXP_INSTR(S.LOCATION, '\/', 1,
-                                                      REGEXP_COUNT(S.LOCATION, '\/')) - 1)
+                                         REGEXP_INSTR(S.LOCATION, '\\/', 1,
+                                                      REGEXP_COUNT(S.LOCATION, '\\/')) - 1)
           ORDER BY
               DBS.NAME, TBL_TYPE, SUBSTR(S.LOCATION, 1,
-                                         REGEXP_INSTR(S.LOCATION, '\/', 1,
-                                                      REGEXP_COUNT(S.LOCATION, '\/')) - 1)
+                                         REGEXP_INSTR(S.LOCATION, '\\/', 1,
+                                                      REGEXP_COUNT(S.LOCATION, '\\/')) - 1)
       ),
            ANTI_PATTERN AS (
                SELECT
@@ -490,8 +490,8 @@ WHERE
               DBS.NAME                                                 DB_NAME
             , TBLS.TBL_TYPE
             , SUBSTR(S.LOCATION, 1,
-                     REGEXP_INSTR(S.LOCATION, '\/', 1,
-                                  REGEXP_COUNT(S.LOCATION, '\/')) - 1) BASE_DIR
+                     REGEXP_INSTR(S.LOCATION, '\\/', 1,
+                                  REGEXP_COUNT(S.LOCATION, '\\/')) - 1) BASE_DIR
       
             , COUNT(1)                                                 BASE_DIR_COUNT
           FROM
@@ -502,12 +502,12 @@ WHERE
               DBS.NAME LIKE ?
           GROUP BY
               DBS.NAME, TBL_TYPE, SUBSTR(S.LOCATION, 1,
-                                         REGEXP_INSTR(S.LOCATION, '\/', 1,
-                                                      REGEXP_COUNT(S.LOCATION, '\/')) - 1)
+                                         REGEXP_INSTR(S.LOCATION, '\\/', 1,
+                                                      REGEXP_COUNT(S.LOCATION, '\\/')) - 1)
           ORDER BY
               DBS.NAME, TBL_TYPE, SUBSTR(S.LOCATION, 1,
-                                         REGEXP_INSTR(S.LOCATION, '\/', 1,
-                                                      REGEXP_COUNT(S.LOCATION, '\/')) - 1)
+                                         REGEXP_INSTR(S.LOCATION, '\\/', 1,
+                                                      REGEXP_COUNT(S.LOCATION, '\\/')) - 1)
       )
       SELECT
           DB_NAME

@@ -17,9 +17,8 @@
 
 package com.cloudera.utils.mapreduce;
 
-//import spec.bridge.hadoop2.KafkaOutputFormat;
-
 import org.apache.commons.cli.*;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
@@ -38,20 +37,18 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-//import static com.streever.iot.data.mapreduce.DataGenMapper.SCHEMA_FILE;
+public class MRBusyTool extends Configured implements Tool {
 
-public class MRPingTool extends Configured implements Tool {
-
-    static private Logger LOG = Logger.getLogger(MRPingTool.class.getName());
-    public static final String HOST_LIST_FILE = "host.file";
-    public static final String BATCH_ID = "batch.id";
-
+    static private Logger LOG = Logger.getLogger(MRBusyTool.class.getName());
+    public static final String PAUSE_INCREMENT = "busy.pause.increment";
+    public static final int PAUSE_INCREMENT_DEFAULT = 1;
+    private char[] chars = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
     private Options options;
     private Path outputPath;
     public static final int DEFAULT_MAPPERS = 2;
     public static final long DEFAULT_COUNT = 5;
 
-    public MRPingTool() {
+    public MRBusyTool() {
         buildOptions();
     }
 
@@ -61,23 +58,19 @@ public class MRPingTool extends Configured implements Tool {
         Option help = new Option("h", "help", false, "Help");
         help.setRequired(false);
 
-        Option outputDir = new Option("d", "directory", true, "Output Directory [REQUIRED]");
-        outputDir.setRequired(Boolean.TRUE);
-
         Option mappers = new Option("m", "mappers", true, "Number of Mappers.  To get coverage, should be more than the compute node count.  But no guarantee of even distribution, so best to over subscribe. Default 2");
         mappers.setRequired(false);
 
-        Option hlFile = new Option("hl", "host-list", true, "The host list file on HDFS. A text file with a FQHN (full qualified host name) per line.[REQUIRED]");
-        hlFile.setRequired(Boolean.TRUE);
-        options.addOption(hlFile);
+        Option busyWaitTime = new Option("w", "wait-pause", true, "The time to 'pause' (secs) in between record writes. This should not be too long (a few seconds max) to avoid Mapper Timeouts.  Increase count to get longer job runs.");
+        busyWaitTime.setRequired(Boolean.FALSE);
 
-        Option count = new Option("c", "count", true, "Ping Count (The number of iterations we'll run ping).  Each ping request makes 5 pings.\n" +
-                "                         So if this value is 3, we'll do 3 sets of 5 pings (15 total). Default 5");
+        Option count = new Option("c", "count", true, "Record Count");
+
         count.setRequired(false);
 
         options.addOption(help);
         options.addOption(mappers);
-        options.addOption(outputDir);
+        options.addOption(busyWaitTime);
         options.addOption(count);
     }
 
@@ -89,11 +82,8 @@ public class MRPingTool extends Configured implements Tool {
     protected void setup(Job job) {
         // Get the conf location from the job conf.
 
-        String config = job.getConfiguration().get(HOST_LIST_FILE);
-            LOG.info("Host List File: " + config);
-
         job.setNumReduceTasks(0);
-        job.setMapperClass(MRCommandMapper.class);
+        job.setMapperClass(MRBusyMapper.class);
         job.setMapOutputKeyClass(NullWritable.class);
         job.setNumReduceTasks(0);
 
@@ -125,32 +115,27 @@ public class MRPingTool extends Configured implements Tool {
             MRStaticInputFormat.setNumberOfRows(job, DEFAULT_COUNT);
         }
 
+        if (line.hasOption("w")) {
+            configuration.setInt(PAUSE_INCREMENT, Integer.parseInt(line.getOptionValue("w")));
+        }
+
         if (line.hasOption("m")) {
-            int parallelism = Integer.parseInt(line.getOptionValue("m"));
             configuration.setInt(MRJobConfig.NUM_MAPS, Integer.parseInt(line.getOptionValue("m")));
         } else {
             // Default
             configuration.setInt(MRJobConfig.NUM_MAPS, DEFAULT_MAPPERS);
         }
 
+        configuration.setInt(MRJobConfig.MAP_MEMORY_MB, 1024); // 128 Mb
+//        configuration.setInt(MRJobConfig.)
         job.setInputFormatClass(MRStaticInputFormat.class);
         job.setOutputFormatClass(TextOutputFormat.class);
 
         job.setMapOutputValueClass(Text.class);
-
-        outputPath = new Path(line.getOptionValue("d", "MRPing-default"));
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH_mm");
+        String outputPathStr = "busy_mr_job" + "/" + df.format(new Date()) + "_" + RandomStringUtils.random(10, chars);
+        outputPath = new Path(outputPathStr);
         FileOutputFormat.setOutputPath(job, outputPath);
-
-        // One of these is set.
-        if (line.hasOption("hl")) {
-            job.getConfiguration().set(HOST_LIST_FILE, line.getOptionValue("hl"));
-        }
-
-        // Create and set a batch ID
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
-        String batchId = df.format(new Date());
-        job.getConfiguration().set(BATCH_ID, batchId);
-        System.out.println("Batch ID: " + batchId);
 
         return rtn;
     }
@@ -168,7 +153,7 @@ public class MRPingTool extends Configured implements Tool {
 
         setup(job);
 
-        job.setJarByClass(MRPingTool.class);
+        job.setJarByClass(MRBusyTool.class);
 
         if (outputPath == null || outputPath.getFileSystem(job.getConfiguration()).exists(outputPath)) {
             throw new IOException("Output directory " + outputPath +
@@ -190,7 +175,7 @@ public class MRPingTool extends Configured implements Tool {
 
     public static void main(String[] args) throws Exception {
         int result;
-        result = ToolRunner.run(new Configuration(), new MRPingTool(), args);
+        result = ToolRunner.run(new Configuration(), new MRBusyTool(), args);
         System.exit(result);
     }
 }

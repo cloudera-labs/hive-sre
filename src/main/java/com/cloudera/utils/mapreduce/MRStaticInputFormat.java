@@ -32,9 +32,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MRCommandInputFormat extends InputFormat<LongWritable, NullWritable> {
+public class MRStaticInputFormat extends InputFormat<LongWritable, NullWritable> {
 
-    private static final Log LOG = LogFactory.getLog(MRCommandInputFormat.class);
+    private static final Log LOG = LogFactory.getLog(MRStaticInputFormat.class);
 
     public static final String NUM_ROWS = "repeat.command.count";
 
