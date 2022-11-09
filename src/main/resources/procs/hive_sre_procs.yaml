@@ -368,8 +368,9 @@ processes:
     successDescription:       "Nested Table Directory Listing"
     errorFilename:            "hive_nested_table_locations_err.txt"
     successFilename:          "hive_nested_table_locations.md"
-    listingQuery:             "nested_table_locations"
+    dbListingQuery:           "db_tbl_count"
     listingColumns:           [ "name" ,"tbl_name" , "location", "root_db", "root_tbl", "root_location"]
+    pathsListingQuery:        "nested_table_locations"
     skipCommandCheck:
       displayName:            "Hive Nested Table Locations"
       title:                  "# Hive Nested Table Locations - Unique Base Location w/ Counts (v.${Implementation-Version})\n"

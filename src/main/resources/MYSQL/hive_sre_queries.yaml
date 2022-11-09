@@ -496,9 +496,16 @@ WITH
                               DB.NAME AS ROOT_DB
                             , TBL.TBL_NAME AS ROOT_TBL
                             , S.LOCATION               AS ROOT_LOCATION
-                            , CONCAT(S.LOCATION, \"/%\") AS SEARCH_LOCATION
+                            , CONCAT(S.LOCATION, '/%') AS SEARCH_LOCATION
               FROM DBS DB
               INNER JOIN TBLS TBL ON DB.DB_ID = TBL.DB_ID
               INNER JOIN SDS S ON TBL.SD_ID = S.SD_ID
+              WHERE 
+                DB.NAME LIKE ?
         ) SUB ON S.LOCATION LIKE SUB.SEARCH_LOCATION
       "
+    parameters:
+      dbs:
+        initial:  "%"
+        sqlType:  12
+        location: 1
