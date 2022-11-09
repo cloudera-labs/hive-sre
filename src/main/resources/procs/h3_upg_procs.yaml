@@ -143,7 +143,7 @@ processes:
       record:             "-- This table 'could' be migrated to an ACID table unless changed.\n
                           -- Recommend forcing the manual conversion to ensure table isn't inadvertently migrated.\n
                           -- created date: %3$s\n
-                          ALTER TABLE %1$s.%2$s SET TBLPROPERTIES('EXTERNAL'='TRUE', 'external.table.purge'='true');"
+                          ALTER TABLE `%1$s`.`%2$s` SET TBLPROPERTIES('EXTERNAL'='TRUE', 'external.table.purge'='true');"
     commandChecks:
       - displayName:            "Hive 3 Upgrade Check - Potential ACID Conversions"
         title:                  "-- Managed Non - ACID to ACID Table Migrations  (v.${Implementation-Version})\n"
@@ -175,12 +175,12 @@ processes:
               pass: "\"-- Table is owned by '%5$s' and not currently ACID.\\n
                     -- This table will be migrated unless changed.\\n
                     -- created date: %3$s\\n
-                    ALTER TABLE %1$s.%2$s SET TBLPROPERTIES('EXTERNAL'='TRUE', 'external.table.purge'='true')\\;\""
+                    ALTER TABLE `%1$s`.`%2$s` SET TBLPROPERTIES('EXTERNAL'='TRUE', 'external.table.purge'='true')\\;\""
               fail: "\"-- Table is owned by '%5$s', not '%6$s', and NOT currently ACID.\\n
                     -- This table 'could' be migrated to an ACID table unless changed.\\n
                     -- Recommend forcing the manual conversion to ensure table isn't inadvertently migrated.\\n
                     -- created date: %3$s\\n
-                    ALTER TABLE %1$s.%2$s SET TBLPROPERTIES('EXTERNAL'='TRUE', 'external.table.purge'='true')\\;\""
+                    ALTER TABLE `%1$s`.`%2$s` SET TBLPROPERTIES('EXTERNAL'='TRUE', 'external.table.purge'='true')\\;\""
               params: [ "hive" ]
   - type:                     "dbSet"
     id:                       4
@@ -223,8 +223,8 @@ processes:
           partitionCheck:
             PATH:
               test: "if (\"%4$s\".trim().length() == 0) true; else false;"
-              pass: "\"ALTER TABLE %1$s.%2$s COMPACT 'MAJOR';\""
-              fail: "\"ALTER TABLE %1$s.%2$s PARTITION (\" + com.cloudera.utils.hive.sre.Utils.dirToPartitionSpec('%4$s') + \") COMPACT \\\"MAJOR\\\"\\;\""
+              pass: "\"ALTER TABLE `%1$s`.`%2$s` COMPACT 'MAJOR';\""
+              fail: "\"ALTER TABLE `%1$s`.`%2$s` PARTITION (\" + com.cloudera.utils.hive.sre.Utils.dirToPartitionSpec('%4$s') + \") COMPACT \\\"MAJOR\\\"\\;\""
               params: [ "hive" ]
   - type:                     "metastore.report"
     id:                       5
@@ -322,7 +322,7 @@ processes:
       note:                   "-- This report will show the ACID tables that don't contain the required 'bucketing_version=2' tblproperties configuration.\n
       -- Without this setting, you will have issues access/reading/processing the upgraded ACID table.\n
       -- We recommend that you run the script to add this configuration value to the tables.\n\n"
-      record:             "ALTER TABLE %1$s.%2$s SET TBLPROPERTIES('bucketing_version'='2');"
+      record:             "ALTER TABLE `%1$s`.`%2$s` SET TBLPROPERTIES('bucketing_version'='2');"
   - type:                     "metastore.report"
     id:                       7
     active:                   true
