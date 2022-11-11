@@ -1,7 +1,8 @@
 #!/usr/bin/env sh
 
+
 #
-# Copyright (c) 2022. Cloudera, Inc. All Rights Reserved
+# Copyright (c) 2022. David W. Streever All Rights Reserved
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -15,7 +16,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-#
 
 # Resolve Symlinks of exe
 RESOLVED_EXE_PATH=`readlink -f $0`
@@ -24,6 +24,12 @@ APP_DIR=$(dirname $RESOLVED_EXE_PATH)
 CURR_DIR=$(pwd)
 
 echo "APP_DIR: $APP_DIR"
+
+DO_NOT_FILE="${APP_DIR}/DO_NOT_RUN_APP_FROM_HERE.txt"
+if [ -f $DO_NOT_FILE ]; then
+  echo "Do NOT run application from 'install' directory.  If properly installed, the application will be in your PATH";
+  exit 1
+fi
 
 if [[ "${APP_DIR}" == "${HOME}/.hive-sre/bin" ]]; then
   echo "Running from User Local Instance"
@@ -110,10 +116,10 @@ while [[ $# -gt 0 ]]; do
       export AUX_LIBS_DIR=$1
       shift
       ;;
-#    --hadoop-classpath)
-#      shift
-#      HADOOP_CLASSPATH="true"
-#      ;;
+    --hadoop-classpath)
+      shift
+      HADOOP_CLASSPATH="true"
+      ;;
     --show-cp)
       shift
       SHOW_CP="true"
@@ -153,9 +159,7 @@ SHADED=
 if [[ "${HADOOP_CLASSPATH}x" != "x" ]]; then
   echo "Picking up local Hadoop Classpath Libs."
   SHADED=shaded-no-hadoop
-  CMD_CP=${CMD_CP}:$(hadoop classpath)
-  echo "hive-sre-cli with local Hadoop Classpath Libs not supported"
-  exit 1
+  CMD_CP=$(hadoop classpath):${CMD_CP}
 else
   SHADED=shaded
 fi
