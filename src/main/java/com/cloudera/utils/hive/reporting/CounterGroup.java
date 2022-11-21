@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class CounterGroup {
     private int initCheckRetry = 0;
-    private static final int initCheckRetryThreshold = 5;
+    private static final int initCheckRetryThreshold = 20;
 
     private static Logger LOG = LogManager.getLogger(CounterGroup.class);
 
