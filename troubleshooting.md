@@ -50,3 +50,13 @@ Ideally, the host should be configured as an **HDFS Gateway** in Cloudera Manage
 This happens when running against *MySQL* and there is a translation issue with the timezone set on the server.  Override this with the client by adding the following to the jdbc connection url: `serverTimezone=UTC`.
 
 For example: `jdbc:mysql://m01.streever.local:3306/hive_50?serverTimezone=UTC`
+
+### 'No Progress Exception'
+
+This happens when a connection is usually made but the application fails to make progress initializing.  The check was added for certain scenarios that hung the application indefinitely.
+
+Under some conditions, the connection may take a bit longer to establish and this process kicks in and kills the application.  Sometimes a "High-Availability" RDBMS might have just enough of a delay to trigger this process.  In that case, you can extend the time given for the check by adding:
+
+`reportingInterval: 1000`
+
+to the configuration yaml file.  Add it before or after the `parallelism` setting at the level indent level.
