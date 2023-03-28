@@ -1,0 +1,341 @@
+definitions:
+  elapsed_time:
+    shortDesc: "Elapsed-Time"
+    longDesc: "Elapsed-Time"
+    query:
+      resource: "elapsed_time.sql"
+      # Map of Parameters (key is the the parameter name)
+      # .. need to account for location based parameters for jdbc
+      # The 'key/name' for the parameter will be sync'd with any incoming parameter map
+      default_parameters:
+        interval: "24h"
+        limit: 10
+      detail_groups:
+        - "query_details"
+  completed_task_count:
+    shortDesc: "Completed Task Count"
+    longDesc: "Completed Task Count"
+    query:
+      resource: "completed_task_count.sql"
+      default_parameters:
+        interval: "24h"
+        limit: 10
+      detail_groups:
+        - "query_details"
+  failed_task_count:
+    shortDesc: "Failed Task Count"
+    longDesc: "Failed Task Count"
+    query:
+      resource: "failed_task_count.sql"
+      default_parameters:
+        interval: "24h"
+        limit: 10
+      detail_groups:
+        - "query_details"
+  killed_task_count:
+    shortDesc: "Killed Task Count"
+    longDesc: "Killed Task Count"
+    query:
+      resource: "killed_task_count.sql"
+      default_parameters:
+        interval: "24h"
+        limit: 10
+      detail_groups:
+        - "query_details"
+  startup_delay:
+    shortDesc: "Startup Delay"
+    longDesc: "Startup Delay"
+    query:
+      resource: "startup_delay.sql"
+      default_parameters:
+        interval: "24h"
+        limit: 10
+      detail_groups:
+        - "query_details"
+  tables_accessed_count:
+    shortDesc: "Tables Accessed Count"
+    longDesc: "Tables Accessed Count"
+    query:
+      resource: "tables_accessed_count.sql"
+      default_parameters:
+        interval: "24h"
+        limit: 10
+  tables_written_count:
+    shortDesc: "Tables Written Count"
+    longDesc: "Tables Written Count"
+    query:
+      resource: "tables_written_count.sql"
+      default_parameters:
+        interval: "24h"
+        limit: 10
+  tables_accessed_by_user_count:
+    shortDesc: "Tables Accessed by User Count"
+    longDesc: "Tables Accessed by User Count"
+    query:
+      resource: "tables_accessed_by_user_count.sql"
+      default_parameters:
+        interval: "24h"
+        limit: 10
+  tables_written_by_user_count:
+    shortDesc: "Tables Written by User Count"
+    longDesc: "Tables Written by User Count"
+    query:
+      resource: "tables_written_by_user_count.sql"
+      default_parameters:
+        interval: "24h"
+        limit: 10
+  memory_physical:
+    shortDesc: "Physical Memory"
+    longDesc: "Physical Memory"
+    query:
+      resource: "memory_physical.sql"
+      default_parameters:
+        interval: "24h"
+        limit: 10
+      detail_groups:
+        - "query_details"
+  memory_virtual:
+    shortDesc: "Virtual Memory"
+    longDesc: "Virtual Memory"
+    query:
+      resource: "memory_virtual.sql"
+      default_parameters:
+        interval: "24h"
+        limit: 10
+      detail_groups:
+        - "query_details"
+  memory_efficiency:
+    shortDesc: "Memory Efficiency"
+    longDesc: "Memory Efficiency"
+    query:
+      resource: "memory_efficiency.sql"
+      default_parameters:
+        interval: "24h"
+        limit: 10
+      detail_groups:
+        - "query_details"
+  vertex_count:
+    shortDesc: "Vertex Count"
+    longDesc: "Vertex Count"
+    query:
+      resource: "vertex_count.sql"
+      default_parameters:
+        interval: "24h"
+        limit: 10
+      detail_groups:
+        - "query_details"
+  cpu_time:
+    shortDesc: "CPU Time"
+    longDesc: "CPU Time"
+    query:
+      resource: "cpu.sql"
+      default_parameters:
+        interval: "24h"
+        limit: 10
+      detail_groups:
+        - "query_details"
+  cpu_status_failed:
+    shortDesc: "CPU Time - Status FAILED"
+    longDesc: "CPU Time - Status FAILED"
+    query:
+      resource: "cpu_status.sql"
+      default_parameters:
+        interval: "24h"
+        status: "FAILED"
+        limit: 10
+      detail_groups:
+        - "query_details"
+  cpu_status_killed:
+    shortDesc: "CPU Time - Status KILLED"
+    longDesc: "CPU Time - Status KILLED"
+    query:
+      resource: "cpu_status.sql"
+      default_parameters:
+        interval: "24h"
+        status: "KILLED"
+        limit: 10
+      detail_groups:
+        - "query_details"
+  cpu_status_error:
+    shortDesc: "CPU Time - Status ERROR"
+    longDesc: "CPU Time - Status ERROR"
+    query:
+      resource: "cpu_status.sql"
+      default_parameters:
+        interval: "24h"
+        status: "ERROR"
+        limit: 10
+      detail_groups:
+        - "query_details"
+  cpu_status_started:
+    shortDesc: "CPU Time - Status STARTED"
+    longDesc: "CPU Time - Status STARTED"
+    query:
+      resource: "cpu_status.sql"
+      default_parameters:
+        interval: "24h"
+        status: "STARTED"
+        limit: 10
+      detail_groups:
+        - "query_details"
+  cpu_status_by_user_success:
+    shortDesc: "CPU Time - Status by User (SUCCESS)"
+    longDesc: "CPU Time - Status by User (SUCCESS)"
+    query:
+      resource: "cpu_status_user_count.sql"
+      # Map of Parameters (key is the the parameter name)
+      # .. need to account for location based parameters for jdbc
+      # The 'key/name' for the parameter will be sync'd with any incoming parameter map
+      default_parameters:
+        interval: "24h"
+        status: "SUCCESS"
+        limit: 1000
+      detail_references:
+        - "user_queries"
+  cpu_status_by_user_failed:
+    shortDesc: "CPU Time - Status by User (FAILED)"
+    longDesc: "CPU Time - Status by User (FAILED)"
+    query:
+      resource: "cpu_status_user_count.sql"
+      default_parameters:
+        interval: "24h"
+        status: "FAILED"
+        limit: 1000
+      detail_references:
+        - "user_queries"
+  cpu_status_by_user_error:
+    shortDesc: "CPU Time - Status by User (ERROR)"
+    longDesc: "CPU Time - Status by User (ERROR)"
+    query:
+      resource: "cpu_status_user_count.sql"
+      default_parameters:
+        interval: "24h"
+        status: "ERROR"
+        limit: 1000
+      detail_references:
+        - "user_queries"
+  #      detail_groups:
+  #        - "query_details"
+  perf_parse:
+    shortDesc: "Parse Time"
+    longDesc: "Parse Time"
+    query:
+      resource: "perf_time.sql"
+      default_parameters:
+        perf: "parse"
+        interval: "24h"
+        limit: 10
+      detail_groups:
+        - "query_details"
+  perf_compile:
+    shortDesc: "Compile Time"
+    longDesc: "Compile Time"
+    query:
+      resource: "perf_time.sql"
+      default_parameters:
+        perf: "compile"
+        interval: "24h"
+        limit: 10
+      detail_groups:
+        - "query_details"
+  perf_semantic_analyze:
+    shortDesc: "Semantic Analyze Time"
+    longDesc: "Semantic Analyze Time"
+    query:
+      resource: "perf_time.sql"
+      default_parameters:
+        perf: "semanticAnalyze"
+        interval: "24h"
+        limit: 10
+      detail_groups:
+        - "query_details"
+  query_detail_explain:
+    shortDesc: "Explain Plan"
+    longDesc: "Query Detail - Explain Plan"
+    display:
+      - "explain_plan_compressed"
+    query:
+      resource: "query_detail_explain.sql"
+  query_detail_counters:
+    shortDesc: "Counters"
+    longDesc: "Query Detail - Counters"
+    display:
+      - "counters_compressed"
+    query:
+      resource: "query_detail_counters.sql"
+  query_detail_dag_plan:
+    shortDesc: "DAG Plan"
+    longDesc: "Query Detail - DAG Plan"
+    display:
+      - "dag_plan_compressed"
+    query:
+      resource: "query_detail_dag_plan.sql"
+  query_detail_sql:
+    shortDesc: "Query SQL"
+    longDesc: "Query Detail - SQL"
+    display:
+      - "query"
+    query:
+      resource: "query_detail_sql.sql"
+  query_detail_tables:
+    shortDesc: "Query Tables"
+    longDesc: "Query Detail - Tables"
+    display:
+      - "tbl_read"
+      - "tbl_written"
+    query:
+      resource: "query_detail_tables.sql"
+  query_detail_app_id:
+    shortDesc: "Query App ID"
+    longDesc: "Query Detail - Application ID"
+    display:
+      - "application_id"
+    query:
+      resource: "query_detail_app_id.sql"
+  query_detail:
+    shortDesc: "Query Detail"
+    longDesc: "Query Detail"
+    query:
+      resource: "query_detail.sql"
+  queue_delay:
+    shortDesc: "Queue Delays"
+    longDesc: "Queue Delays w/ Threshold"
+    query:
+      resource: "queue_delays.sql"
+  queue_jobs_waiting:
+    shortDesc: "Queue Jobs - Waiting Time Order"
+    longDesc: "Queue Jobs - Waiting Time Order"
+    query:
+      resource: "queue_jobs.sql"
+      default_parameters:
+        order_by: "waiting_time desc"
+      detail_groups:
+        - "query_details"
+  user_total_time:
+    shortDesc: "User Total Time"
+    longDesc: "User Total Time"
+    query:
+      resource: "user_total_time.sql"
+      default_parameters:
+        interval: "24h"
+        limit: 1000
+  user_queries:
+    shortDesc: "User Queries"
+    longDesc: "User Queries"
+    query:
+      resource: "user_queries.sql"
+      default_parameters:
+        interval: "24h"
+        limit: 1000
+      detail_groups:
+        - "query_details"
+groups:
+  query_details:
+    detail_references:
+      - "query_detail_dag_plan"
+      - "query_detail_counters"
+      - "query_detail_explain"
+      - "query_detail_sql"
+      - "query_detail_tables"
+      - "query_detail_app_id"
+      - "query_detail"

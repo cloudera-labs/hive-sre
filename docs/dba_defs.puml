@@ -1,0 +1,220 @@
+@startyaml
+definitions:
+  elapsed_time:
+    shortDesc: "Elapsed-Time"
+    longDesc: "Elapsed-Time"
+    query:
+      resource: "elapsed_time.sql"
+      # Map of Parameters (key is the the parameter name)
+      # .. need to account for location based parameters for jdbc
+      # The 'key/name' for the parameter will be sync'd with any incoming parameter map
+      default_parameters:
+        interval: "24h"
+        limit: 10
+  completed_task_count:
+    shortDesc: "Completed Task Count"
+    longDesc: "Completed Task Count"
+    query:
+      resource: "completed_task_count.sql"
+      # Map of Parameters (key is the the parameter name)
+      # .. need to account for location based parameters for jdbc
+      # The 'key/name' for the parameter will be sync'd with any incoming parameter map
+      default_parameters:
+        interval: "24h"
+        limit: 10
+  failed_task_count:
+    shortDesc: "Failed Task Count"
+    longDesc: "Failed Task Count"
+    query:
+      resource: "failed_task_count.sql"
+      # Map of Parameters (key is the the parameter name)
+      # .. need to account for location based parameters for jdbc
+      # The 'key/name' for the parameter will be sync'd with any incoming parameter map
+      default_parameters:
+        interval: "24h"
+        limit: 10
+  killed_task_count:
+    shortDesc: "Killed Task Count"
+    longDesc: "Killed Task Count"
+    query:
+      resource: "killed_task_count.sql"
+      # Map of Parameters (key is the the parameter name)
+      # .. need to account for location based parameters for jdbc
+      # The 'key/name' for the parameter will be sync'd with any incoming parameter map
+      default_parameters:
+        interval: "24h"
+        limit: 10
+  startup_delay:
+    shortDesc: "Startup Delay"
+    longDesc: "Startup Delay"
+    query:
+      resource: "startup_delay.sql"
+      # Map of Parameters (key is the the parameter name)
+      # .. need to account for location based parameters for jdbc
+      # The 'key/name' for the parameter will be sync'd with any incoming parameter map
+      default_parameters:
+        interval: "24h"
+        limit: 10
+  tables_accessed_count:
+    shortDesc: "Tables Accessed Count"
+    longDesc: "Tables Accessed Count"
+    query:
+      resource: "tables_accessed_count.sql"
+      # Map of Parameters (key is the the parameter name)
+      # .. need to account for location based parameters for jdbc
+      # The 'key/name' for the parameter will be sync'd with any incoming parameter map
+      default_parameters:
+        interval: "24h"
+        limit: 10
+  tables_written_count:
+    shortDesc: "Tables Written Count"
+    longDesc: "Tables Written Count"
+    query:
+      resource: "tables_written_count.sql"
+      # Map of Parameters (key is the the parameter name)
+      # .. need to account for location based parameters for jdbc
+      # The 'key/name' for the parameter will be sync'd with any incoming parameter map
+      default_parameters:
+        interval: "24h"
+        limit: 10
+  tables_accessed_by_user_count:
+    shortDesc: "Tables Accessed by User Count"
+    longDesc: "Tables Accessed by User Count"
+    query:
+      resource: "tables_accessed_by_user_count.sql"
+      # Map of Parameters (key is the the parameter name)
+      # .. need to account for location based parameters for jdbc
+      # The 'key/name' for the parameter will be sync'd with any incoming parameter map
+      default_parameters:
+        interval: "24h"
+        limit: 10
+  tables_written_by_user_count:
+    shortDesc: "Tables Written by User Count"
+    longDesc: "Tables Written by User Count"
+    query:
+      resource: "tables_written_by_user_count.sql"
+      # Map of Parameters (key is the the parameter name)
+      # .. need to account for location based parameters for jdbc
+      # The 'key/name' for the parameter will be sync'd with any incoming parameter map
+      default_parameters:
+        interval: "24h"
+        limit: 10
+  physical_memory:
+    shortDesc: "Physical Memory"
+    longDesc: "Physical Memory"
+    query:
+      resource: "physical_memory.sql"
+      default_parameters:
+        interval: "24h"
+        limit: 10
+  virtual_memory:
+    shortDesc: "Virtual Memory"
+    longDesc: "Virtual Memory"
+    query:
+      resource: "virtual_memory.sql"
+      default_parameters:
+        interval: "24h"
+        limit: 10
+  memory_efficiency:
+    shortDesc: "Memory Efficiency"
+    longDesc: "Memory Efficiency"
+    query:
+      resource: "virtual_memory.sql"
+      default_parameters:
+        interval: "24h"
+        limit: 10
+  vertex_count:
+    shortDesc: "Vertex Count"
+    longDesc: "Vertex Count"
+    query:
+      resource: "vertex_count.sql"
+      # Map of Parameters (key is the the parameter name)
+      # .. need to account for location based parameters for jdbc
+      # The 'key/name' for the parameter will be sync'd with any incoming parameter map
+      default_parameters:
+        interval: "24h"
+        limit: 10
+  cpu_time:
+    shortDesc: "CPU Time"
+    longDesc: "CPU Time"
+    query:
+      resource: "cpu.sql"
+      # Map of Parameters (key is the the parameter name)
+      # .. need to account for location based parameters for jdbc
+      # The 'key/name' for the parameter will be sync'd with any incoming parameter map
+      default_parameters:
+        interval: "24h"
+        limit: 10
+  perf_parse:
+    shortDesc: "Top Ten Parse Time"
+    longDesc: "Top Ten Parse Time"
+    query:
+      resource: "perf_time.sql"
+      # Map of Parameters (key is the the parameter name)
+      # .. need to account for location based parameters for jdbc
+      # The 'key/name' for the parameter will be sync'd with any incoming parameter map
+      default_parameters:
+        perf: "parse"
+        interval: "24h"
+        limit: 10
+  perf_compile:
+    shortDesc: "Top Ten Compile Time"
+    longDesc: "Top Ten Compile Time"
+    query:
+      resource: "perf_time.sql"
+      # Map of Parameters (key is the the parameter name)
+      # .. need to account for location based parameters for jdbc
+      # The 'key/name' for the parameter will be sync'd with any incoming parameter map
+      default_parameters:
+        perf: "compile"
+        interval: "24h"
+        limit: 10
+  perf_semantic_analyze:
+    shortDesc: "Top Ten Semantic Analyze Time"
+    longDesc: "Top Ten Semantic Analyze Time"
+    query:
+      resource: "perf_time.sql"
+      # Map of Parameters (key is the the parameter name)
+      # .. need to account for location based parameters for jdbc
+      # The 'key/name' for the parameter will be sync'd with any incoming parameter map
+      default_parameters:
+        perf: "semanticAnalyze"
+        interval: "24h"
+        limit: 10
+  query_detail_explain:
+    shortDesc: "Explain Plan"
+    longDesc: "Query Detail - Explain Plan"
+    query:
+      resource: "query_detail_explain.sql"
+#      field_translations:
+#        explain_plan_compressed:
+#          name: explain_plan
+#          translation_class: Decompress
+  query_detail_counters:
+    shortDesc: "Counters"
+    longDesc: "Query Detail - Counters"
+    query:
+      resource: "query_detail_counters.sql"
+  query_detail_dag_plan:
+    shortDesc: "DAG Plan"
+    longDesc: "Query Detail - DAG Plan"
+    query:
+      resource: "query_detail_dag_plan.sql"
+    # ...
+  queue_delay:
+    shortDesc: "Queue Delays"
+    longDesc: "Queue Delays w/ Threshold"
+    query:
+      resource: "queue_delays.sql"
+  queue_jobs_waiting:
+    shortDesc: "Queue Jobs - Waiting Time Order"
+    longDesc: "Queue Jobs - Waiting Time Order"
+    query:
+      resource: "queue_jobs.sql"
+      default_parameters:
+        order_by: "waiting_time desc"
+      details:
+        - "query_detail_dag_plan"
+        - "query_detail_counters"
+        - "query_detail_explain"
+@endyaml

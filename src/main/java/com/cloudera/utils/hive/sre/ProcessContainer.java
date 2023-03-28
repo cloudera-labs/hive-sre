@@ -17,7 +17,7 @@
 
 package com.cloudera.utils.hive.sre;
 
-import com.cloudera.utils.hive.config.Metastore;
+import com.cloudera.utils.hive.config.DBStore;
 import com.cloudera.utils.hive.config.SreProcessesConfig;
 import com.cloudera.utils.hive.reporting.Reporter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -51,6 +51,8 @@ The 'ProcessContainer' is the definition and runtime structure
         "connectionPools", "outputDirectory", "dbsOverride", "includeFilter", "excludeFilter", "testSQL"})
 public class ProcessContainer implements Runnable {
     private static Logger LOG = LogManager.getLogger(ProcessContainer.class);
+
+    private String module;
 
     private boolean initializing = Boolean.TRUE;
     private SreProcessesConfig config;
@@ -87,6 +89,14 @@ public class ProcessContainer implements Runnable {
          */
     private List<SreProcessBase> processes = new ArrayList<SreProcessBase>();
     private int parallelism = 3;
+
+    public String getModule() {
+        return module;
+    }
+
+    public void setModule(String module) {
+        this.module = module;
+    }
 
     public SreProcessesConfig getConfig() {
         return config;
@@ -339,13 +349,13 @@ public class ProcessContainer implements Runnable {
                     if (getConfig().getMetastoreDirect().getType() != null) {
                         switch (getConfig().getMetastoreDirect().getType()) {
                             case MYSQL:
-                                process.setDbType(Metastore.DB_TYPE.MYSQL);
+                                process.setDbType(DBStore.DB_TYPE.MYSQL);
                                 break;
                             case ORACLE:
-                                process.setDbType(Metastore.DB_TYPE.ORACLE);
+                                process.setDbType(DBStore.DB_TYPE.ORACLE);
                                 break;
                             case POSTGRES:
-                                process.setDbType(Metastore.DB_TYPE.POSTGRES);
+                                process.setDbType(DBStore.DB_TYPE.POSTGRES);
                                 break;
                             default:
                                 System.err.println("Hasn't been implemented yet.");

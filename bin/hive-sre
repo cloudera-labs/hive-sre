@@ -24,6 +24,8 @@ APP_DIR=$(dirname $RESOLVED_EXE_PATH)
 CURR_DIR=$(pwd)
 
 echo "APP_DIR: $APP_DIR"
+# Set column (width) for the program.
+export MY_COLUMNS=`tput cols`
 
 DO_NOT_FILE="${APP_DIR}/DO_NOT_RUN_APP_FROM_HERE.txt"
 if [ -f $DO_NOT_FILE ]; then
@@ -131,6 +133,6 @@ fi
 
 $(${JAVA} -version)
 
-CLI_CMD="${JAVA} -cp ${CMD_CP} ${APP_JAVA_OPTS} com.cloudera.utils.hive.Sre ${PRG_ARGS}"
+CLI_CMD="${JAVA} -cp ${CMD_CP} ${APP_JAVA_OPTS} com.cloudera.utils.Sre ${PRG_ARGS}"
 
 eval "${CLI_CMD}"

@@ -17,8 +17,9 @@
 
 package com.cloudera.utils.hive.sre;
 
-import com.cloudera.utils.hive.config.Metastore;
+import com.cloudera.utils.hive.config.DBStore;
 import com.cloudera.utils.hive.config.SreProcessesConfig;
+import com.cloudera.utils.hive.dba.QueryStore;
 import org.apache.commons.dbcp2.*;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
@@ -32,6 +33,7 @@ public class ConnectionPools {
 
     private PoolingDataSource<PoolableConnection> metastoreDirectDataSource = null;
     private PoolingDataSource<PoolableConnection> hs2DataSource = null;
+    private PoolingDataSource<PoolableConnection> queryAnalysisDataSource = null;
 
     public ConnectionPools(SreProcessesConfig config) {
         this.config = config;
@@ -39,6 +41,7 @@ public class ConnectionPools {
 
     public void init() {
         initMetastoreDataSource();
+        initQueryAnalysisDataSource();
         initHs2DataSource();
     }
 
@@ -49,6 +52,13 @@ public class ConnectionPools {
         return metastoreDirectDataSource;
     }
 
+    public PoolingDataSource<PoolableConnection> getQueryAnalysisDataSource() {
+        if (queryAnalysisDataSource == null) {
+            initQueryAnalysisDataSource();
+        }
+        return queryAnalysisDataSource;
+    }
+
     public DataSource getHs2DataSource() {
         if (hs2DataSource == null) {
             initHs2DataSource();
@@ -57,44 +67,59 @@ public class ConnectionPools {
     }
 
     public Connection getMetastoreDirectConnection() throws SQLException {
-        Connection conn = getMetastoreDirectDataSource().getConnection();
-        if (this.config.getMetastoreDirect().getInitSql() != null) {
-            conn.createStatement().execute(this.config.getMetastoreDirect().getInitSql());
+        Connection conn = null;
+        if (getMetastoreDirectDataSource() != null) {
+            conn = getMetastoreDirectDataSource().getConnection();
+            if (this.config.getMetastoreDirect().getInitSql() != null) {
+                conn.createStatement().execute(this.config.getMetastoreDirect().getInitSql());
+            }
+        }
+        return conn;
+    }
+
+    public Connection getQueryAnalysisConnection() throws SQLException {
+        Connection conn = null;
+        if (getQueryAnalysisDataSource() != null) {
+            conn = getQueryAnalysisDataSource().getConnection();
+            if (this.config.getMetastoreDirect().getInitSql() != null) {
+                conn.createStatement().execute(this.config.getMetastoreDirect().getInitSql());
+            }
         }
         return conn;
     }
 
     public Connection getHs2Connection() throws SQLException {
-        Connection conn = getHs2DataSource().getConnection();
+        Connection conn = null;
+        if (getHs2DataSource() != null) {
+            conn = getHs2DataSource().getConnection();
+        }
         return conn;
     }
 
     protected void initMetastoreDataSource() {
         // Metastore Direct
-        if (config.getMetastoreDirect() == null) {
-            throw new RuntimeException("Missing configuration to connect to Metastore RDBMS");
+        if (config.getMetastoreDirect() != null) {
+            DBStore msdb = config.getMetastoreDirect();
+            ConnectionFactory msconnectionFactory =
+                    new DriverManagerConnectionFactory(msdb.getUri(), msdb.getConnectionProperties());
+
+            PoolableConnectionFactory mspoolableConnectionFactory =
+                    new PoolableConnectionFactory(msconnectionFactory, null);
+
+            ObjectPool<PoolableConnection> msconnectionPool =
+                    new GenericObjectPool<>(mspoolableConnectionFactory);
+
+            mspoolableConnectionFactory.setPool(msconnectionPool);
+
+            this.metastoreDirectDataSource =
+                    new PoolingDataSource<>(msconnectionPool);
         }
-        Metastore msdb = config.getMetastoreDirect();
-        ConnectionFactory msconnectionFactory =
-                new DriverManagerConnectionFactory(msdb.getUri(), msdb.getConnectionProperties());
-
-        PoolableConnectionFactory mspoolableConnectionFactory =
-                new PoolableConnectionFactory(msconnectionFactory, null);
-
-        ObjectPool<PoolableConnection> msconnectionPool =
-                new GenericObjectPool<>(mspoolableConnectionFactory);
-
-        mspoolableConnectionFactory.setPool(msconnectionPool);
-
-        this.metastoreDirectDataSource =
-                new PoolingDataSource<>(msconnectionPool);
-
     }
 
     protected void initHs2DataSource() {
         // this is optional.
         if (config.getHs2() != null) {
-            Metastore hs2db = config.getHs2();
+            DBStore hs2db = config.getHs2();
             ConnectionFactory hs2connectionFactory =
                     new DriverManagerConnectionFactory(hs2db.getUri(), hs2db.getConnectionProperties());
 
@@ -109,6 +134,28 @@ public class ConnectionPools {
             this.hs2DataSource =
                     new PoolingDataSource<>(hs2connectionPool);
         }
+    }
+
+    protected void initQueryAnalysisDataSource() {
+        // Query Analysis
+        if (config.getQueryAnalysis() != null) {
+
+            QueryStore queryAnalysis = config.getQueryAnalysis();
+            ConnectionFactory qaconnectionFactory =
+                    new DriverManagerConnectionFactory(queryAnalysis.getUri(), queryAnalysis.getConnectionProperties());
+
+            PoolableConnectionFactory qapoolableConnectionFactory =
+                    new PoolableConnectionFactory(qaconnectionFactory, null);
+
+            ObjectPool<PoolableConnection> qaconnectionPool =
+                    new GenericObjectPool<>(qapoolableConnectionFactory);
+
+            qapoolableConnectionFactory.setPool(qaconnectionPool);
+
+            this.queryAnalysisDataSource =
+                    new PoolingDataSource<>(qaconnectionPool);
+        }
+
     }
 
 }

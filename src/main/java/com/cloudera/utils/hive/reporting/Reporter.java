@@ -266,9 +266,8 @@ public class Reporter implements Runnable {
         while (refresh()) {
             try {
                 Thread.sleep(refreshInterval);
-//                System.out.print(".");
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                System.out.println("..");
             }
         }
         refresh();

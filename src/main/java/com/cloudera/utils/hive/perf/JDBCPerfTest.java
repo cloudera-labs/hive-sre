@@ -17,7 +17,7 @@
 
 package com.cloudera.utils.hive.perf;
 
-import com.cloudera.utils.hive.SreSubApp;
+import com.cloudera.utils.SreSubApp;
 import org.apache.commons.cli.*;
 
 import java.util.*;

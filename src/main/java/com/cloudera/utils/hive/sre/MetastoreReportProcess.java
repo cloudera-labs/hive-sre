@@ -132,7 +132,9 @@ public class MetastoreReportProcess extends MetastoreProcess {
 //        this.setTotalCount(getMetastoreQueryDefinitions().size());
         for (MetastoreQuery metastoreQueryDefinition: getMetastoreQueryDefinitions()) {
             String[][] metastoreRecords = null;
-            try (Connection conn = getParent().getConnectionPools().getMetastoreDirectConnection()) {
+            Connection conn = null;
+            try {
+                conn = getParent().getConnectionPools().getMetastoreDirectConnection();
                 String targetQueryDef = metastoreQueryDefinition.getQuery();
                 LOG.info("Query Definition: " + targetQueryDef);
                 // build prepared statement for targetQueryDef
@@ -257,6 +259,14 @@ public class MetastoreReportProcess extends MetastoreProcess {
                 error.println(metastoreQueryDefinition.getQuery());
                 error.println("> Processing Issue: " + rte.getMessage());
                 rte.printStackTrace(error);
+            } finally {
+                if (conn != null) {
+                    try {
+                        conn.close();
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
             }
         }
         setInitializing(Boolean.FALSE);

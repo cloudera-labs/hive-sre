@@ -1,0 +1,776 @@
+# a method to organize more then one nav tree at this level.
+# this is the name of the grouping.
+#                   grouping Map is Tree with name of NavItem (key) and NavItem (structure)
+# NavGrouping: grouping Map<String, Map<String, NavItem>>
+# The grouping should have a parent (optional, of course for root).
+# We'll need to establish some type of 'session' that tracks what's been run
+#    and the values that will be past down to the next level.
+# The session should have an expiration process for value it tracks.
+groupings:
+  # Map of Root Nav Tree's
+  top-ten:
+    name: "Top Ten"
+    longDesc: "
+    A group of 'top ten' option groups.
+    "
+    options:
+      -
+        # reference to the definition in "dba_refs.yaml"
+        definition_reference: "elapsed_time"
+        # These are the options presented to the user for this 'option'
+        # Below are the scenarios with the overridden parameter values.
+        display:
+          - id
+          - request_user
+          - queue_name
+          - elapsed_time
+        scenarios:
+          -
+            name: "Last 24 hours"
+            parameters:
+              interval: "24h"
+          -
+            name: "Last Week"
+            parameters:
+              interval: "1w"
+          -
+            name: "Last ?interval?"
+            parameters:
+              interval: "${interval}"
+          -
+            name: "Last 24 hours - Queue"
+            parameters:
+              interval: "24h"
+              and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+          -
+            name: "Last ?interval? - ?queue?"
+            parameters:
+              interval: "${interval}"
+              and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+      -
+        definition_reference: "startup_delay"
+        scenarios:
+          -
+            name: "Last 24 hours"
+            parameters:
+              interval: "24h"
+          -
+            name: "Last Week"
+            parameters:
+              interval: "1w"
+          -
+            name: "Last ?interval?"
+            parameters:
+              interval: "${interval}"
+          -
+            name: "Last 24 hours - Queue"
+            parameters:
+              interval: "24h"
+              and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+          -
+            name: "Last ?interval? - ?queue?"
+            parameters:
+              interval: "${interval}"
+              and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+    groupings:
+      performance:
+        name: "Performance"
+        longDesc: "
+        This is for Performance
+        "
+        options:
+          -
+            definition_reference: "perf_compile"
+            display:
+              - id
+              - request_user
+              - queue_name
+              - perf_time_ms2
+              - perf_time_ms
+            scenarios:
+              -
+                name: "Last 24 hours"
+                parameters:
+                  interval: "24h"
+              -
+                name: "Last Week"
+                parameters:
+                  interval: "1w"
+              -
+                name: "Last ?interval?"
+                parameters:
+                  interval: "${interval}"
+              -
+                name: "Last 24 hours - Queue"
+                parameters:
+                  interval: "24h"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+              -
+                name: "Last ?interval? - ?queue?"
+                parameters:
+                  interval: "${interval}"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+          -
+            definition_reference: "perf_parse"
+            scenarios:
+              -
+                name: "Last 24 hours"
+                parameters:
+                  interval: "24h"
+              -
+                name: "Last Week"
+                parameters:
+                  interval: "1w"
+              -
+                name: "Last ?interval?"
+                parameters:
+                  interval: "${interval}"
+              -
+                name: "Last 24 hours - Queue"
+                parameters:
+                  interval: "24h"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+              -
+                name: "Last ?interval? - ?queue?"
+                parameters:
+                  interval: "${interval}"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+          -
+            definition_reference: "perf_semantic_analyze"
+            scenarios:
+              -
+                name: "Last 24 hours"
+                parameters:
+                  interval: "24h"
+              -
+                name: "Last Week"
+                parameters:
+                  interval: "1w"
+              -
+                name: "Last ?interval?"
+                parameters:
+                  interval: "${interval}"
+              -
+                name: "Last 24 hours - Queue"
+                parameters:
+                  interval: "24h"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+              -
+                name: "Last ?interval? - ?queue?"
+                parameters:
+                  interval: "${interval}"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+      tables:
+        name: "Tables"
+        longDesc: "
+        This is for Tables
+        "
+        options:
+          - definition_reference: "tables_accessed_count"
+            scenarios:
+              - name: "Last 24 hours"
+                parameters:
+                  interval: "24h"
+              - name: "Last Week"
+                parameters:
+                  interval: "1w"
+              -
+                name: "Last ?interval?"
+                parameters:
+                  interval: "${interval}"
+              -
+                name: "Last 24 hours - Queue"
+                parameters:
+                  interval: "24h"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+              -
+                name: "Last ?interval? - ?queue?"
+                parameters:
+                  interval: "${interval}"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+          - definition_reference: "tables_written_count"
+            scenarios:
+              - name: "Last 24 hours"
+                parameters:
+                  interval: "24h"
+              - name: "Last Week"
+                parameters:
+                  interval: "1w"
+              -
+                name: "Last ?interval?"
+                parameters:
+                  interval: "${interval}"
+              -
+                name: "Last 24 hours - Queue"
+                parameters:
+                  interval: "24h"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+              -
+                name: "Last ?interval? - ?queue?"
+                parameters:
+                  interval: "${interval}"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+          - definition_reference: "tables_accessed_by_user_count"
+            scenarios:
+              - name: "Last 24 hours"
+                parameters:
+                  interval: "24h"
+              - name: "Last Week"
+                parameters:
+                  interval: "1w"
+              -
+                name: "Last ?interval?"
+                parameters:
+                  interval: "${interval}"
+              -
+                name: "Last 24 hours - Queue"
+                parameters:
+                  interval: "24h"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+              -
+                name: "Last ?interval? - ?queue?"
+                parameters:
+                  interval: "${interval}"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+          - definition_reference: "tables_written_by_user_count"
+            scenarios:
+              - name: "Last 24 hours"
+                parameters:
+                  interval: "24h"
+              - name: "Last Week"
+                parameters:
+                  interval: "1w"
+              -
+                name: "Last ?interval?"
+                parameters:
+                  interval: "${interval}"
+              -
+                name: "Last 24 hours - Queue"
+                parameters:
+                  interval: "24h"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+              -
+                name: "Last ?interval? - ?queue?"
+                parameters:
+                  interval: "${interval}"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+      tasks:
+        name: "Tasks"
+        longDesc: "
+        This is for Tasks
+        "
+        options:
+          -
+            definition_reference: "completed_task_count"
+            scenarios:
+              -
+                name: "Last 24 hours"
+                parameters:
+                  interval: "24h"
+              -
+                name: "Last Week"
+                parameters:
+                  interval: "1w"
+              -
+                name: "Last ?interval?"
+                parameters:
+                  interval: "${interval}"
+              -
+                name: "Last 24 hours - Queue"
+                parameters:
+                  interval: "24h"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+              -
+                name: "Last ?interval? - ?queue?"
+                parameters:
+                  interval: "${interval}"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+          -
+            definition_reference: "failed_task_count"
+            scenarios:
+              -
+                name: "Last 24 hours"
+                parameters:
+                  interval: "24h"
+              -
+                name: "Last Week"
+                parameters:
+                  interval: "1w"
+              -
+                name: "Last ?interval?"
+                parameters:
+                  interval: "${interval}"
+              -
+                name: "Last 24 hours - Queue"
+                parameters:
+                  interval: "24h"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+              -
+                name: "Last ?interval? - ?queue?"
+                parameters:
+                  interval: "${interval}"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+          -
+            definition_reference: "killed_task_count"
+            scenarios:
+              -
+                name: "Last 24 hours"
+                parameters:
+                  interval: "24h"
+              -
+                name: "Last Week"
+                parameters:
+                  interval: "1w"
+              -
+                name: "Last ?interval?"
+                parameters:
+                  interval: "${interval}"
+              -
+                name: "Last 24 hours - Queue"
+                parameters:
+                  interval: "24h"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+              -
+                name: "Last ?interval? - ?queue?"
+                parameters:
+                  interval: "${interval}"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+      memory:
+        name: "Memory"
+        longDesc: "
+        This is for Memory
+        "
+        options:
+          -
+            definition_reference: "memory_physical"
+            scenarios:
+              -
+                name: "Last 24 hours"
+                parameters:
+                  interval: "24h"
+              -
+                name: "Last Week"
+                parameters:
+                  interval: "1w"
+              -
+                name: "Last ?interval?"
+                parameters:
+                  interval: "${interval}"
+              -
+                name: "Last 24 hours - Queue"
+                parameters:
+                  interval: "24h"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+              -
+                name: "Last ?interval? - ?queue?"
+                parameters:
+                  interval: "${interval}"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+          -
+            definition_reference: "memory_virtual"
+            scenarios:
+              -
+                name: "Last 24 hours"
+                parameters:
+                  interval: "24h"
+              -
+                name: "Last Week"
+                parameters:
+                  interval: "1w"
+              -
+                name: "Last ?interval?"
+                parameters:
+                  interval: "${interval}"
+              -
+                name: "Last 24 hours - Queue"
+                parameters:
+                  interval: "24h"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+              -
+                name: "Last ?interval? - ?queue?"
+                parameters:
+                  interval: "${interval}"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+          -
+            definition_reference: "memory_efficiency"
+            scenarios:
+              -
+                name: "Last 24 hours"
+                parameters:
+                  interval: "24h"
+              -
+                name: "Last Week"
+                parameters:
+                  interval: "1w"
+              -
+                name: "Last ?interval?"
+                parameters:
+                  interval: "${interval}"
+              -
+                name: "Last 24 hours - Queue"
+                parameters:
+                  interval: "24h"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+              -
+                name: "Last ?interval? - ?queue?"
+                parameters:
+                  interval: "${interval}"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+      resources:
+        name: "Resources"
+        options:
+          -
+            # reference to the definition in "dba_refs.yaml"
+            definition_reference: "cpu_time"
+            scenarios:
+              -
+                name: "Last 24 hours"
+                parameters:
+                  interval: "24h"
+              -
+                name: "Last Week"
+                parameters:
+                  interval: "1w"
+              -
+                name: "Last ?interval?"
+                parameters:
+                  interval: "${interval}"
+              -
+                name: "Last 24 hours - Queue"
+                parameters:
+                  interval: "24h"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+              -
+                name: "Last ?interval? - ?queue?"
+                parameters:
+                  interval: "${interval}"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+          -
+            definition_reference: "vertex_count"
+            scenarios:
+              -
+                name: "Last 24 hours"
+                parameters:
+                  interval: "24h"
+              -
+                name: "Last Week"
+                parameters:
+                  interval: "1w"
+              -
+                name: "Last ?interval?"
+                parameters:
+                  interval: "${interval}"
+              -
+                name: "Last 24 hours - Queue"
+                parameters:
+                  interval: "24h"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+              -
+                name: "Last ?interval? - ?queue?"
+                parameters:
+                  interval: "${interval}"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+      status:
+        name: "Status"
+        options:
+          -
+            definition_reference: "cpu_status_by_user_success"
+            scenarios:
+              -
+                name: "Last 24 hours"
+                parameters:
+                  interval: "24h"
+              -
+                name: "Last Week"
+                parameters:
+                  interval: "1w"
+              -
+                name: "Last ?interval?"
+                parameters:
+                  interval: "${interval}"
+              -
+                name: "Last 24 hours - Queue"
+                parameters:
+                  interval: "24h"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+              -
+                name: "Last ?interval? - ?queue?"
+                parameters:
+                  interval: "${interval}"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+          -
+            definition_reference: "cpu_status_by_user_failed"
+            scenarios:
+              -
+                name: "Last 24 hours"
+                parameters:
+                  interval: "24h"
+              -
+                name: "Last Week"
+                parameters:
+                  interval: "1w"
+              -
+                name: "Last ?interval?"
+                parameters:
+                  interval: "${interval}"
+              -
+                name: "Last 24 hours - Queue"
+                parameters:
+                  interval: "24h"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+              -
+                name: "Last ?interval? - ?queue?"
+                parameters:
+                  interval: "${interval}"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+          -
+            definition_reference: "cpu_status_by_user_error"
+            scenarios:
+              -
+                name: "Last 24 hours"
+                parameters:
+                  interval: "24h"
+              -
+                name: "Last Week"
+                parameters:
+                  interval: "1w"
+              -
+                name: "Last ?interval?"
+                parameters:
+                  interval: "${interval}"
+              -
+                name: "Last 24 hours - Queue"
+                parameters:
+                  interval: "24h"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+              -
+                name: "Last ?interval? - ?queue?"
+                parameters:
+                  interval: "${interval}"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+          -
+            definition_reference: "cpu_status_error"
+            scenarios:
+              -
+                name: "Last 24 hours"
+                parameters:
+                  interval: "24h"
+              -
+                name: "Last Week"
+                parameters:
+                  interval: "1w"
+              -
+                name: "Last ?interval?"
+                parameters:
+                  interval: "${interval}"
+              -
+                name: "Last 24 hours - Queue"
+                parameters:
+                  interval: "24h"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+              -
+                name: "Last ?interval? - ?queue?"
+                parameters:
+                  interval: "${interval}"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+          -
+            definition_reference: "cpu_status_started"
+            scenarios:
+              -
+                name: "Last 24 hours"
+                parameters:
+                  interval: "24h"
+              -
+                name: "Last Week"
+                parameters:
+                  interval: "1w"
+              -
+                name: "Last ?interval?"
+                parameters:
+                  interval: "${interval}"
+              -
+                name: "Last 24 hours - Queue"
+                parameters:
+                  interval: "24h"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+              -
+                name: "Last ?interval? - ?queue?"
+                parameters:
+                  interval: "${interval}"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+          -
+            definition_reference: "cpu_status_failed"
+            scenarios:
+              -
+                name: "Last 24 hours"
+                parameters:
+                  interval: "24h"
+              -
+                name: "Last Week"
+                parameters:
+                  interval: "1w"
+              -
+                name: "Last ?interval?"
+                parameters:
+                  interval: "${interval}"
+              -
+                name: "Last 24 hours - Queue"
+                parameters:
+                  interval: "24h"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+              -
+                name: "Last ?interval? - ?queue?"
+                parameters:
+                  interval: "${interval}"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+          -
+            definition_reference: "cpu_status_killed"
+            scenarios:
+              -
+                name: "Last 24 hours"
+                parameters:
+                  interval: "24h"
+              -
+                name: "Last Week"
+                parameters:
+                  interval: "1w"
+              -
+                name: "Last ?interval?"
+                parameters:
+                  interval: "${interval}"
+              -
+                name: "Last 24 hours - Queue"
+                parameters:
+                  interval: "24h"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+              -
+                name: "Last ?interval? - ?queue?"
+                parameters:
+                  interval: "${interval}"
+                  and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+  user:
+    name: "Users"
+    longDesc: "
+    A list of User Views
+    "
+    options:
+      -
+        definition_reference: "user_total_time"
+        scenarios:
+          -
+            name: "Last 24 hours"
+            parameters:
+              interval: "24h"
+          -
+            name: "Last Week"
+            parameters:
+              interval: "1w"
+          -
+            name: "Last ?interval?"
+            parameters:
+              interval: "${interval}"
+          -
+            name: "Last 24 hours - Queue"
+            parameters:
+              interval: "24h"
+              and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+          -
+            name: "Last ?interval? - ?queue?"
+            parameters:
+              interval: "${interval}"
+              and_queue: "AND HQ.QUEUE_NAME = '${queue_name}'"
+        drill_downs:
+          - definition_reference: "user_queries"
+  queues:
+    name: "Queues"
+    longDesc: "
+    A listing of Queues
+    "
+    options:
+      -
+        # reference to the definition in "dba_refs.yaml"
+        definition_reference: "queue_delay"
+        scenarios:
+          -
+            name: "Last 24 hours"
+            parameters:
+              interval: "24h"
+              wait_threshold: 5000
+          -
+            name: "Last Week"
+            parameters:
+              interval: "1w"
+              wait_threshold: 5000
+          -
+            name: "Last ?interval?"
+            parameters:
+              interval: "${interval}"
+              wait_threshold: 5000
+          -
+            name: "Last ?interval? w/ ?threshold?"
+            parameters:
+              interval: "${interval}"
+              wait_threshold: ${wait_threshold}
+        drill_downs:
+          - definition_reference: "queue_jobs_waiting"
+scorings:
+  top-ten:
+    shortDesc: "Ranked Top Ten Results"
+    longDesc: "Ranked Top Ten Results"
+    scored:
+      -
+        definition_reference: "elapsed_time"
+        weight: 100
+      -
+        definition_reference: "startup_delay"
+        weight: 50
+      -
+        definition_reference: "perf_compile"
+        weight: 80
+      -
+        definition_reference: "perf_parse"
+        weight: 10
+      -
+        definition_reference: "perf_semantic_analyze"
+        weight: 50
+      -
+        definition_reference: "completed_task_count"
+        weight: 20
+      -
+        definition_reference: "failed_task_count"
+        weight: 80
+      -
+        definition_reference: "killed_task_count"
+        weight: 30
+      -
+        definition_reference: "memory_physical"
+        weight: 20
+      -
+        definition_reference: "memory_virtual"
+        weight: 80
+      -
+        definition_reference: "cpu_time"
+        weight: 90
+      -
+        definition_reference: "vertex_count"
+        weight: 30
+    scoring_key_field: "id"
+    display:
+      - "request_user"
+    scenarios:
+      -
+        name: "Last 24 hours"
+        parameters:
+          interval: "24h"
+      -
+        name: "Last Week"
+        parameters:
+          interval: "1w"
+      -
+        name: "Last ?interval?"
+        parameters:
+          interval: "${interval}"
+    detail_groups:
+      - "query_details"
+
+

@@ -18,10 +18,18 @@
 package com.cloudera.utils.hive.config;
 
 import com.cloudera.utils.Messages;
+import com.cloudera.utils.hive.dba.QueryStore;
 import com.cloudera.utils.sql.QueryDefinition;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import org.apache.commons.io.FileUtils;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -31,8 +39,11 @@ The control structure used to connect to resources used by the @link ProcessCont
  */
 public class SreProcessesConfig {
     @JsonProperty(value = "metastore_direct")
-    private Metastore metastoreDirect;
-    private Metastore hs2;
+    private DBStore metastoreDirect;
+    private DBStore hs2;
+    @JsonProperty(value = "query_analysis")
+    private QueryStore queryAnalysis;
+
     private int parallelism = 2;
     private int reportingInterval = 500;
 
@@ -48,19 +59,27 @@ public class SreProcessesConfig {
         return queries.get(name);
     }
 
-    public Metastore getMetastoreDirect() {
+    public DBStore getMetastoreDirect() {
         return metastoreDirect;
     }
 
-    public void setMetastoreDirect(Metastore metastoreDirect) {
+    public void setMetastoreDirect(DBStore metastoreDirect) {
         this.metastoreDirect = metastoreDirect;
     }
 
-    public Metastore getHs2() {
+    public QueryStore getQueryAnalysis() {
+        return queryAnalysis;
+    }
+
+    public void setQueryAnalysis(QueryStore queryAnalysis) {
+        this.queryAnalysis = queryAnalysis;
+    }
+
+    public DBStore getHs2() {
         return hs2;
     }
 
-    public void setHs2(Metastore hs2) {
+    public void setHs2(DBStore hs2) {
         this.hs2 = hs2;
     }
 
@@ -101,5 +120,27 @@ public class SreProcessesConfig {
 
 
         return rtn;
+    }
+
+    public static SreProcessesConfig init(String configFile) {
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        mapper.enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        SreProcessesConfig sreConfig = null;
+        try {
+            File cfgFile = new File(configFile);
+            if (!cfgFile.exists()) {
+                throw new RuntimeException("Missing configuration file: " + configFile);
+            } else {
+                System.out.println("Using Config: " + configFile);
+            }
+            String yamlCfgFile = FileUtils.readFileToString(cfgFile, Charset.forName("UTF-8"));
+            sreConfig = mapper.readerFor(SreProcessesConfig.class).readValue(yamlCfgFile);
+            sreConfig.validate();
+
+        } catch (
+                IOException e) {
+            throw new RuntimeException("Issue getting configs", e);
+        }
+        return sreConfig;
     }
 }

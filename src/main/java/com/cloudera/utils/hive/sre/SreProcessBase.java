@@ -17,11 +17,10 @@
 
 package com.cloudera.utils.hive.sre;
 
-import com.cloudera.utils.hive.config.Metastore;
+import com.cloudera.utils.hive.config.DBStore;
 import com.cloudera.utils.hive.config.QueryDefinitions;
 import com.cloudera.utils.hive.config.SreProcessesConfig;
 import com.cloudera.utils.hive.reporting.CounterGroup;
-import com.cloudera.utils.sql.QueryDefinition;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -32,6 +31,7 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.*;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.concurrent.Callable;
 
 @JsonIgnoreProperties({"parent", "config", "queryDefinitions", "dbsOverride", "includeRegEx", "excludeRegEx", "dbType",
@@ -52,7 +52,7 @@ public abstract class SreProcessBase implements Callable<String> {
     private Boolean active = Boolean.TRUE;
     protected Boolean initializing = Boolean.TRUE;
 
-    private Metastore.DB_TYPE dbType = Metastore.DB_TYPE.MYSQL;
+    private DBStore.DB_TYPE dbType = DBStore.DB_TYPE.MYSQL;
 
     private ProcessContainer parent;
 
@@ -159,11 +159,11 @@ public abstract class SreProcessBase implements Callable<String> {
         this.skip = skip;
     }
 
-    public Metastore.DB_TYPE getDbType() {
+    public DBStore.DB_TYPE getDbType() {
         return dbType;
     }
 
-    public void setDbType(Metastore.DB_TYPE dbType) {
+    public void setDbType(DBStore.DB_TYPE dbType) {
         this.dbType = dbType;
     }
 
@@ -315,14 +315,14 @@ public abstract class SreProcessBase implements Callable<String> {
         mapper.enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
         try {
-            String dbQueryDefReference = "/" + dbType.toString() + this.queryDefinitionReference;
+            String dbQueryDefReference = "/" + parent.getModule() + "/" + dbType.toString() + this.queryDefinitionReference;
             try {
                 URL configURL = this.getClass().getResource(dbQueryDefReference);
                 if (configURL == null) {
                     throw new RuntimeException("Can't build URL for Resource: " +
                             dbQueryDefReference);
                 }
-                String yamlConfigDefinition = IOUtils.toString(configURL);
+                String yamlConfigDefinition = IOUtils.toString(configURL, Charset.forName("UTF-8"));
                 setQueryDefinitions(mapper.readerFor(QueryDefinitions.class).readValue(yamlConfigDefinition));
             } catch (Exception e) {
                 throw new RuntimeException("Missing resource file: " +

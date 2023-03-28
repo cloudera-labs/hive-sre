@@ -1,0 +1,755 @@
+# Copyright 2021 Cloudera, Inc. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+query_definitions:
+  db_tbl_part_count:
+    statement: "SELECT \"D\".\"NAME\",
+                         COUNT(DISTINCT \"T\".\"TBL_NAME\") \"TBL_COUNT\",
+                         COUNT(\"P\".\"PART_NAME\")         \"PART_COUNT\"
+                  FROM \"DBS\" \"D\"
+                           INNER JOIN
+                       \"TBLS\" \"T\"
+                       ON
+                           \"D\".\"DB_ID\" = \"T\".\"DB_ID\"
+                           LEFT OUTER JOIN
+                       \"PARTITIONS\" \"P\"
+                       ON
+                           \"T\".\"TBL_ID\" = \"P\".\"TBL_ID\"
+                  GROUP BY \"D\".\"NAME\"
+                "
+  tbl_part_locations:
+    statement: "SELECT DISTINCT
+                    \"D\".\"NAME\",
+                    \"T\".\"TBL_NAME\",
+                    \"T\".\"TBL_TYPE\",
+                    \"P\".\"PART_NAME\",
+                    CASE
+                        WHEN \"PS\".\"LOCATION\" IS NULL
+                            THEN \"S\".\"LOCATION\"
+                        ELSE \"PS\".\"LOCATION\"
+                        END AS \"PATH_LOCATION\"
+                FROM
+                    \"DBS\" \"D\"
+                        INNER JOIN
+                        \"TBLS\" \"T\"
+                        ON
+                            \"D\".\"DB_ID\" = \"T\".\"DB_ID\"
+                        LEFT OUTER JOIN
+                        \"SDS\" \"S\"
+                        ON
+                            \"T\".\"SD_ID\" = \"S\".\"SD_ID\"
+                        LEFT OUTER JOIN
+                        \"TABLE_PARAMS\" \"PARAMS\"
+                        ON
+                            \"T\".\"TBL_ID\" = \"PARAMS\".\"TBL_ID\"
+                        LEFT OUTER JOIN
+                        \"PARTITIONS\" \"P\"
+                        ON
+                            \"T\".\"TBL_ID\" = \"P\".\"TBL_ID\"
+                        LEFT OUTER JOIN
+                        \"SDS\" \"PS\"
+                        ON
+                            \"P\".\"SD_ID\" = \"PS\".\"SD_ID\"
+                WHERE
+                      \"D\".\"NAME\" LIKE ?
+                  AND \"D\".\"NAME\" != 'sys'
+                  AND \"T\".\"TBL_TYPE\" != 'VIRTUAL_VIEW'
+                ORDER BY
+                    \"D\".\"NAME\", \"T\".\"TBL_NAME\""
+    parameters:
+      dbs:
+        initial: "%"
+        sqlType: 12
+        location: 1
+  db_tbl_count:
+    statement: "SELECT
+                    \"DBS\".\"NAME\",
+                    COUNT(\"TBLS\".\"TBL_NAME\") AS \"TBL_COUNT\"
+                FROM
+                    \"DBS\" \"DBS\"
+                        INNER JOIN
+                        \"TBLS\" \"TBLS\"
+                        ON
+                            \"DBS\".\"DB_ID\" = \"TBLS\".\"DB_ID\"
+                WHERE
+                    \"DBS\".\"NAME\" LIKE ?
+                GROUP BY
+                    \"DBS\".\"NAME\"
+                 "
+    parameters:
+      dbs:
+        initial: "%"
+        sqlType: 12
+        location: 1
+  tbl_mngd_non_acid_locations:
+    statement: "
+    SELECT
+        \"B\".\"DB_NAME\",
+        \"B\".\"TBL_ID\",
+        \"B\".\"TBL_NAME\",
+        \"B\".\"TBL_TYPE\",
+        \"B\".\"PART_NAME\",
+        \"B\".\"PART_LOCATION\" AS \"PATH_CHECK\",
+        COUNT(*)
+    FROM
+        (SELECT
+             \"D\".\"NAME\"             AS \"DB_NAME\",
+             \"D\".\"DB_LOCATION_URI\"  AS \"DB_DEFAULT_LOC\",
+             \"D\".\"OWNER_NAME\"       AS \"DB_OWNER\",
+             \"T\".\"TBL_ID\"           AS \"TBL_ID\",
+             \"T\".\"TBL_NAME\"         AS \"TBL_NAME\",
+             \"T\".\"OWNER\"            AS \"TBL_OWNER\",
+             \"T\".\"TBL_TYPE\"         AS \"TBL_TYPE\",
+             \"S\".\"INPUT_FORMAT\"     AS \"TBL_INPUT_FORMAT\",
+             \"S\".\"OUTPUT_FORMAT\"    AS \"TBL_OUTPUT_FORMAT\",
+             \"S\".\"LOCATION\"         AS \"TBL_LOCATION\",
+             \"S\".\"NUM_BUCKETS\"      AS \"TBL_NUM_BUCKETS\",
+             \"SER\".\"SLIB\"           AS \"TBL_SERDE_SLIB\",
+             \"PARAMS\".\"PARAM_KEY\"   AS \"TBL_PARAM_KEY\",
+             \"PARAMS\".\"PARAM_VALUE\" AS \"TBL_PARAM_VALUE\",
+             \"P\".\"PART_ID\"          AS \"PART_ID\",
+             \"P\".\"PART_NAME\"        AS \"PART_NAME\",
+             \"PS\".\"INPUT_FORMAT\"    AS \"PART_INPUT_FORMAT\",
+             \"PS\".\"OUTPUT_FORMAT\"   AS \"PART_OUTPUT_FORMAT\",
+             \"PS\".\"LOCATION\"        AS \"PART_LOCATION\",
+             \"PS\".\"NUM_BUCKETS\"     AS \"PART_NUM_BUCKETS\",
+             \"PSER\".\"SLIB\"          AS \"PART_SERDE_SLIB\"
+         FROM
+             \"DBS\" \"D\"
+                 INNER JOIN
+                 \"TBLS\" \"T\"
+                 ON
+                     \"D\".\"DB_ID\" = \"T\".\"DB_ID\"
+                 LEFT OUTER JOIN
+                 \"SDS\" \"S\"
+                 ON
+                     \"T\".\"SD_ID\" = \"S\".\"SD_ID\"
+                 LEFT OUTER JOIN
+                 \"SERDES\" \"SER\"
+                 ON
+                     \"S\".\"SERDE_ID\" = \"SER\".\"SERDE_ID\"
+                 LEFT OUTER JOIN
+                 \"TABLE_PARAMS\" \"PARAMS\"
+                 ON
+                     \"T\".\"TBL_ID\" = \"PARAMS\".\"TBL_ID\"
+                 LEFT OUTER JOIN
+                 \"PARTITIONS\" \"P\"
+                 ON
+                     \"T\".\"TBL_ID\" = \"P\".\"TBL_ID\"
+                 LEFT OUTER JOIN
+                 \"SDS\" \"PS\"
+                 ON
+                     \"P\".\"SD_ID\" = \"PS\".\"SD_ID\"
+                 LEFT OUTER JOIN
+                 \"SERDES\" \"PSER\"
+                 ON
+                     \"PS\".\"SERDE_ID\" = \"PSER\".\"SERDE_ID\"
+         WHERE
+             \"D\".\"NAME\" LIKE ?) \"B\"
+    WHERE
+          \"TBL_TYPE\" = 'MANAGED_TABLE'
+      AND \"B\".\"TBL_ID\" NOT IN
+          (SELECT
+               \"TBL_ID\"
+           FROM
+               (SELECT DISTINCT
+                    \"T\".\"TBL_ID\"
+                FROM
+                    \"TBLS\" \"T\"
+                        INNER JOIN
+                        \"TABLE_PARAMS\" \"TP\"
+                        ON
+                            \"T\".\"TBL_ID\" = \"TP\".\"TBL_ID\"
+                WHERE
+                      \"T\".\"TBL_TYPE\" = 'MANAGED_TABLE'
+                  AND \"TP\".\"PARAM_KEY\" = 'transactional'
+                  AND LOWER(\"TP\".\"PARAM_VALUE\") = 'true') \"MANAGED_TBL\")
+    GROUP BY
+        \"B\".\"DB_NAME\",
+        \"B\".\"TBL_ID\",
+        \"B\".\"TBL_NAME\",
+        \"B\".\"TBL_TYPE\",
+        \"B\".\"PART_NAME\",
+        \"B\".\"PART_LOCATION\"
+    "
+    parameters:
+      dbs:
+        initial: "%"
+        sqlType: 12
+        location: 1
+  questionable_serdes:
+    statement: "
+SELECT DISTINCT \"DB_NAME\",
+                \"TBL_NAME\",
+                \"TBL_SERDE_SLIB\"
+FROM (SELECT \"B3\".\"DB_NAME\",
+             \"B3\".\"TBL_NAME\",
+             \"B3\".\"TBL_SERDE_SLIB\",
+             COUNT(*)
+      FROM (SELECT \"D\".\"NAME\"     AS \"DB_NAME\",
+                   \"T\".\"TBL_NAME\" AS \"TBL_NAME\",
+                   \"SER\".\"SLIB\"   AS \"TBL_SERDE_SLIB\"
+            FROM \"DBS\" \"D\"
+                     INNER JOIN
+                 \"TBLS\" \"T\"
+                 ON
+                     \"D\".\"DB_ID\" = \"T\".\"DB_ID\"
+                     LEFT OUTER JOIN
+                 \"SDS\" \"S\"
+                 ON
+                     \"T\".\"SD_ID\" = \"S\".\"SD_ID\"
+                     LEFT OUTER JOIN
+                 \"SERDES\" \"SER\"
+                 ON
+                     \"S\".\"SERDE_ID\" = \"SER\".\"SERDE_ID\"
+                     LEFT OUTER JOIN
+                 \"TABLE_PARAMS\" \"PARAMS\"
+                 ON
+                     \"T\".\"TBL_ID\" = \"PARAMS\".\"TBL_ID\"
+                     LEFT OUTER JOIN
+                 \"PARTITIONS\" \"P\"
+                 ON
+                     \"T\".\"TBL_ID\" = \"P\".\"TBL_ID\"
+                     LEFT OUTER JOIN
+                 \"SDS\" \"PS\"
+                 ON
+                     \"P\".\"SD_ID\" = \"PS\".\"SD_ID\"
+                     LEFT OUTER JOIN
+                 \"SERDES\" \"PSER\"
+                 ON
+                     \"PS\".\"SERDE_ID\" = \"PSER\".\"SERDE_ID\") \"B3\"
+      GROUP BY \"B3\".\"DB_NAME\",
+               \"B3\".\"TBL_NAME\",
+               \"B3\".\"TBL_SERDE_SLIB\") \"T\"
+WHERE \"T\".\"TBL_SERDE_SLIB\" IN
+      (SELECT \"A\".\"SERDE\"
+       FROM (SELECT DISTINCT \"SUB\".\"SERDE\"
+             FROM (SELECT DISTINCT \"B1\".\"TBL_SERDE_SLIB\" AS \"SERDE\"
+                   FROM (SELECT DISTINCT \"SER\".\"SLIB\" AS \"TBL_SERDE_SLIB\"
+                         FROM \"DBS\" \"D\"
+                                  INNER JOIN
+                              \"TBLS\" \"T\"
+                              ON
+                                  \"D\".\"DB_ID\" = \"T\".\"DB_ID\"
+                                  LEFT OUTER JOIN
+                              \"SDS\" \"S\"
+                              ON
+                                  \"T\".\"SD_ID\" = \"S\".\"SD_ID\"
+                                  LEFT OUTER JOIN
+                              \"SERDES\" \"SER\"
+                              ON
+                                  \"S\".\"SERDE_ID\" = \"SER\".\"SERDE_ID\"
+                                  LEFT OUTER JOIN
+                              \"TABLE_PARAMS\" \"PARAMS\"
+                              ON
+                                  \"T\".\"TBL_ID\" = \"PARAMS\".\"TBL_ID\"
+                                  LEFT OUTER JOIN
+                              \"PARTITIONS\" \"P\"
+                              ON
+                                  \"T\".\"TBL_ID\" = \"P\".\"TBL_ID\"
+                                  LEFT OUTER JOIN
+                              \"SDS\" \"PS\"
+                              ON
+                                  \"P\".\"SD_ID\" = \"PS\".\"SD_ID\"
+                                  LEFT OUTER JOIN
+                              \"SERDES\" \"PSER\"
+                              ON
+                                  \"PS\".\"SERDE_ID\" = \"PSER\".\"SERDE_ID\"
+                         WHERE \"SER\".\"SLIB\" NOT IN (
+                                                    'org.apache.hadoop.hive.ql.io.orc.OrcSerde',
+                                                    'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe',
+                                                    'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe',
+                                                    'org.apache.hadoop.hive.hbase.HBaseSerDe',
+                                                    'org.apache.hive.storage.jdbc.JdbcSerDe',
+                                                    'org.apache.hadoop.hive.druid.DruidStorageHandler',
+                                                    'org.apache.phoenix.hive.PhoenixStorageHandler',
+                                                    'org.apache.hadoop.hive.serde2.avro.AvroSerDe',
+                                                    'org.apache.hadoop.hive.serde2.RegexSerDe',
+                                                    'parquet.hive.serde.ParquetHiveSerDe',
+                                                    'org.apache.hadoop.hive.serde2.OpenCSVSerde',
+                                                    'org.apache.hadoop.hive.serde2.JsonSerDe',
+                                                    'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe',
+                                                    'org.apache.hive.hcatalog.data.JsonSerDe',
+                                                    'org.apache.hadoop.hive.kudu.KuduSerDe',
+                                                    'org.apache.hadoop.mapred.SequenceFileInputFormat',
+                                                    'org.apache.hadoop.mapred.SequenceFileOutputFormat',
+                                                    'org.apache.hadoop.hive.ql.io.RCFileInputFormat',
+                                                    'org.apache.hadoop.hive.ql.io.RCFileOutputFormat',
+                                                    'org.apache.hadoop.hive.serde2.MultiDelimitSerDe',
+                                                    'org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe'
+                             )) \"B1\"
+
+                   UNION ALL
+
+                   SELECT \"B2\".\"PART_SERDE_SLIB\" AS \"SERDE\"
+                   FROM (SELECT DISTINCT \"PSER\".\"SLIB\" AS \"PART_SERDE_SLIB\"
+                         FROM \"DBS\" \"D\"
+                                  INNER JOIN
+                              \"TBLS\" \"T\"
+                              ON
+                                  \"D\".\"DB_ID\" = \"T\".\"DB_ID\"
+                                  LEFT OUTER JOIN
+                              \"SDS\" \"S\"
+                              ON
+                                  \"T\".\"SD_ID\" = \"S\".\"SD_ID\"
+                                  LEFT OUTER JOIN
+                              \"SERDES\" \"SER\"
+                              ON
+                                  \"S\".\"SERDE_ID\" = \"SER\".\"SERDE_ID\"
+                                  LEFT OUTER JOIN
+                              \"TABLE_PARAMS\" \"PARAMS\"
+                              ON
+                                  \"T\".\"TBL_ID\" = \"PARAMS\".\"TBL_ID\"
+                                  LEFT OUTER JOIN
+                              \"PARTITIONS\" \"P\"
+                              ON
+                                  \"T\".\"TBL_ID\" = \"P\".\"TBL_ID\"
+                                  LEFT OUTER JOIN
+                              \"SDS\" \"PS\"
+                              ON
+                                  \"P\".\"SD_ID\" = \"PS\".\"SD_ID\"
+                                  LEFT OUTER JOIN
+                              \"SERDES\" \"PSER\"
+                              ON
+                                  \"PS\".\"SERDE_ID\" = \"PSER\".\"SERDE_ID\"
+                         WHERE \"PSER\".\"SLIB\" NOT IN (
+                                                     'org.apache.hadoop.hive.ql.io.orc.OrcSerde',
+                                                     'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe',
+                                                     'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe',
+                                                     'org.apache.hadoop.hive.hbase.HBaseSerDe',
+                                                     'org.apache.hive.storage.jdbc.JdbcSerDe',
+                                                     'org.apache.hadoop.hive.druid.DruidStorageHandler',
+                                                     'org.apache.phoenix.hive.PhoenixStorageHandler',
+                                                     'org.apache.hadoop.hive.serde2.avro.AvroSerDe',
+                                                     'org.apache.hadoop.hive.serde2.RegexSerDe',
+                                                     'parquet.hive.serde.ParquetHiveSerDe',
+                                                     'org.apache.hadoop.hive.serde2.OpenCSVSerde',
+                                                     'org.apache.hadoop.hive.serde2.JsonSerDe',
+                                                     'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe',
+                                                     'org.apache.hive.hcatalog.data.JsonSerDe',
+                                                     'org.apache.hadoop.hive.kudu.KuduSerDe',
+                                                     'org.apache.hadoop.mapred.SequenceFileInputFormat',
+                                                     'org.apache.hadoop.mapred.SequenceFileOutputFormat',
+                                                     'org.apache.hadoop.hive.ql.io.RCFileInputFormat',
+                                                     'org.apache.hadoop.hive.ql.io.RCFileOutputFormat',
+                                                     'org.apache.hadoop.hive.serde2.MultiDelimitSerDe',
+                                                     'org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe'
+                             )) \"B2\") AS \"SUB\") \"A\"
+      )
+    "
+  managed_2_acid:
+    statement: "
+      WITH \"WPARAMS\" AS (
+          SELECT \"SP\".\"TBL_ID\"
+               , \"SP\".\"PARAM_KEY\"
+               , \"SP\".\"PARAM_VALUE\"
+          FROM \"TABLE_PARAMS\" \"SP\"
+          WHERE LOWER(\"SP\".\"PARAM_KEY\") = 'transactional'
+             OR LOWER(\"SP\".\"PARAM_KEY\") = 'external'
+      ),
+           \"WCAT\" AS (
+               SELECT \"DB\".\"NAME\" AS \"DB_NAME\"
+                    , \"TBL\".\"TBL_NAME\"
+                    , to_timestamp(\"TBL\".\"CREATE_TIME\")::date AS \"CREATED_DATE\"
+                    , \"S\".\"LOCATION\" AS \"TBL_LOCATION\"
+                    , CASE CONCAT(LOWER(\"TBL_TYPE\"), LOWER(\"P\".\"PARAM_KEY\"), LOWER(\"P\".\"PARAM_VALUE\"))
+                          WHEN 'external_tableexternaltrue' THEN 'EXTERNAL'
+                          WHEN 'managed_tabletransactionaltrue' THEN 'ACID'
+                          ELSE 'LEGACY_MANAGED'
+                   END            AS \"TBL_TYPE\"
+               FROM \"DBS\" \"DB\"
+                        JOIN
+                    \"TBLS\" \"TBL\" ON
+                        \"DB\".\"DB_ID\" = \"TBL\".\"DB_ID\"
+                        INNER JOIN \"SDS\" \"S\" ON \"TBL\".\"SD_ID\" = \"S\".\"SD_ID\"
+                        LEFT OUTER JOIN \"WPARAMS\" \"P\"
+                                        ON \"TBL\".\"TBL_ID\" = \"P\".\"TBL_ID\"
+               WHERE \"DB\".\"NAME\" LIKE ?
+                  AND \"TBL\".\"TBL_TYPE\" = 'MANAGED_TABLE'
+           )
+      SELECT DISTINCT \"DB_NAME\"
+                    , \"TBL_NAME\"
+                    , \"CREATED_DATE\"
+                    , \"TBL_TYPE\"
+                    , \"TBL_LOCATION\"
+      FROM \"WCAT\"
+      WHERE \"TBL_TYPE\" = 'LEGACY_MANAGED'
+      ORDER BY \"DB_NAME\", \"TBL_TYPE\"
+    "
+    parameters:
+      dbs:
+        initial: "%"
+        sqlType: 12
+        location: 1
+  managed_tbl_shadows:
+    statement: "
+SELECT
+    \"B1\".\"DB_NAME\",
+    \"B1\".\"TBL_NAME\",
+    \"S\".\"TBL_LOCATION\"
+FROM
+    (SELECT
+         \"D\".\"NAME\"            AS \"DB_NAME\",
+         \"D\".\"DB_LOCATION_URI\" AS \"DB_DEFAULT_LOC\",
+         \"D\".\"OWNER_NAME\"      AS \"DB_OWNER\",
+         \"T\".\"TBL_ID\"          AS \"TBL_ID\",
+         \"T\".\"TBL_NAME\"        AS \"TBL_NAME\",
+         \"T\".\"OWNER\"           AS \"TBL_OWNER\",
+         \"T\".\"TBL_TYPE\"        AS \"TBL_TYPE\",
+         \"S\".\"LOCATION\"        AS \"TBL_LOCATION\"
+     FROM
+         \"DBS\" \"D\"
+             INNER JOIN
+             \"TBLS\" \"T\"
+             ON
+                 \"D\".\"DB_ID\" = \"T\".\"DB_ID\"
+             LEFT OUTER JOIN
+             \"SDS\" \"S\"
+             ON
+                 \"T\".\"SD_ID\" = \"S\".\"SD_ID\"
+     WHERE
+           \"D\".\"NAME\" LIKE ?
+       AND \"T\".\"TBL_TYPE\" = 'MANAGED_TABLE') \"B1\"
+        INNER JOIN
+        (SELECT
+             \"B1\".\"TBL_LOCATION\",
+             COUNT(*) AS SHARES
+         FROM
+             (SELECT
+                  \"D\".\"NAME\"            AS \"DB_NAME\",
+                  \"D\".\"DB_LOCATION_URI\" AS \"DB_DEFAULT_LOC\",
+                  \"D\".\"OWNER_NAME\"      AS \"DB_OWNER\",
+                  \"T\".\"TBL_ID\"          AS \"TBL_ID\",
+                  \"T\".\"TBL_NAME\"        AS \"TBL_NAME\",
+                  \"T\".\"OWNER\"           AS \"TBL_OWNER\",
+                  \"T\".\"TBL_TYPE\"        AS \"TBL_TYPE\",
+                  \"S\".\"LOCATION\"        AS \"TBL_LOCATION\"
+              FROM
+                  \"DBS\" \"D\"
+                      INNER JOIN
+                      \"TBLS\" \"T\"
+                      ON
+                          \"D\".\"DB_ID\" = \"T\".\"DB_ID\"
+                      LEFT OUTER JOIN
+                      \"SDS\" \"S\"
+                      ON
+                          \"T\".\"SD_ID\" = \"S\".\"SD_ID\"
+              WHERE
+                    \"D\".\"NAME\"  LIKE ?
+                AND \"T\".\"TBL_TYPE\" = 'MANAGED_TABLE') \"B1\"
+         GROUP BY
+             \"TBL_LOCATION\"
+         HAVING
+             COUNT(*) > 1) \"S\"
+        ON
+            \"B1\".\"TBL_LOCATION\" = \"S\".\"TBL_LOCATION\"
+ORDER BY
+    \"TBL_LOCATION\",
+    \"DB_NAME\",
+    \"TBL_NAME\"
+        "
+    parameters:
+      dbs:
+        initial: "%"
+        sqlType: 12
+        location: 1
+      dbs2:
+        initial: "%"
+        sqlType: 12
+        location: 2
+  managed_tbl_locations:
+    statement: "
+    SELECT DISTINCT
+        \"D\".\"NAME\",
+        \"T\".\"TBL_NAME\",
+        \"T\".\"TBL_TYPE\",
+        \"P\".\"PART_NAME\",
+        CASE
+            WHEN \"PS\".\"LOCATION\" IS NULL
+                THEN \"S\".\"LOCATION\"
+            ELSE \"PS\".\"LOCATION\"
+            END AS \"PATH_LOCATION\"
+    FROM
+        \"DBS\" \"D\"
+            INNER JOIN
+            \"TBLS\" \"T\"
+            ON
+                \"D\".\"DB_ID\" = \"T\".\"DB_ID\"
+            LEFT OUTER JOIN
+            \"SDS\" \"S\"
+            ON
+                \"T\".\"SD_ID\" = \"S\".\"SD_ID\"
+            LEFT OUTER JOIN
+            \"TABLE_PARAMS\" \"PARAMS\"
+            ON
+                \"T\".\"TBL_ID\" = \"PARAMS\".\"TBL_ID\"
+            LEFT OUTER JOIN
+            \"PARTITIONS\" \"P\"
+            ON
+                \"T\".\"TBL_ID\" = \"P\".\"TBL_ID\"
+            LEFT OUTER JOIN
+            \"SDS\" \"PS\"
+            ON
+                \"P\".\"SD_ID\" = \"PS\".\"SD_ID\"
+    WHERE
+          \"D\".\"NAME\" LIKE ?
+      AND \"T\".\"TBL_TYPE\" = 'MANAGED_TABLE'
+      AND \"PARAMS\".\"PARAM_KEY\" = 'transactional'
+      AND LOWER(\"PARAMS\".\"PARAM_VALUE\") = 'true'
+    ORDER BY
+        \"D\".\"NAME\", \"T\".\"TBL_NAME\"
+    "
+    parameters:
+      dbs:
+        initial: "%"
+        sqlType: 12
+        location: 1
+  legacy_decimal_defs_orc:
+    statement: "SELECT
+               \"D\".\"NAME\",
+               \"T\".\"TBL_NAME\",
+               \"S\".\"LOCATION\",
+               \"C\".\"COLUMN_NAME\",
+               \"C\".\"TYPE_NAME\",
+               \"C\".\"INTEGER_IDX\"
+               FROM
+               \"DBS\" \"D\"
+               INNER JOIN
+               \"TBLS\" \"T\"
+               ON
+               \"D\".\"DB_ID\" = \"T\".\"DB_ID\"
+               INNER JOIN
+               \"SDS\" \"S\"
+               ON
+               \"T\".\"SD_ID\" = \"S\".\"SD_ID\"
+               INNER JOIN
+               \"SERDES\" \"SER\"
+               ON
+               \"S\".\"SERDE_ID\" = \"SER\".\"SERDE_ID\"
+               INNER JOIN
+               \"COLUMNS_V2\" \"C\"
+               ON
+               \"S\".\"CD_ID\" = \"C\".\"CD_ID\"
+               WHERE
+               \"D\".\"NAME\" LIKE ?
+               AND \"SER\".\"SLIB\" LIKE '%OrcSerde'
+               AND \"C\".\"TYPE_NAME\" = 'decimal'"
+    parameters:
+      dbs:
+        initial: "%"
+        sqlType: 12
+        location: 1
+  legacy_kudu_storage_handle_class:
+    statement: "
+SELECT DISTINCT \"DB_NAME\",
+                \"TBL_NAME\",
+                \"TBL_SERDE_SLIB\"
+FROM (SELECT \"B3\".\"DB_NAME\",
+             \"B3\".\"TBL_NAME\",
+             \"B3\".\"TBL_SERDE_SLIB\",
+             COUNT(*)
+      FROM (SELECT \"D\".\"NAME\"     AS \"DB_NAME\",
+                   \"T\".\"TBL_NAME\" AS \"TBL_NAME\",
+                   \"SER\".\"SLIB\"   AS \"TBL_SERDE_SLIB\"
+            FROM \"DBS\" \"D\"
+                     INNER JOIN
+                 \"TBLS\" \"T\"
+                 ON
+                     \"D\".\"DB_ID\" = \"T\".\"DB_ID\"
+                     LEFT OUTER JOIN
+                 \"SDS\" \"S\"
+                 ON
+                     \"T\".\"SD_ID\" = \"S\".\"SD_ID\"
+                     LEFT OUTER JOIN
+                 \"SERDES\" \"SER\"
+                 ON
+                     \"S\".\"SERDE_ID\" = \"SER\".\"SERDE_ID\"
+                     LEFT OUTER JOIN
+                 \"TABLE_PARAMS\" \"PARAMS\"
+                 ON
+                     \"T\".\"TBL_ID\" = \"PARAMS\".\"TBL_ID\"
+                     LEFT OUTER JOIN
+                 \"PARTITIONS\" \"P\"
+                 ON
+                     \"T\".\"TBL_ID\" = \"P\".\"TBL_ID\"
+                     LEFT OUTER JOIN
+                 \"SDS\" \"PS\"
+                 ON
+                     \"P\".\"SD_ID\" = \"PS\".\"SD_ID\"
+                     LEFT OUTER JOIN
+                 \"SERDES\" \"PSER\"
+                 ON
+                     \"PS\".\"SERDE_ID\" = \"PSER\".\"SERDE_ID\") \"B3\"
+      GROUP BY \"B3\".\"DB_NAME\",
+               \"B3\".\"TBL_NAME\",
+               \"B3\".\"TBL_SERDE_SLIB\") \"T\"
+WHERE \"T\".\"TBL_SERDE_SLIB\" IN
+      (SELECT \"A\".\"SERDE\"
+       FROM (SELECT DISTINCT \"SUB\".\"SERDE\"
+             FROM (SELECT DISTINCT \"B1\".\"TBL_SERDE_SLIB\" AS \"SERDE\"
+                   FROM (SELECT DISTINCT \"SER\".\"SLIB\" AS \"TBL_SERDE_SLIB\"
+                         FROM \"DBS\" \"D\"
+                                  INNER JOIN
+                              \"TBLS\" \"T\"
+                              ON
+                                  \"D\".\"DB_ID\" = \"T\".\"DB_ID\"
+                                  LEFT OUTER JOIN
+                              \"SDS\" \"S\"
+                              ON
+                                  \"T\".\"SD_ID\" = \"S\".\"SD_ID\"
+                                  LEFT OUTER JOIN
+                              \"SERDES\" \"SER\"
+                              ON
+                                  \"S\".\"SERDE_ID\" = \"SER\".\"SERDE_ID\"
+                                  LEFT OUTER JOIN
+                              \"TABLE_PARAMS\" \"PARAMS\"
+                              ON
+                                  \"T\".\"TBL_ID\" = \"PARAMS\".\"TBL_ID\"
+                                  LEFT OUTER JOIN
+                              \"PARTITIONS\" \"P\"
+                              ON
+                                  \"T\".\"TBL_ID\" = \"P\".\"TBL_ID\"
+                                  LEFT OUTER JOIN
+                              \"SDS\" \"PS\"
+                              ON
+                                  \"P\".\"SD_ID\" = \"PS\".\"SD_ID\"
+                                  LEFT OUTER JOIN
+                              \"SERDES\" \"PSER\"
+                              ON
+                                  \"PS\".\"SERDE_ID\" = \"PSER\".\"SERDE_ID\"
+                         WHERE \"SER\".\"SLIB\" IN ( ? )) \"B1\"
+
+                   UNION ALL
+
+                   SELECT \"B2\".\"PART_SERDE_SLIB\" AS \"SERDE\"
+                   FROM (SELECT DISTINCT \"PSER\".\"SLIB\" AS \"PART_SERDE_SLIB\"
+                         FROM \"DBS\" \"D\"
+                                  INNER JOIN
+                              \"TBLS\" \"T\"
+                              ON
+                                  \"D\".\"DB_ID\" = \"T\".\"DB_ID\"
+                                  LEFT OUTER JOIN
+                              \"SDS\" \"S\"
+                              ON
+                                  \"T\".\"SD_ID\" = \"S\".\"SD_ID\"
+                                  LEFT OUTER JOIN
+                              \"SERDES\" \"SER\"
+                              ON
+                                  \"S\".\"SERDE_ID\" = \"SER\".\"SERDE_ID\"
+                                  LEFT OUTER JOIN
+                              \"TABLE_PARAMS\" \"PARAMS\"
+                              ON
+                                  \"T\".\"TBL_ID\" = \"PARAMS\".\"TBL_ID\"
+                                  LEFT OUTER JOIN
+                              \"PARTITIONS\" \"P\"
+                              ON
+                                  \"T\".\"TBL_ID\" = \"P\".\"TBL_ID\"
+                                  LEFT OUTER JOIN
+                              \"SDS\" \"PS\"
+                              ON
+                                  \"P\".\"SD_ID\" = \"PS\".\"SD_ID\"
+                                  LEFT OUTER JOIN
+                              \"SERDES\" \"PSER\"
+                              ON
+                                  \"PS\".\"SERDE_ID\" = \"PSER\".\"SERDE_ID\"
+                         WHERE \"PSER\".\"SLIB\" IN ( ? )) \"B2\") AS \"SUB\") \"A\"
+      )
+"
+    parameters:
+      tblserdes:
+        initial: "com.cloudera.kudu.hive.KuduStorageHandler"
+        sqlType: 12
+        location: 1
+      partserdes:
+        initial: "com.cloudera.kudu.hive.KuduStorageHandler"
+        sqlType: 12
+        location: 2
+  acid_bucket_version:
+    statement: "
+      WITH \"TPARAMS\" AS (
+          SELECT \"SP\".\"TBL_ID\"
+               , \"SP\".\"PARAM_KEY\"
+               , \"SP\".\"PARAM_VALUE\"
+          FROM \"TABLE_PARAMS\" \"SP\"
+          WHERE LOWER(\"SP\".\"PARAM_KEY\") = 'transactional'
+            AND LOWER(\"SP\".\"PARAM_VALUE\") = 'true'
+      ),
+           \"BPARAMS\" AS (
+               SELECT \"SP\".\"TBL_ID\"
+                    , \"SP\".\"PARAM_KEY\"
+                    , \"SP\".\"PARAM_VALUE\"
+               FROM \"TABLE_PARAMS\" \"SP\"
+               WHERE LOWER(\"SP\".\"PARAM_KEY\") = 'bucketing_version'
+                 AND \"SP\".\"PARAM_VALUE\" = '2'
+           ),
+           \"WCAT\" AS (
+               SELECT \"DB\".\"NAME\" AS \"DB_NAME\"
+                    , \"TBL\".\"TBL_NAME\"
+                    , \"TBL\".\"TBL_ID\"
+               FROM \"DBS\" \"DB\"
+                        JOIN
+                    \"TBLS\" \"TBL\" ON
+                        \"DB\".\"DB_ID\" = \"TBL\".\"DB_ID\"
+                        INNER JOIN \"SDS\" \"S\" ON \"TBL\".\"SD_ID\" = \"S\".\"SD_ID\"
+                        INNER JOIN \"TPARAMS\" \"P\"
+                                   ON \"TBL\".\"TBL_ID\" = \"P\".\"TBL_ID\"
+               WHERE \"DB\".\"NAME\" LIKE ?
+           ),
+           \"ACIDV1\" AS (
+               SELECT DISTINCT \"DB_NAME\"
+                             , \"TBL_NAME\"
+                             , \"TBL_ID\"
+               FROM \"WCAT\"
+           )
+      SELECT \"DB_NAME\"
+           , \"TBL_NAME\"
+           , \"TBL_ID\"
+      FROM \"ACIDV1\" \"AV1\"
+      WHERE
+          \"AV1\".\"TBL_ID\" NOT IN (
+              SELECT \"TBL_ID\"
+              FROM \"BPARAMS\")    
+    "
+    parameters:
+      dbs:
+        initial:  "%"
+        sqlType:  12
+        location: 1
+  storage_format:
+    statement: "
+      SELECT
+          \"D\".\"NAME\"
+        , \"T\".\"TBL_NAME\"
+        , \"T\".\"TBL_TYPE\"
+        , \"TP_SUB\".\"PARAM_VALUE\"
+        , to_timestamp(\"T\".\"CREATE_TIME\")::date AS \"CREATE_DATE\"
+      FROM \"DBS\" \"D\"
+               INNER JOIN \"TBLS\" \"T\" ON \"D\".\"DB_ID\" = \"T\".\"DB_ID\"
+               INNER JOIN \"SDS\" \"S\" ON \"T\".\"SD_ID\" = \"S\".\"SD_ID\"
+               LEFT OUTER JOIN
+                    (SELECT \"TP\".\"TBL_ID\", \"TP\".\"PARAM_KEY\", \"TP\".\"PARAM_VALUE\"
+                     FROM \"TABLE_PARAMS\" \"TP\"
+                     WHERE \"TP\".\"PARAM_KEY\" = ? ) \"TP_SUB\" ON \"T\".\"TBL_ID\" = \"TP_SUB\".\"TBL_ID\"      
+      WHERE
+           \"S\".\"INPUT_FORMAT\" = ?
+      "
+    parameters:
+      tableparam:
+        initial: "not_set"
+        sqlType: 12
+        location: 1
+      inputformat:
+        initial: "not_set"
+        sqlType: 12
+        location: 2

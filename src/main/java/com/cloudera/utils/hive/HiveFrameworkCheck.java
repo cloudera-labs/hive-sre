@@ -18,6 +18,7 @@
 package com.cloudera.utils.hive;
 
 import com.cloudera.utils.Protect;
+import com.cloudera.utils.SreSubApp;
 import com.cloudera.utils.hive.config.SreProcessesConfig;
 import com.cloudera.utils.hive.sre.MessageCode;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -144,7 +145,6 @@ public class HiveFrameworkCheck implements SreSubApp {
                 LOG.warn(warning);
                 System.err.println(warning);
             }
-
         }
     }
 

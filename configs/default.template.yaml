@@ -24,6 +24,16 @@ metastore_direct:
   connectionPool:
     min: 3
     max: 5
+query_analysis:
+  source: DAS | QP
+  uri: ""
+  type: POSTGRES
+  connectionProperties:
+    user: "DB_USER"
+    password: "DB_PASSWORD"
+  connectionPool:
+    min: 3
+    max: 10
 parallelism: 4
 queries:
   db_tbl_count:

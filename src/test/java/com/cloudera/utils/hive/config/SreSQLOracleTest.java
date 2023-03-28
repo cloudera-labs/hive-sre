@@ -17,7 +17,7 @@
 
 package com.cloudera.utils.hive.config;
 
-import com.cloudera.utils.hive.Sre;
+import com.cloudera.utils.Sre;
 import org.junit.Test;
 
 public class SreSQLOracleTest {
@@ -26,7 +26,7 @@ public class SreSQLOracleTest {
     public void u3ORACLE_SQLTest() {
         String cfg = System.getProperty("user.home") + System.getProperty("file.separator") +
                 ".hive-sre/cfg" + System.getProperty("file.separator") +
-                "default-" + Metastore.DB_TYPE.ORACLE + ".yaml";
+                "default-" + DBStore.DB_TYPE.ORACLE + ".yaml";
         Sre.main(new String[]{"u3", "-tsql", "-all", "-cfg", cfg,"-o", "/tmp/sre-sql-test"});
     }
 
@@ -34,7 +34,7 @@ public class SreSQLOracleTest {
     public void sreORACLE_SQLTest() {
         String cfg = System.getProperty("user.home") + System.getProperty("file.separator") +
                 ".hive-sre/cfg" + System.getProperty("file.separator") +
-                "default-" + Metastore.DB_TYPE.ORACLE + ".yaml";
+                "default-" + DBStore.DB_TYPE.ORACLE + ".yaml";
         Sre.main(new String[]{"sre", "-tsql", "-all", "-cfg", cfg,"-o", "/tmp/sre-sql-test"});
     }
 

@@ -17,7 +17,7 @@
 
 package com.cloudera.utils.hive.config;
 
-import com.cloudera.utils.hive.Sre;
+import com.cloudera.utils.Sre;
 import org.junit.Test;
 
 public class SreSQLPostgreSQLTest {
@@ -26,7 +26,7 @@ public class SreSQLPostgreSQLTest {
     public void u3POSTGRESQL_SQLTest() {
         String cfg = System.getProperty("user.home") + System.getProperty("file.separator") +
                 ".hive-sre/cfg" + System.getProperty("file.separator") +
-                "default-" + Metastore.DB_TYPE.POSTGRES + ".yaml";
+                "default-" + DBStore.DB_TYPE.POSTGRES + ".yaml";
         Sre.main(new String[]{"u3", "-tsql", "-all", "-cfg", cfg,"-o", "/tmp/sre-sql-test"});
     }
 
@@ -34,7 +34,7 @@ public class SreSQLPostgreSQLTest {
     public void srePOSTGRESQL_SQLTest() {
         String cfg = System.getProperty("user.home") + System.getProperty("file.separator") +
                 ".hive-sre/cfg" + System.getProperty("file.separator") +
-                "default-" + Metastore.DB_TYPE.POSTGRES + ".yaml";
+                "default-" + DBStore.DB_TYPE.POSTGRES + ".yaml";
         Sre.main(new String[]{"sre", "-tsql", "-all", "-cfg", cfg,"-o", "/tmp/sre-sql-test"});
     }
 
