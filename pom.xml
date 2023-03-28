@@ -65,7 +65,7 @@
 
         <gateway-shell.version>1.0.0</gateway-shell.version>
 
-        <hadoop-cli.version>2.4.2.0</hadoop-cli.version>
+        <hadoop-cli.version>2.4.3.0</hadoop-cli.version>
 
     </properties>
 
