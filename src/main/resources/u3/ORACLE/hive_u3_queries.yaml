@@ -700,7 +700,7 @@ WHERE T.TBL_SERDE_SLIB IN
           FROM TABLE_PARAMS SP
           WHERE
                LOWER(SP.PARAM_KEY) = 'transactional'
-              AND LOWER(SP.PARAM_VALUE) = 'true'
+              AND LOWER(to_char(SP.PARAM_VALUE)) = 'true'
           ),
           BPARAMS AS (
           SELECT
@@ -710,7 +710,7 @@ WHERE T.TBL_SERDE_SLIB IN
           FROM TABLE_PARAMS SP
           WHERE
                 LOWER(SP.PARAM_KEY) = 'bucketing_version'
-            AND SP.PARAM_VALUE = '2'
+            AND to_char(SP.PARAM_VALUE) = '2'
           ),
           WCAT AS (
           SELECT
