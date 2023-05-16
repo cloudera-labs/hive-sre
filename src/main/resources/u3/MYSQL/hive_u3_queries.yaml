@@ -281,7 +281,6 @@ WHERE t.tbl_serde_slib IN
                                                 'org.apache.hadoop.hive.serde2.OpenCSVSerde',
                                                 'org.apache.hadoop.hive.serde2.JsonSerDe',
                                                 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe',
-                                                'org.apache.hive.hcatalog.data.JsonSerDe',
                                                 'org.apache.hadoop.hive.kudu.KuduSerDe',
                                                 'org.apache.hadoop.mapred.SequenceFileInputFormat',
                                                 'org.apache.hadoop.mapred.SequenceFileOutputFormat',
