@@ -64,7 +64,8 @@ FROM (SELECT db
            , ROUND(sum(loc_sz) )tbl_size
       FROM FIXED_TBL_VOL_RPT
       GROUP BY db, tbl
-      HAVING part_count > 100) a;
+      HAVING part_count > 100) a
+ORDER BY avg_part_size DESC;
 
 
 
