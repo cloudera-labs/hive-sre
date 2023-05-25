@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+## Require for `u3` and `sre`
 metastore_direct:
-  uri: "FULL_DB_URL"
+  uri: "FULL_JDBC_DB_URL"
   type: MYSQL | POSTGRES | ORACLE
   # Required for Oracle Connections to Select proper schema
   #initSql: "ALTER SESSION SET CURRENT_SCHEMA=<hive_schema>"
@@ -24,9 +25,11 @@ metastore_direct:
   connectionPool:
     min: 3
     max: 5
+## NOT required for `u3` and `sre`
 query_analysis:
   source: DAS | QP
-  uri: ""
+  uri: "<FULL_JDBC_DB_URL>"
+  # Currently only POSTGRES is supported for either DAS|QP
   type: POSTGRES
   connectionProperties:
     user: "DB_USER"
