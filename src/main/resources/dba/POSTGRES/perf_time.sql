@@ -8,7 +8,7 @@ WITH
 --               , HQ.TABLES_READ
 --               , HQ.TABLES_WRITTEN
 --               , HQ.USED_CBO
---               , DI.APPLICATION_ID
+              , DI.APPLICATION_ID
 --               , DI.DAG_ID
               , TO_TIMESTAMP(HQ.START_TIME / 1000)::TIMESTAMP(0)            QUERY_START_TIME
               , TO_TIMESTAMP(HQ.END_TIME / 1000)::TIMESTAMP(0)              QUERY_END_TIME

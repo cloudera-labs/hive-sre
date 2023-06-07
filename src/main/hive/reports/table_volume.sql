@@ -1,3 +1,8 @@
+-- This script is used against the `hive-sre sre -i 4` output report (table_volume.md).
+-- Create a directory in HDFS to store the report.  Note this directory as the "LOCATION" variable below.
+-- Run this script to build a table in Hive on top of the report.
+-- The remaining part of the script provides various aggregations on the data.
+
 CREATE DATABASE IF NOT EXISTS ${DB};
 
 USE ${DB};
@@ -50,7 +55,7 @@ WHERE db is not null
 -- Validate Data.
 SELECT distinct db
 FROM FIXED_TBL_VOL_RPT
-LIMIT 10;
+-- LIMIT 10;
 
 -- Tables with Partition Count over 100 w/ avg partition size.
 SELECT db,
@@ -68,7 +73,7 @@ FROM (SELECT db
 ORDER BY avg_part_size DESC;
 
 
-
+-- hms-mirror -db ... -tfs 5000 -tfp 100
 -- Table with no partitions or less than 100 partitions w/ sizes
 SELECT db,
        tbl,

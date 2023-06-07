@@ -292,6 +292,14 @@ definitions:
       - "application_id"
     query:
       resource: "query_detail_app_id.sql"
+  query_detail_vectors:
+    shortDesc: "Query Vector Details"
+    longDesc: "Query Detail - Vectors"
+    display:
+      - "counters_compressed"
+      - "stats_compressed"
+    query:
+      resource: "query_detail_vertex_info.sql"
   query_detail:
     shortDesc: "Query Detail"
     longDesc: "Query Detail"
@@ -338,4 +346,5 @@ groups:
       - "query_detail_sql"
       - "query_detail_tables"
       - "query_detail_app_id"
+      - "query_detail_vectors"
       - "query_detail"

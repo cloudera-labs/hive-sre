@@ -19,11 +19,14 @@ groupings:
         definition_reference: "elapsed_time"
         # These are the options presented to the user for this 'option'
         # Below are the scenarios with the overridden parameter values.
-        display:
-          - id
-          - request_user
-          - queue_name
-          - elapsed_time
+        # The absences of 'display' will display all columns in the query.
+#        display:
+#          - id
+#          - request_user
+#          - queue_name
+#          - query_start_time
+#          - query_end_time
+#          - elapsed_time
         scenarios:
           -
             name: "Last 24 hours"
@@ -81,12 +84,12 @@ groupings:
         options:
           -
             definition_reference: "perf_compile"
-            display:
-              - id
-              - request_user
-              - queue_name
-              - perf_time_ms2
-              - perf_time_ms
+#            display:
+#              - id
+#              - request_user
+#              - queue_name
+#              - perf_time_ms2
+#              - perf_time_ms
             scenarios:
               -
                 name: "Last 24 hours"
