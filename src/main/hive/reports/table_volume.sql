@@ -1,3 +1,5 @@
+-- noinspection SqlCurrentSchemaInspectionForFile
+
 -- This script is used against the `hive-sre sre -i 4` output report (table_volume.md).
 -- Create a directory in HDFS to store the report.  Note this directory as the "LOCATION" variable below.
 -- Run this script to build a table in Hive on top of the report.

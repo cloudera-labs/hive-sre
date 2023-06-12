@@ -22,7 +22,7 @@
 
     <groupId>com.cloudera.utils.hive</groupId>
     <artifactId>hive-sre</artifactId>
-    <version>2.5.1.0</version>
+    <version>2.5.1.1</version>
 
     <name>hive-sre</name>
 
@@ -61,11 +61,10 @@
         <junit.version>4.13.2</junit.version>
 
         <hadoop.version>3.1.1</hadoop.version>
-        <cdp.version>7.1.7.1000-141</cdp.version>
 
         <gateway-shell.version>1.0.0</gateway-shell.version>
 
-        <hadoop-cli.version>2.4.3.0</hadoop-cli.version>
+        <hadoop-cli.version>2.4.3.3</hadoop-cli.version>
 
     </properties>
 
@@ -148,6 +147,27 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <profiles>
+        <profile>
+            <id>pvc</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <maven.compiler.source>1.8</maven.compiler.source>
+                <maven.compiler.target>1.8</maven.compiler.target>
+                <cdp.version>7.1.8.8-3</cdp.version>
+            </properties>
+        </profile>
+        <profile>
+            <id>cloud</id>
+            <properties>
+                <maven.compiler.source>1.8</maven.compiler.source>
+                <maven.compiler.target>1.8</maven.compiler.target>
+                <cdp.version>7.2.16.0-287</cdp.version>
+            </properties>
+        </profile>
+    </profiles>
 
     <build>
         <finalName>${project.artifactId}</finalName>
