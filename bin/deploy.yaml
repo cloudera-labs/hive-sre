@@ -47,6 +47,12 @@
         dest: /usr/local/hive-sre/lib
         mode: 0755
 
+    - name: Copy lib - no hadoop
+      copy:
+        src: ../target/hive-sre-shaded-no-hadoop.jar
+        dest: /usr/local/hive-sre/lib
+        mode: 0755
+
     - name: Link executable
       file:
         src: /usr/local/hive-sre/bin/hive-sre

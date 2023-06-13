@@ -22,7 +22,7 @@
 
     <groupId>com.cloudera.utils.hive</groupId>
     <artifactId>hive-sre</artifactId>
-    <version>2.5.1.1</version>
+    <version>2.5.1.2</version>
 
     <name>hive-sre</name>
 
@@ -283,6 +283,58 @@
 <!--                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">-->
 <!--                                    <mainClass>com.cloudera.utils.Sre</mainClass>-->
 <!--                                </transformer>-->
+                            </transformers>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>shaded-no-hadoop</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <createSourcesJar>false</createSourcesJar>
+                            <finalName>${project.artifactId}-shaded-no-hadoop</finalName>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <artifactSet>
+                                <includes>
+                                    <include>com.jcabi:*</include>
+                                    <include>org.sonatype.jline:jline</include>
+                                    <include>commons-io:commons-io</include>
+                                    <include>com.cloudera.utils.hadoop:hadoop-cli</include>
+                                    <include>com.fasterxml.jackson.core:jackson-core</include>
+                                    <include>com.fasterxml.jackson.core:jackson-databind</include>
+                                    <include>com.fasterxml.jackson.core:jackson-dataformat-yaml</include>
+                                    <include>org.apache.commons:commons-dbcp2</include>
+                                    <include>org.apache.commons:commons-pool2</include>
+                                    <include>org.apache.commons:commons-lang3</include>
+                                    <include>com.fasterxml.jackson.core:jackson-core</include>
+                                    <include>org.yaml:snakeyaml</include>
+                                </includes>
+                            </artifactSet>
+                            <filters>
+                                <filter>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>META-INF/*.INF</exclude>
+                                        <exclude>META-INF/LICENSE</exclude>
+                                        <exclude>META-INF/**/pom.xml</exclude>
+                                        <exclude>META-INF/**/pom.properties</exclude>
+                                        <!-- CVE-2021-44228 -->
+                                        <exclude>org/apache/logging/log4j/core/lookup/JndiLookup.class</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                            <transformers>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ResourceBundleAppendingTransformer"/>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>com.streever.hive.Sre</mainClass>
+                                </transformer>
                             </transformers>
                         </configuration>
                     </execution>

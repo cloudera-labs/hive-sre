@@ -77,10 +77,10 @@ while [[ $# -gt 0 ]]; do
       APP_JAVA_OPTS="${APP_JAVA_OPTS} ${1}"
       shift
       ;;
-#    --hadoop-classpath)
-#      shift
-#      HADOOP_CLASSPATH="true"
-#      ;;
+    --hadoop-classpath)
+      shift
+      HADOOP_CLASSPATH="true"
+      ;;
     --aux-libs)
       shift
       export AUX_LIBS_DIR=$1
@@ -102,20 +102,26 @@ if [[ ! -d ${AUX_LIBS_DIR} ]]; then
     mkdir -p ${AUX_LIBS_DIR}
 fi
 
-if [[ -f $APP_DIR/../lib/hive-sre-shaded.jar ]]; then
-    CMD_CP=$APP_DIR/../lib/hive-sre-shaded.jar:${CMD_CP}
+SHADED=
+# Choose to use embedded libs (Hadoop 3+) or get Hadoop Classpath locally
+if [[ "${HADOOP_CLASSPATH}x" != "x" ]]; then
+  echo "Picking up local Hadoop Classpath Libs."
+  SHADED=shaded-no-hadoop
+  CMD_CP=$(hadoop classpath):${CMD_CP}
 else
-    echo "Couldn't locate hive-sre Library at: ${APP_DIR}/../lib/hive-sre-shaded.jar " >&2
-    exit -1
+  SHADED=shaded
+fi
+
+if [[ -f $APP_DIR/../lib/hive-sre-$SHADED.jar ]]; then
+    CMD_CP=$APP_DIR/../lib/hive-sre-$SHADED.jar:${CMD_CP}
+else
+    echo "Couldn't locate Hadoop Cli Library at: ${APP_DIR}/../lib/hive-sre-${SHADED}.jar"
+    exit 1
 fi
 
 for jarFile in `ls -d ${AUX_LIBS_DIR}/*.jar 2> /dev/null`; do
     CMD_CP=${CMD_CP}:$jarFile
 done
-
-#if [[ "${HADOOP_CLASSPATH}x" != "x" ]]; then
-#    CMD_CP=${CMD_CP}:`hadoop classpath`
-#fi
 
 CLI_CMD=""
 
