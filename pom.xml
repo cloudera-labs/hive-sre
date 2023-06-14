@@ -301,15 +301,16 @@
                                     <include>com.jcabi:*</include>
                                     <include>org.sonatype.jline:jline</include>
                                     <include>commons-io:commons-io</include>
-                                    <include>com.cloudera.utils.hadoop:hadoop-cli</include>
-                                    <include>com.fasterxml.jackson.core:jackson-core</include>
-                                    <include>com.fasterxml.jackson.core:jackson-databind</include>
-                                    <include>com.fasterxml.jackson.core:jackson-dataformat-yaml</include>
+                                    <include>com.cloudera.utils.hadoop:*</include>
+                                    <include>com.fasterxml.jackson.core:*</include>
+                                    <include>com.fasterxml.jackson.dataformat:*</include>
                                     <include>org.apache.commons:commons-dbcp2</include>
                                     <include>org.apache.commons:commons-pool2</include>
                                     <include>org.apache.commons:commons-lang3</include>
-                                    <include>com.fasterxml.jackson.core:jackson-core</include>
+                                    <include>org.commonmark:*</include>
                                     <include>org.yaml:snakeyaml</include>
+                                    <include>commons-logging:commons-logging</include>
+                                    <include>javax.validation:validation-api</include>
                                 </includes>
                             </artifactSet>
                             <filters>
