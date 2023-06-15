@@ -37,6 +37,50 @@ query_definitions:
     statement: "
       SELECT \"TBL_TYPE\", COUNT(*) as count FROM \"TBLS\" GROUP BY \"TBL_TYPE\"
     "
+  tbl_part_locations:
+    statement: "SELECT DISTINCT
+                    \"D\".\"NAME\",
+                    \"T\".\"TBL_NAME\",
+                    \"T\".\"TBL_TYPE\",
+                    \"P\".\"PART_NAME\",
+                    CASE
+                        WHEN \"PS\".\"LOCATION\" IS NULL
+                            THEN \"S\".\"LOCATION\"
+                        ELSE \"PS\".\"LOCATION\"
+                        END AS \"PATH_LOCATION\"
+                FROM
+                    \"DBS\" \"D\"
+                        INNER JOIN
+                        \"TBLS\" \"T\"
+                        ON
+                            \"D\".\"DB_ID\" = \"T\".\"DB_ID\"
+                        LEFT OUTER JOIN
+                        \"SDS\" \"S\"
+                        ON
+                            \"T\".\"SD_ID\" = \"S\".\"SD_ID\"
+                        LEFT OUTER JOIN
+                        \"TABLE_PARAMS\" \"PARAMS\"
+                        ON
+                            \"T\".\"TBL_ID\" = \"PARAMS\".\"TBL_ID\"
+                        LEFT OUTER JOIN
+                        \"PARTITIONS\" \"P\"
+                        ON
+                            \"T\".\"TBL_ID\" = \"P\".\"TBL_ID\"
+                        LEFT OUTER JOIN
+                        \"SDS\" \"PS\"
+                        ON
+                            \"P\".\"SD_ID\" = \"PS\".\"SD_ID\"
+                WHERE
+                      \"D\".\"NAME\" LIKE ?
+                  AND \"D\".\"NAME\" != 'sys'
+                  AND \"T\".\"TBL_TYPE\" != 'VIRTUAL_VIEW'
+                ORDER BY
+                    \"D\".\"NAME\", \"T\".\"TBL_NAME\""
+    parameters:
+      dbs:
+        initial: "%"
+        sqlType: 12
+        location: 1
   dbs_table_type_count:
     statement: "
       SELECT
@@ -291,6 +335,52 @@ FROM
                 GROUP BY
                     \"DBS\".\"NAME\"
                  "
+    parameters:
+      dbs:
+        initial: "%"
+        sqlType: 12
+        location: 1
+  managed_tbl_locations:
+    statement: "SELECT DISTINCT
+    \"D\".\"NAME\"
+  , \"T\".\"TBL_NAME\"
+  , \"T\".\"TBL_TYPE\"
+  , \"P\".\"PART_NAME\"
+  , CASE
+        WHEN \"PS\".\"LOCATION\" IS NULL
+            THEN \"S\".\"LOCATION\"
+        ELSE \"PS\".\"LOCATION\"
+        END AS PATH_LOCATION
+FROM
+    \"DBS\" \"D\"
+        INNER JOIN
+        \"TBLS\" \"T\"
+        ON
+            \"D\".\"DB_ID\" = \"T\".\"DB_ID\"
+        LEFT OUTER JOIN
+        \"SDS\" \"S\"
+        ON
+            \"T\".\"SD_ID\" = \"S\".\"SD_ID\"
+        LEFT OUTER JOIN
+        \"TABLE_PARAMS\" \"PARAMS\"
+        ON
+            \"T\".\"TBL_ID\" = \"PARAMS\".\"TBL_ID\"
+        LEFT OUTER JOIN
+        \"PARTITIONS\" \"P\"
+        ON
+            \"T\".\"TBL_ID\" = \"P\".\"TBL_ID\"
+        LEFT OUTER JOIN
+        \"SDS\" \"PS\"
+        ON
+            \"P\".\"SD_ID\" = \"PS\".\"SD_ID\"
+WHERE
+     \"D\".\"NAME\" LIKE ?
+  AND \"T\".\"TBL_TYPE\" = 'MANAGED_TABLE'
+  AND \"PARAMS\".\"PARAM_KEY\" = 'transactional'
+  AND LOWER(\"PARAMS\".\"PARAM_VALUE\") = 'true'
+ORDER BY
+    \"D\".\"NAME\"
+  , \"T\".\"TBL_NAME\""
     parameters:
       dbs:
         initial: "%"
