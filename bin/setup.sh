@@ -50,6 +50,10 @@ if [ -f hive-sre-shaded.jar ]; then
     cp -f hive-sre-shaded.jar $BASE_DIR/lib
 fi
 
+if [ -f hive-sre-shaded-no-hadoop.jar ]; then
+    cp -f hive-sre-shaded-no-hadoop.jar $BASE_DIR/lib
+fi
+
 chmod -R +r $BASE_DIR
 chmod +x $BASE_DIR/bin/hive-sre
 chmod +x $BASE_DIR/bin/hive-sre-cli
