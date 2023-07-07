@@ -43,7 +43,7 @@ It is an interactive HDFS Client Command Line tool.
 
 ## Ping Performance Tool
 
-Included in this application suite is a `ping` performance tool that you can use to measure cluster host letancy.  It is a MapReduce application that uses a list of hosts and will `ping` those hosts from the MR Map Task and record the results to HDFS.
+Included in this application suite is a `ping` performance tool that you can use to measure cluster host latency.  It is a MapReduce application that uses a list of hosts and will `ping` those hosts from the MR Map Task and record the results to HDFS.
 
 The MR program take a few options:
 ```
