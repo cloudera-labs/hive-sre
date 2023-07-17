@@ -35,7 +35,7 @@ public class Utils {
                 String[] specParts = directory.split("=");
                 String partDir = null;
                 partDir = URLDecoder.decode(specParts[1], StandardCharsets.UTF_8.toString());
-                partitionSpecs[loc++] = specParts[0] + "=\"" + partDir + "\"";
+                partitionSpecs[loc++] = "`" + specParts[0] + "`" + "=\'" + partDir + "\'";
             }
         } catch (Throwable t) {
             System.err.println("Issue with partition directory spec: " + directoryPart);
