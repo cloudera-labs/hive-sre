@@ -49,7 +49,7 @@ import java.util.Properties;
 public class HiveFrameworkCheck implements SreSubApp {
     private static final Logger LOG = LogManager.getLogger(HiveFrameworkCheck.class);
 
-    private final String USAGE_CMD = "hive-sre u3|sre|perf -cdh|-hdp2|-hdp3|-all|-i <proc[,proc...]> -o <output-dir> [options]";
+    private final String USAGE_CMD = "hive-sre u3|u3e|sre|perf -cdh|-hdp2|-hdp3|-all|-i <proc[,proc...]> -o <output-dir> [options]";
 
     private String name;
     private String stackResource;
@@ -212,6 +212,8 @@ public class HiveFrameworkCheck implements SreSubApp {
                     configURL.toString());
         }
 
+        procContainer.setParent(this);
+
         if (cmd.hasOption("i")) {
             String[] includeIds = cmd.getOptionValues("i");
             List<String> includes = Arrays.asList(includeIds);
@@ -254,9 +256,9 @@ public class HiveFrameworkCheck implements SreSubApp {
                 if (includes.contains(proc.getId())) {
                     proc.setActive(Boolean.TRUE);
                     proc.setSkip(Boolean.FALSE);
-                    if (proc.getId().equals("3")) {
-                        ((DbSetProcess) proc).setCommandChecks(null);
-                    }
+//                    if (proc.getId().equals("3")) {
+//                        ((DbSetProcess) proc).setCommandChecks(null);
+//                    }
                 } else {
                     proc.setActive(Boolean.FALSE);
                     proc.setSkip(Boolean.TRUE);
@@ -271,9 +273,9 @@ public class HiveFrameworkCheck implements SreSubApp {
                 if (includes.contains(proc.getId())) {
                     proc.setActive(Boolean.TRUE);
                     proc.setSkip(Boolean.FALSE);
-                    if (proc.getId().equals("3")) {
-                        ((DbSetProcess) proc).setCommandChecks(null);
-                    }
+//                    if (proc.getId().equals("3")) {
+//                        ((DbSetProcess) proc).setCommandChecks(null);
+//                    }
                 } else {
                     proc.setActive(Boolean.FALSE);
                     proc.setSkip(Boolean.TRUE);

@@ -1,0 +1,51 @@
+# Copyright 2021 Cloudera, Inc. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+module: "u3e"
+processes:
+  - type:                     "metastore.action"
+    transactional:            true
+    id:                       1
+    active:                   true
+    displayName:              "Legacy Managed Non-Transactional (non-acid) Conversions to EXTERNAL/PURGE"
+    title:                    "# Legacy Managed Non-Transactional (non-acid) Conversions to EXTERNAL/PURGE (v.${Implementation-Version})"
+    queryDefinitionReference: "/hive_u3e_queries.yaml"
+    errorDescription:         "Processing Issues"
+    successDescription:       "Hive Metastore"
+    errorFilename:            "legacy_managed_upgrade_issues.txt"
+    successFilename:          "legacy_managed_upgrade.md"
+    actionDefinition:         "fix_legacy_managed"
+  - type:                     "metastore.action"
+    transactional:            true
+    id:                       2
+    active:                   true
+    displayName:              "ACID Table bucketing version update"
+    title:                    "# ACID Table bucketing version update (v.${Implementation-Version})"
+    queryDefinitionReference: "/hive_u3e_queries.yaml"
+    errorDescription:         "Processing Issues"
+    successDescription:       "Hive Metastore"
+    errorFilename:            "acid_bucketing_upgrade_issues.txt"
+    successFilename:          "acid_bucketing_upgrade.md"
+    actionDefinition:         "acid_table"
+  - type:                     "metastore.action"
+    transactional:            true
+    id:                       3
+    active:                   true
+    displayName:              "Legacy Contrib Serde2 Replacement"
+    title:                    "# Legacy Contrib Serde2 Replacement (v.${Implementation-Version})"
+    queryDefinitionReference: "/hive_u3e_queries.yaml"
+    errorDescription:         "Processing Issues"
+    successDescription:       "Hive Metastore"
+    errorFilename:            "legacy_contrib_serde2_upgrade_issues.txt"
+    successFilename:          "legacy_contrib_serde2_upgrade.md"
+    actionDefinition:         "serde_exchange"

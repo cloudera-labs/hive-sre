@@ -19,10 +19,8 @@ package com.cloudera.utils.hive.sre;
 
 import com.cloudera.utils.hive.config.DBStore;
 import com.cloudera.utils.hive.config.SreProcessesConfig;
-import com.cloudera.utils.hive.dba.QueryStore;
-import org.apache.commons.dbcp2.*;
-import org.apache.commons.pool2.ObjectPool;
-import org.apache.commons.pool2.impl.GenericObjectPool;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -31,40 +29,39 @@ import java.sql.SQLException;
 public class ConnectionPools {
     private SreProcessesConfig config;
 
-    private PoolingDataSource<PoolableConnection> metastoreDirectDataSource = null;
-    private PoolingDataSource<PoolableConnection> hs2DataSource = null;
-    private PoolingDataSource<PoolableConnection> queryAnalysisDataSource = null;
+    private HikariDataSource metastoreDirectDataSource = null;
+//    private HikariDataSource hs2DataSource = null;
+    private HikariDataSource queryAnalysisDataSource = null;
 
     public ConnectionPools(SreProcessesConfig config) {
         this.config = config;
     }
 
-    public void init() {
-        initMetastoreDataSource();
-        initQueryAnalysisDataSource();
-        initHs2DataSource();
+    public void close() {
+//        if (hs2DataSource != null)
+//            hs2DataSource.close();
+
+        if (metastoreDirectDataSource != null)
+            metastoreDirectDataSource.close();
+
+        if (queryAnalysisDataSource != null)
+            queryAnalysisDataSource.close();
     }
 
-    public DataSource getMetastoreDirectDataSource() {
-        if (metastoreDirectDataSource == null) {
-            initMetastoreDataSource();
-        }
-        return metastoreDirectDataSource;
-    }
-
-    public PoolingDataSource<PoolableConnection> getQueryAnalysisDataSource() {
-        if (queryAnalysisDataSource == null) {
-            initQueryAnalysisDataSource();
-        }
-        return queryAnalysisDataSource;
-    }
-
-    public DataSource getHs2DataSource() {
-        if (hs2DataSource == null) {
-            initHs2DataSource();
-        }
-        return hs2DataSource;
-    }
+//    public Connection getHs2Connection() throws SQLException {
+//        Connection conn = null;
+//        if (getHs2DataSource() != null) {
+//            conn = getHs2DataSource().getConnection();
+//        }
+//        return conn;
+//    }
+//
+//    public DataSource getHs2DataSource() {
+//        if (hs2DataSource == null) {
+//            initHs2DataSource();
+//        }
+//        return hs2DataSource;
+//    }
 
     public Connection getMetastoreDirectConnection() throws SQLException {
         Connection conn = null;
@@ -75,6 +72,13 @@ public class ConnectionPools {
             }
         }
         return conn;
+    }
+
+    public DataSource getMetastoreDirectDataSource() {
+        if (metastoreDirectDataSource == null) {
+            initMetastoreDataSource();
+        }
+        return metastoreDirectDataSource;
     }
 
     public Connection getQueryAnalysisConnection() throws SQLException {
@@ -88,51 +92,63 @@ public class ConnectionPools {
         return conn;
     }
 
-    public Connection getHs2Connection() throws SQLException {
-        Connection conn = null;
-        if (getHs2DataSource() != null) {
-            conn = getHs2DataSource().getConnection();
+    public DataSource getQueryAnalysisDataSource() {
+        if (queryAnalysisDataSource == null) {
+            initQueryAnalysisDataSource();
         }
-        return conn;
+        return queryAnalysisDataSource;
     }
+
+    public void init() {
+        initMetastoreDataSource();
+        initQueryAnalysisDataSource();
+//        initHs2DataSource();
+    }
+
+//    protected void initHs2DataSource() {
+//        // this is optional.
+//        if (config.getHs2() != null) {
+//            DBStore hs2db = config.getHs2();
+//            ConnectionFactory hs2connectionFactory =
+//                    new DriverManagerConnectionFactory(hs2db.getUri(), hs2db.getConnectionProperties());
+//
+//            PoolableConnectionFactory hs2poolableConnectionFactory =
+//                    new PoolableConnectionFactory(hs2connectionFactory, null);
+//
+//            ObjectPool<PoolableConnection> hs2connectionPool =
+//                    new GenericObjectPool<>(hs2poolableConnectionFactory);
+//
+//            hs2poolableConnectionFactory.setPool(hs2connectionPool);
+//
+//            this.hs2DataSource =
+//                    new PoolingDataSource<>(hs2connectionPool);
+//        }
+//    }
 
     protected void initMetastoreDataSource() {
         // Metastore Direct
         if (config.getMetastoreDirect() != null) {
-            DBStore msdb = config.getMetastoreDirect();
-            ConnectionFactory msconnectionFactory =
-                    new DriverManagerConnectionFactory(msdb.getUri(), msdb.getConnectionProperties());
 
-            PoolableConnectionFactory mspoolableConnectionFactory =
-                    new PoolableConnectionFactory(msconnectionFactory, null);
+            HikariConfig cpConfig = new HikariConfig();
+            cpConfig.setJdbcUrl(config.getMetastoreDirect().getUri());
+            cpConfig.setDataSourceProperties(config.getMetastoreDirect().getConnectionProperties());
+            metastoreDirectDataSource = new HikariDataSource(cpConfig);
 
-            ObjectPool<PoolableConnection> msconnectionPool =
-                    new GenericObjectPool<>(mspoolableConnectionFactory);
-
-            mspoolableConnectionFactory.setPool(msconnectionPool);
-
-            this.metastoreDirectDataSource =
-                    new PoolingDataSource<>(msconnectionPool);
-        }
-    }
-
-    protected void initHs2DataSource() {
-        // this is optional.
-        if (config.getHs2() != null) {
-            DBStore hs2db = config.getHs2();
-            ConnectionFactory hs2connectionFactory =
-                    new DriverManagerConnectionFactory(hs2db.getUri(), hs2db.getConnectionProperties());
-
-            PoolableConnectionFactory hs2poolableConnectionFactory =
-                    new PoolableConnectionFactory(hs2connectionFactory, null);
-
-            ObjectPool<PoolableConnection> hs2connectionPool =
-                    new GenericObjectPool<>(hs2poolableConnectionFactory);
-
-            hs2poolableConnectionFactory.setPool(hs2connectionPool);
-
-            this.hs2DataSource =
-                    new PoolingDataSource<>(hs2connectionPool);
+            // Test Connection.
+            Connection conn = null;
+            try {
+                conn = metastoreDirectDataSource.getConnection();
+            } catch (Throwable t) {
+                if (conn != null) {
+                    try {
+                        conn.close();
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                    throw new RuntimeException(t);
+                }
+            }
         }
     }
 
@@ -140,22 +156,27 @@ public class ConnectionPools {
         // Query Analysis
         if (config.getQueryAnalysis() != null) {
 
-            QueryStore queryAnalysis = config.getQueryAnalysis();
-            ConnectionFactory qaconnectionFactory =
-                    new DriverManagerConnectionFactory(queryAnalysis.getUri(), queryAnalysis.getConnectionProperties());
+            HikariConfig cpConfig = new HikariConfig();
+            cpConfig.setJdbcUrl(config.getQueryAnalysis().getUri());
+            cpConfig.setDataSourceProperties(config.getQueryAnalysis().getConnectionProperties());
+            queryAnalysisDataSource = new HikariDataSource(cpConfig);
 
-            PoolableConnectionFactory qapoolableConnectionFactory =
-                    new PoolableConnectionFactory(qaconnectionFactory, null);
-
-            ObjectPool<PoolableConnection> qaconnectionPool =
-                    new GenericObjectPool<>(qapoolableConnectionFactory);
-
-            qapoolableConnectionFactory.setPool(qaconnectionPool);
-
-            this.queryAnalysisDataSource =
-                    new PoolingDataSource<>(qaconnectionPool);
+            // Test Connection.
+            Connection conn = null;
+            try {
+                conn = queryAnalysisDataSource.getConnection();
+            } catch (Throwable t) {
+                if (conn != null) {
+                    try {
+                        conn.close();
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                    throw new RuntimeException(t);
+                }
+            }
         }
-
     }
 
 }

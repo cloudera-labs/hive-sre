@@ -49,7 +49,7 @@ public class Sre {
         // cust
         // tc - transaction cleanup
         String subApp = null;
-        if (args.length > 0 && args[0].matches("perf|sre|u3|cust|dba|stats")) {
+        if (args.length > 0 && args[0].matches("perf|sre|u3|u3e|cust|dba|stats")) {
             System.err.println("Launching: " + args[0]);
             subApp = args[0];
         } else {
@@ -71,6 +71,9 @@ public class Sre {
                 break;
             case "u3":
                 sreApp = new HiveFrameworkCheck("u3", "/u3/proc/hive_u3_procs.yaml");
+                break;
+            case "u3e":
+                sreApp = new HiveFrameworkCheck("u3e", "/u3e/proc/hive_u3e_procs.yaml");
                 break;
             case "cust":
                 sreApp = new HiveFrameworkCheck();

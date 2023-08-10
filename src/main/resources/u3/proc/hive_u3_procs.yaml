@@ -91,97 +91,26 @@ processes:
         reportOnPath:         true
         processOnError:       true
         processOnSuccess:     false
-  - type:                     "dbSet"
+  - type:                     "metastore.report"
     id:                       3
     active:                   true
-    displayName:              "Managed Non-ACID to ACID Table Migrations"
+    displayName:              "Legacy Managed Non-Transactional (non-acid) Conversions to EXTERNAL/PURGE"
+    title:                    "# Legacy Managed Non-Transactional (non-acid) Conversions to EXTERNAL/PURGE (v.${Implementation-Version})"
     queryDefinitionReference: "/hive_u3_queries.yaml"
-    errorDescription:         "Issues"
-    successDescription:       "SQL Conversion Script"
-    errorFilename:            "managed_upgrade_2_acid_issues.txt"
-    successFilename:          "managed_upgrade_2_acid.sql"
-    dbListingQuery:           "db_tbl_count"
-    listingColumns:           [ "db_name" ,"tbl_name" , "created_date", "tbl_type" ,"tbl_location" ]
-    pathsListingQuery:        "managed_2_acid"
-    hsmmElements:
-      databaseField:          "db_name"
-      tableField:             "tbl_name"
-    skipCommandCheck:
-      displayName:            "Hive 3 Upgrade Check - Potential ACID Conversions (Skip Command Check)"
-      title:                  "-- Managed Non - ACID to ACID Table Migrations  (v.${Implementation-Version})\n"
-      note:                   "
-      -- This report highlights classic Managed Non-ACID tables that _could_ be converted to ACID tables by the post hive
-      'strictmigration' process.  This will dramatically change the characteristics of the table and affect the integration
-      methods used by Spark SQL, direct HDFS access, etc..  Many of which will 'fail' and/or 'corrupt' the newly converted
-      Hive ACID table.\n
-
-      -- We recommend that you proactively force these tables to 'EXTERNAL' tables (with purge characteristics) to prevent this
-      conversion.  Changing tables to ACID, post migration is much easier than trying to revert converted ACID tables back
-      to non-ACID tables.\n
-
-      -- Tables that are managed and aren't converted by this program, will be converted to 'EXTERNAL/purge' when they don't
-      meet all the criteria for the conversion, regardless.  Using the 'action' elements of this report simply ensures
-      you are in control of the migration process.\n
-      
-      -- These conversions need to happen BEFORE the tables are accessed in CDP.  Generally, this is done AFTER the upgrade
-      to CDP and BEFORE the tables are turned over to the end users.  In some cases, due to the volume of changes needed,
-      the conversion can be run before the upgrade.  BUT the conversion WILL have an impact on table behavior.  Convert tables
-      in the legacy environment will NOT honor the 'purge' characteristics stated by the 'external.table.purge' TBLPROPERTIES.
-      So be advised of this caveat if you choose to run these conversions BEFORE the upgrade.\n
-      
-      -- The report includes the tables 'created_date' in the comment line above the 'ALTER'.  You can use:\n
-      --    grep -A1 'created date: yyyy-MM' managed_upgrade_2_acid.sql | grep 'ALTER TABLE' > beeline_run.sql\n
-      --         OR
-      --    grep 'ALTER TABLE' managed_upgrade_2_acid.sql | sort -k3 > beeline_run.sql\n
-      -- to target certain tables first and run this post upgrade to make them available asap.\n
-      
-      -- Consider breaking the file into multiple parts to increase throughput and reduce runtime.\n
-      -- The statement are meant to be run against 'hive'.  Use 'beeline -f <run.sql>'\n
-      
-      -- NOTE: This process CAN and SHOULD be run after the upgrade and after all the ALTER scripts have been run to ensure
-      --       you haven't missed any conversion.\n\n"
-      record:             "-- This table 'could' be migrated to an ACID table unless changed.\n
-                          -- Recommend forcing the manual conversion to ensure table isn't inadvertently migrated.\n
-                          -- created date: %3$s\n
-                          ALTER TABLE `%1$s`.`%2$s` SET TBLPROPERTIES('EXTERNAL'='TRUE', 'external.table.purge'='true');"
-    commandChecks:
-      - displayName:            "Hive 3 Upgrade Check - Potential ACID Conversions"
-        title:                  "-- Managed Non - ACID to ACID Table Migrations  (v.${Implementation-Version})\n"
-        note:                   "
-        -- This report highlights classic Managed Non-ACID tables that _could_ be converted to ACID tables by the post hive
-        'strictmigration' process.  This will dramatically change the characteristics of the table and affect the integration
-        methods used by Spark SQL, direct HDFS access, etc..  Many of which will 'fail' and/or 'corrupt' the newly converted
-        Hive ACID table.\n
-
-        -- We recommend that you proactively force these tables to 'EXTERNAL' tables (with purge characteristics) to prevent this
-        conversion.  Changing tables to ACID, post migration is much easier than trying to revert converted ACID tables back
-        to non-ACID tables.\n
-
-        -- Tables that are managed and aren't converted by this program, will be converted to 'EXTERNAL/purge' when they don't
-        meet all the criteria for the conversion, regardless.  Using the 'action' elements of this report simply ensures
-        you are in control of the migration process.\n\n"
-        invertCheck:            false
-        pathCommand:            "lsp -f user -self \"%5$s\""
-        onSuccessPathCommand:   "\"Rewrite database table: %1$s.%2$s [Partition: \" + com.cloudera.utils.hive.sre.Utils.dirToPartitionSpec('%5$s') + \"]"
-        onSuccessRecordCommand: "# Bad filename %2$s in directory: %1$s "
-        reportOnResults:        false
-        reportOnPath:           false
-        processOnError:         false
-        processOnSuccess:       true
-        checkCalculations:
-          ownershipCheck:
-            RECORDS:
-              test: "if (\"%5$s\".equals(\"%6$s\")) true; else false;"
-              pass: "\"-- Table is owned by '%5$s' and not currently ACID.\\n
-                    -- This table will be migrated unless changed.\\n
-                    -- created date: %3$s\\n
-                    ALTER TABLE `%1$s`.`%2$s` SET TBLPROPERTIES('EXTERNAL'='TRUE', 'external.table.purge'='true')\\;\""
-              fail: "\"-- Table is owned by '%5$s', not '%6$s', and NOT currently ACID.\\n
-                    -- This table 'could' be migrated to an ACID table unless changed.\\n
-                    -- Recommend forcing the manual conversion to ensure table isn't inadvertently migrated.\\n
-                    -- created date: %3$s\\n
-                    ALTER TABLE `%1$s`.`%2$s` SET TBLPROPERTIES('EXTERNAL'='TRUE', 'external.table.purge'='true')\\;\""
-              params: [ "hive" ]
+    errorDescription:         "Processing Issues"
+    successDescription:       "Hive Metastore"
+    errorFilename:            "legacy_managed_upgrade_issues.txt"
+    successFilename:          "legacy_managed_upgrade.md"
+    metastoreQueryDefinitions:
+      - query:                       "legacy_managed"
+        listingColumns: [ "name" ,"tbl_name" , "created_date", "tbl_type" ,"location" ]
+        resultMessageHeader:         "
+          This is a list of tables that meet the LEGACY Managed non-transactional criteria.  Use this to understand the scope of the change.
+            \n\n
+            > Run the `u3e` process to execute the fixes for this list of tables.
+              \n\n"
+        resultMessageDetailHeader:   "| Database | Table | Create Date | Type | Location |\n|:---|:---|:---|:---|:---|"
+        resultMessageDetailTemplate: "| %1$s | %2$s | %3$s | %4$s | %5$s |"
   - type:                     "dbSet"
     id:                       4
     active:                   true
@@ -301,28 +230,26 @@ processes:
         resultMessageHeader:         "\n## Table Partition Count"
         resultMessageDetailHeader:   "| Database | Tables | Partitions |\n|:---|:---|:---|"
         resultMessageDetailTemplate: "| %1$s | %2$s | %3$s |"
-  - type:                     "dbSet"
+  - type:                     "metastore.report"
     id:                       6
     active:                   true
     displayName:              "Hive ACID tables missing 'bucketing_version'='2' tblproperties"
+    title:                    "# Hive ACID tables missing 'bucketing_version'='2' tblproperties  (v.${Implementation-Version})"
     queryDefinitionReference: "/hive_u3_queries.yaml"
     errorDescription:         "Issues"
     successDescription:       "SQL Conversion Script"
     errorFilename:            "acid_bucketing_update_issues.txt"
-    successFilename:          "acid_bucketing_update.sql"
-    dbListingQuery:           "db_tbl_count"
-    listingColumns:           [ "db_name" ,"tbl_name" , "tbl_id"]
-    pathsListingQuery:        "acid_bucket_version"
-    hsmmElements:
-      databaseField:          "db_name"
-      tableField:             "tbl_name"
-    skipCommandCheck:
-      displayName:            "Hive ACID tables missing 'bucketing_version'='2' tblproperties"
-      title:                  "-- Hive ACID tables missing 'bucketing_version'='2' tblproperties  (v.${Implementation-Version})\n"
-      note:                   "-- This report will show the ACID tables that don't contain the required 'bucketing_version=2' tblproperties configuration.\n
-      -- Without this setting, you will have issues access/reading/processing the upgraded ACID table.\n
-      -- We recommend that you run the script to add this configuration value to the tables.\n\n"
-      record:             "ALTER TABLE `%1$s`.`%2$s` SET TBLPROPERTIES('bucketing_version'='2');"
+    successFilename:          "acid_bucketing_update.md"
+    metastoreQueryDefinitions:
+      - query: "acid_bucket_report"
+        listingColumns: [ "db_name" ,"tbl_name" ]
+        resultMessageHeader: "
+           This report will show the ACID tables that don't contain the required 'bucketing_version=2' tblproperties configuration.\n
+           Without this setting, you will have issues access/reading/processing the upgraded ACID table.\n
+           We recommend that you run the `u3e` process to correct after the upgrade.\n\n
+        "
+        resultMessageDetailHeader: "| Database | Table |\n|:---|:---|"
+        resultMessageDetailTemplate: "| %1$s | %2$s |"
   - type:                     "metastore.report"
     id:                       7
     active:                   true
@@ -431,3 +358,78 @@ processes:
                               "
         resultMessageDetailHeader:   "| Database | Table | Type | Location | Create Date |\n|:---|:---|:---|:---|:---|"
         resultMessageDetailTemplate: "| %1$s | %2$s | %3$s | %4$s | %5$s |"
+  - type:                     "dbSet"
+    id:                       8
+    active:                   false
+    displayName:              "Managed Non-ACID to ACID Table Migrations"
+    queryDefinitionReference: "/hive_u3_queries.yaml"
+    errorDescription:         "Issues"
+    successDescription:       "SQL Conversion Script"
+    errorFilename:            "managed_upgrade_2_acid_issues.txt"
+    successFilename:          "managed_upgrade_2_acid.sql"
+    dbListingQuery:           "db_tbl_count"
+    listingColumns:           [ "db_name" ,"tbl_name" , "created_date", "tbl_type" ,"tbl_location" ]
+    pathsListingQuery:        "managed_2_acid"
+    hsmmElements:
+      databaseField:          "db_name"
+      tableField:             "tbl_name"
+    skipCommandCheck:
+      displayName:            "Hive 3 Upgrade Check - Potential ACID Conversions (Skip Command Check)"
+      title:                  "-- Managed Non - ACID to ACID Table Migrations  (v.${Implementation-Version})\n"
+      note:                   "
+      -- This report highlights classic Managed Non-ACID tables that _could_ be converted to ACID tables by the post hive
+      'strictmigration' process.  This will dramatically change the characteristics of the table and affect the integration
+      methods used by Spark SQL, direct HDFS access, etc..  Many of which will 'fail' and/or 'corrupt' the newly converted
+      Hive ACID table.\n
+
+      -- We recommend that you proactively force these tables to 'EXTERNAL' tables (with purge characteristics) to prevent this
+      conversion.  Changing tables to ACID, post migration is much easier than trying to revert converted ACID tables back
+      to non-ACID tables.\n
+
+      -- Tables that are managed and aren't converted by this program, will be converted to 'EXTERNAL/purge' when they don't
+      meet all the criteria for the conversion, regardless.  Using the 'action' elements of this report simply ensures
+      you are in control of the migration process.\n
+      
+      -- These conversions need to happen BEFORE the tables are accessed in CDP.  Generally, this is done AFTER the upgrade
+      to CDP and BEFORE the tables are turned over to the end users.  In some cases, due to the volume of changes needed,
+      the conversion can be run before the upgrade.  BUT the conversion WILL have an impact on table behavior.  Convert tables
+      in the legacy environment will NOT honor the 'purge' characteristics stated by the 'external.table.purge' TBLPROPERTIES.
+      So be advised of this caveat if you choose to run these conversions BEFORE the upgrade.\n
+      
+      -- The report includes the tables 'created_date' in the comment line above the 'ALTER'.  You can use:\n
+      --    grep -A1 'created date: yyyy-MM' managed_upgrade_2_acid.sql | grep 'ALTER TABLE' > beeline_run.sql\n
+      --         OR
+      --    grep 'ALTER TABLE' managed_upgrade_2_acid.sql | sort -k3 > beeline_run.sql\n
+      -- to target certain tables first and run this post upgrade to make them available asap.\n
+      
+      -- Consider breaking the file into multiple parts to increase throughput and reduce runtime.\n
+      -- The statement are meant to be run against 'hive'.  Use 'beeline -f <run.sql>'\n
+      
+      -- NOTE: This process CAN and SHOULD be run after the upgrade and after all the ALTER scripts have been run to ensure
+      --       you haven't missed any conversion.\n\n"
+      record:             "-- This table 'could' be migrated to an ACID table unless changed.\n
+                          -- Recommend forcing the manual conversion to ensure table isn't inadvertently migrated.\n
+                          -- created date: %3$s\n
+                          ALTER TABLE `%1$s`.`%2$s` SET TBLPROPERTIES('EXTERNAL'='TRUE', 'external.table.purge'='true');"
+  - type:                     "dbSet"
+    id:                       9
+    active:                   false
+    displayName:              "Hive ACID tables missing 'bucketing_version'='2' tblproperties"
+    queryDefinitionReference: "/hive_u3_queries.yaml"
+    errorDescription:         "Issues"
+    successDescription:       "SQL Conversion Script"
+    errorFilename:            "acid_bucketing_update_issues.txt"
+    successFilename:          "acid_bucketing_update.sql"
+    dbListingQuery:           "db_tbl_count"
+    listingColumns:           [ "db_name" ,"tbl_name" , "tbl_id"]
+    pathsListingQuery:        "acid_bucket_version"
+    hsmmElements:
+      databaseField:          "db_name"
+      tableField:             "tbl_name"
+    skipCommandCheck:
+      displayName:            "Hive ACID tables missing 'bucketing_version'='2' tblproperties"
+      title:                  "-- Hive ACID tables missing 'bucketing_version'='2' tblproperties  (v.${Implementation-Version})\n"
+      note:                   "-- This report will show the ACID tables that don't contain the required 'bucketing_version=2' tblproperties configuration.\n
+      -- Without this setting, you will have issues access/reading/processing the upgraded ACID table.\n
+      -- We recommend that you run the script to add this configuration value to the tables.\n\n"
+      record:             "ALTER TABLE `%1$s`.`%2$s` SET TBLPROPERTIES('bucketing_version'='2');"

@@ -31,6 +31,14 @@ public class SreSQLMySqlTest {
     }
 
     @Test
+    public void u3eMYSQL_SQLTest() {
+        String cfg = System.getProperty("user.home") + System.getProperty("file.separator") +
+                ".hive-sre/cfg" + System.getProperty("file.separator") +
+                "default-" + DBStore.DB_TYPE.MYSQL + ".yaml";
+        Sre.main(new String[]{"u3e", "-tsql", "-all", "-cfg", cfg,"-o", "/tmp/sre-sql-test"});
+    }
+
+    @Test
     public void sreMYSQL_SQLTest() {
         String cfg = System.getProperty("user.home") + System.getProperty("file.separator") +
                 ".hive-sre/cfg" + System.getProperty("file.separator") +
