@@ -373,7 +373,7 @@ query_definitions:
                   D.NAME LIKE ?
                   AND T.TBL_TYPE = 'MANAGED_TABLE'
                   AND PARAMS.PARAM_KEY = 'transactional'
-                  AND LOWER(PARAMS.PARAM_VALUE) = 'true'
+                  AND LOWER(to_char(PARAMS.PARAM_VALUE)) = 'true'
                   ORDER BY D.NAME, T.TBL_NAME"
     parameters:
       dbs:
