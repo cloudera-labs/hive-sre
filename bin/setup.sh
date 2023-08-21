@@ -45,6 +45,8 @@ rm -f $BASE_DIR/bin/*
 
 cp -f hive-sre $BASE_DIR/bin
 cp -f hive-sre-cli $BASE_DIR/bin
+cp -f u3/get_part_ids.sh $BASE_DIR/bin
+cp -f u3/mysql_missing_parts.sh $BASE_DIR/bin
 
 if [ -f hive-sre-shaded.jar ]; then
     cp -f hive-sre-shaded.jar $BASE_DIR/lib
@@ -57,15 +59,21 @@ fi
 chmod -R +r $BASE_DIR
 chmod +x $BASE_DIR/bin/hive-sre
 chmod +x $BASE_DIR/bin/hive-sre-cli
+chmod +x $BASE_DIR/bin/get_part_ids.sh
+chmod +x $BASE_DIR/bin/mysql_missing_parts.sh
 
 if (( $EUID == 0 )); then
   echo "Setting up global links"
   ln -sf $BASE_DIR/bin/hive-sre /usr/local/bin/hive-sre
   ln -sf $BASE_DIR/bin/hive-sre-cli /usr/local/bin/hive-sre-cli
+  ln -sf $BASE_DIR/bin/get_part_ids.sh /usr/local/bin/get_part_ids.sh
+  ln -sf $BASE_DIR/bin/mysql_missing_parts.sh /usr/local/bin/mysql_missing_parts.sh
 else
   mkdir -p $HOME/bin
   ln -sf $BASE_DIR/bin/hive-sre $HOME/bin/hive-sre
   ln -sf $BASE_DIR/bin/hive-sre-cli $HOME/bin/hive-sre-cli
+  ln -sf $BASE_DIR/bin/get_part_ids.sh $HOME/bin/get_part_ids.sh
+  ln -sf $BASE_DIR/bin/mysql_missing_parts.sh $HOME/bin/mysql_missing_parts.sh
   echo "Executable in $HOME/bin .  Add this to the environment path."
 fi
 

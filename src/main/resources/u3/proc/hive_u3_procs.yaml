@@ -19,11 +19,11 @@ processes:
     displayName:              "Locations Scan"
     queryDefinitionReference: "/hive_u3_queries.yaml"
     dbListingQuery:           "db_tbl_count"
-    listingColumns: [ "name" ,"tbl_name" , "tbl_type" ,"part_name" , "path_location" ]
+    listingColumns: [ "name" ,"tbl_name" , "tbl_type" ,"part_name" , "path_location", "part_id" ]
     pathsListingQuery:        "tbl_part_locations"
     commandChecks:
       - displayName:        "Hive 3 Upgrade Check - Missing Directory Locations Scan"
-        title:              "# Hive 3 Upgrade Check - Missing Direcotories (v.${Implementation-Version})\n\n## Missing Directory Locations Scan"
+        title:              "# Hive 3 Upgrade Check - Missing Directories (v.${Implementation-Version})\n\n## Missing Directory Locations Scan"
         note:               "
          *Remediation Options*\n
                 _NOTE:_ Beware of \"Smart Quote\" AND other conversions via Markdown Renderers. Copy/paste from 'raw' text to ensure compatibility.\n\n
@@ -39,7 +39,7 @@ processes:
          always a good practice.\n\n
          This process should be run frequently, up to the point of the upgrade, to ensure all items have been addressed.  Before
          the upgrade can succeed, this report should be *empty*.\n\n"
-        header:             "| DB.Table:Partition Spec | Hive SQL (recommended) | HDFS | Hive MSCK (Post Upgrade) |\n|:---|:---|:---|:---|"
+        header:             "| DB.Table:Partition Spec | Hive SQL (recommended) | HDFS | Hive MSCK (Post Upgrade) | PART ID |\n|:---|:---|:---|:---|:---|"
         errorDescription:   "Scan Actions"
         successDescription: "Issues"
         errorFilename:      loc_scan_missing_dirs.md
@@ -54,8 +54,8 @@ processes:
           partitionCheck:
             RECORDS:
               test: "if (\"%4$s\".equals(\" \")) true; else false;"
-              pass: "\"| %1$s.%2$s | DROP TABLE IF EXISTS `%1$s`.`%2$s`; | mkdir -p \\\"%5$s\\\" | MSCK REPAIR TABLE `%1$s`.`%2$s` SYNC PARTITIONS; |\""
-              fail: "\"| %1$s.%2$s:\" + com.cloudera.utils.hive.sre.Utils.dirToPartitionSpec('%4$s') + \" | ALTER TABLE `%1$s`.`%2$s` DROP IF EXISTS PARTITION (\" + com.cloudera.utils.hive.sre.Utils.dirToPartitionSpec('%4$s') + \"); | mkdir -p \\\"%5$s\\\" | |\""
+              pass: "\"| %1$s.%2$s | DROP TABLE IF EXISTS `%1$s`.`%2$s`; | mkdir -p \\\"%5$s\\\" | MSCK REPAIR TABLE `%1$s`.`%2$s` SYNC PARTITIONS; | |\""
+              fail: "\"| %1$s.%2$s:\" + com.cloudera.utils.hive.sre.Utils.dirToPartitionSpec('%4$s') + \" | ALTER TABLE `%1$s`.`%2$s` DROP IF EXISTS PARTITION (\" + com.cloudera.utils.hive.sre.Utils.dirToPartitionSpec('%4$s') + \"); | mkdir -p \\\"%5$s\\\" | | %6$s |\""
               params: [ "hive" ]
 
   - type:                     "dbSet"

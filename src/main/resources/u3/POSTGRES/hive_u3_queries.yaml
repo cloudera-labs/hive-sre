@@ -38,7 +38,8 @@ query_definitions:
                         WHEN \"PS\".\"LOCATION\" IS NULL
                             THEN \"S\".\"LOCATION\"
                         ELSE \"PS\".\"LOCATION\"
-                        END AS \"PATH_LOCATION\"
+                        END AS \"PATH_LOCATION\",
+                    \"P\".\"PART_ID\",
                 FROM
                     \"DBS\" \"D\"
                         INNER JOIN
