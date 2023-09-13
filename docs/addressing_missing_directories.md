@@ -111,3 +111,7 @@ Although, the `MSCK` process can take a while IF the table has a large number of
 
 Choosing to run these commands across ALL candidates POST upgrade can take a significant amount of time. Missing directories are only an issue when user try to access them, so creating a system down/unavailable to repair tables that may never be accessed is a waste of time.  Knowing the scope of the issue is important and working with the users to educate them on reconciling their tables could save a lot of time and allow you to turn-over the system asap.
 
+**Build the Hive SQL MSCK Commands**
+```bash
+grep  '^|' loc_scan_missing_dirs.md | awk -F'|' '{print $5}' | grep '^ MSCK' >  hive_msck.sql
+```
