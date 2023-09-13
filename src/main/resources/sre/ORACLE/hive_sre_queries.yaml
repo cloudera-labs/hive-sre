@@ -477,7 +477,7 @@ WHERE
       SELECT
           TBL_TYPE
         , COUNT(1) AS COUNT
-      FROM WCAT
+      FROM WCAT2
       GROUP BY TBL_TYPE
       "
   table_catagory_count_by_db:
