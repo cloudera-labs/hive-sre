@@ -70,6 +70,11 @@ This solution however can be quite time consuming.  For a more expedited option 
 **Cons**
 * Time consuming.
 
+**Build the Hive SQL Alter Commands**
+```bash
+grep  '^|' loc_scan_missing_dirs.md | awk -F'|' '{print $3}' | grep '^ ALTER' >  hive_alter.sql
+```
+
 #### 2.b Directly from the Hive Metastore DB (Only MySQL supported currently)
 
 This process currently only support 'PARTITIONS', not tables.  Once complete, run the reports again and use `Hive SQL` to drop the tables that are now empty.
