@@ -33,6 +33,7 @@ So simply creating these directories without understanding how the table/partiti
 * Doesn't address the root cause of the issue.
 * Creates a lot of 'trash' on the file system.
 * May lead to false positives on the state of the tables/partitions.
+* Time consuming. Each command will take 3-5 seconds to run via `hdfs dfs ...`.  `hive-sre-cli -f ...` can be used to optimize this process and will run several hundred commands a second.  See below. 
 
 **Optimizing the process using `hive-sre-cli`**
 This is an HDFS client installed with `hive-sre`.  It can be used to run a set of hdfs commands within the same JVM, therefore eliminating the JVM startup time from each command if you ran it via `hdfs dfs ...`.  This can be a significant time savings if you have a large number of directories to create.
@@ -68,14 +69,14 @@ This solution however can be quite time consuming.  For a more expedited option 
 * Doesn't lead to false positives on the state of the tables/partitions.
 
 **Cons**
-* Time consuming.
+* Time consuming. Each Alter statement will take 1-3 seconds to run.
 
 **Build the Hive SQL Alter Commands**
 ```bash
 grep  '^|' loc_scan_missing_dirs.md | awk -F'|' '{print $3}' | grep '^ ALTER' >  hive_alter.sql
 ```
 
-#### 2.b Directly from the Hive Metastore DB (Only MySQL supported currently)
+#### 2.b Directly from the Hive Metastore DB (Only MySQL supported currently) Only available for `hive-sre v3.0.1.1+`
 
 This process currently only support 'PARTITIONS', not tables.  Once complete, run the reports again and use `Hive SQL` to drop the tables that are now empty.
 
@@ -88,7 +89,7 @@ This creates 1+ MySQL script `mysql_missing_parts.sql` that can be run directly 
 **Altering the partitions it picks up**
 You can likewise use grep against the `loc_scan_missing_dirs.md` file to filter the partitions you want to remove.  For example, if you only want to remove partitions from a specific database, you can use the following sequence of commands:
 
-```
+```bash
 # Filter out the 'test_db' hive database
 grep '^| test_db.*' loc_scan_missing_dirs.md > trimmed.md
 
@@ -111,7 +112,17 @@ Although, the `MSCK` process can take a while IF the table has a large number of
 
 Choosing to run these commands across ALL candidates POST upgrade can take a significant amount of time. Missing directories are only an issue when user try to access them, so creating a system down/unavailable to repair tables that may never be accessed is a waste of time.  Knowing the scope of the issue is important and working with the users to educate them on reconciling their tables could save a lot of time and allow you to turn-over the system asap.
 
+**Pros**
+* Cleans up the Hive Metastore and the filesystem by bringing them back into sync.
+* Can be run adhoc by users with the right permissions on tables they find have issues.
+* Doesn't create 'trash' on the filesystem.
+
+**Cons**
+* Time consuming. Each command will vary based on the number of partitions to reconcile.  Some large tables can take several minutes to reconcile.
+* Puts load on the system while running, so be cautious about running this during peak usage times and on large tables with a lot of partitions.
+
 **Build the Hive SQL MSCK Commands**
+
 ```bash
 grep  '^|' loc_scan_missing_dirs.md | awk -F'|' '{print $5}' | grep '^ MSCK' >  hive_msck.sql
 ```
