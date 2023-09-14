@@ -23,6 +23,7 @@ import java.util.Map;
 
 public class QueryDefinition {
     private String statement;
+    private Map<String, String> preparedStatements;
     @JsonProperty("parameters")
     private Map<String, Parameter> parameters;
 
@@ -32,6 +33,14 @@ public class QueryDefinition {
 
     public void setStatement(String statement) {
         this.statement = statement;
+    }
+
+    public Map<String, String> getPreparedStatements() {
+        return preparedStatements;
+    }
+
+    public void setPreparedStatements(Map<String, String> preparedStatements) {
+        this.preparedStatements = preparedStatements;
     }
 
     public Map<String, Parameter> getParameters() {

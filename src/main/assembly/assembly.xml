@@ -40,6 +40,15 @@
             <useDefaultExcludes>true</useDefaultExcludes>
         </fileSet>
         <fileSet>
+            <directory>${project.basedir}/src/main/bash</directory>
+            <includes>
+                <include>get_part_ids.sh</include>
+                <include>mysql_missing_parts.sh</include>
+            </includes>
+            <outputDirectory>hive-sre-install/u3</outputDirectory>
+            <useDefaultExcludes>true</useDefaultExcludes>
+        </fileSet>
+        <fileSet>
             <directory>${project.basedir}/configs</directory>
             <includes>
                 <include>default.template.yaml</include>

@@ -17,6 +17,7 @@
 
 package com.cloudera.utils.hive.sre;
 
+import com.cloudera.utils.hive.HiveFrameworkCheck;
 import com.cloudera.utils.hive.config.DBStore;
 import com.cloudera.utils.hive.config.SreProcessesConfig;
 import com.cloudera.utils.hive.reporting.Reporter;
@@ -48,12 +49,12 @@ import java.util.concurrent.*;
 The 'ProcessContainer' is the definition and runtime structure
  */
 @JsonIgnoreProperties({"config", "reporter", "taskThreadPool", "procThreadPool", "processThreads", "cliPool",
-        "connectionPools", "outputDirectory", "dbsOverride", "includeFilter", "excludeFilter", "testSQL"})
+        "connectionPools", "outputDirectory", "dbsOverride", "includeFilter", "excludeFilter", "testSQL", "parent"})
 public class ProcessContainer implements Runnable {
     private static Logger LOG = LogManager.getLogger(ProcessContainer.class);
 
     private String module;
-
+    private HiveFrameworkCheck parent;
     private boolean initializing = Boolean.TRUE;
     private SreProcessesConfig config;
     private Reporter reporter;
@@ -105,6 +106,10 @@ public class ProcessContainer implements Runnable {
     public void setConfig(SreProcessesConfig config) {
         this.config = config;
         this.reporter.setRefreshInterval(this.config.getReportingInterval());
+    }
+
+    public void setParent(HiveFrameworkCheck parent) {
+        this.parent = parent;
     }
 
     public Reporter getReporter() {
@@ -316,8 +321,18 @@ public class ProcessContainer implements Runnable {
             String yamlCfgFile = FileUtils.readFileToString(cfgFile, Charset.forName("UTF-8"));
             SreProcessesConfig sreConfig = mapper.readerFor(SreProcessesConfig.class).readValue(yamlCfgFile);
             sreConfig.validate();
+            // If there is more than one MetastoreActionProcess, we need to reduce the parallelism to 1 to
+            // Avoid potential deadlocks on the metastore db they may happen from different threads.
+            int mapProcCount = 0;
+            for (SreProcessBase proc: getProcesses()) {
+                if (proc instanceof MetastoreActionProcess)
+                    mapProcCount++;
+            }
+            if (mapProcCount > 1) {
+                sreConfig.setParallelism(1);
+            }
             setConfig(sreConfig);
-
+            validate();
         } catch (
                 IOException e) {
             throw new RuntimeException("Issue getting configs", e);
@@ -326,6 +341,12 @@ public class ProcessContainer implements Runnable {
         initializing = Boolean.FALSE;
 
         return jobRunDir;
+    }
+
+    private void validate() {
+        if (parent.getName().equals("u3e") && getConfig().getMetastoreDirect().getType() != DBStore.DB_TYPE.MYSQL) {
+            throw new RuntimeException("The `u3e` process only works with MYSQL database types at this time.");
+        }
     }
 
     protected void initResources() {

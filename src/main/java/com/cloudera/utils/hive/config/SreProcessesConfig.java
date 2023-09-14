@@ -118,7 +118,6 @@ public class SreProcessesConfig {
     public Boolean validate() {
         Boolean rtn = Boolean.TRUE;
 
-
         return rtn;
     }
 

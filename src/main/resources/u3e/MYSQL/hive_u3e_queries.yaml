@@ -1,0 +1,133 @@
+query_definitions:
+  fix_legacy_managed:
+    preparedStatements:
+      fix_table_external_params: "
+        INSERT INTO TABLE_PARAMS
+          SELECT
+              T.TBL_ID
+            , 'EXTERNAL'
+            , 'TRUE'
+          FROM TBLS T
+                   INNER JOIN DBS D ON T.DB_ID = D.DB_ID
+          WHERE
+                  T.TBL_ID NOT IN (
+                                  SELECT
+                                      T2.TBL_ID
+                                  FROM TABLE_PARAMS TP
+                                           INNER JOIN TBLS T2 ON TP.TBL_ID = T2.TBL_ID
+                                  WHERE
+                                      TP.PARAM_KEY = 'transactional'
+                                    AND BINARY TP.PARAM_VALUE = 'true') 
+            AND TBL_TYPE = 'MANAGED_TABLE'
+          ON DUPLICATE KEY UPDATE PARAM_VALUE = 'TRUE'
+      "
+      add_purge_flag: "
+        INSERT INTO TABLE_PARAMS
+          SELECT
+              T.TBL_ID
+            , 'external.table.purge'
+            , 'TRUE'
+          FROM TBLS T
+                   INNER JOIN DBS D ON T.DB_ID = D.DB_ID
+          WHERE
+                  T.TBL_ID NOT IN (
+                                  SELECT
+                                      T2.TBL_ID
+                                  FROM TABLE_PARAMS TP
+                                           INNER JOIN TBLS T2 ON TP.TBL_ID = T2.TBL_ID
+                                  WHERE
+                                      TP.PARAM_KEY = 'transactional'
+                                    AND BINARY TP.PARAM_VALUE = 'true')
+            AND TBL_TYPE = 'MANAGED_TABLE'
+          ON DUPLICATE KEY UPDATE PARAM_VALUE = 'TRUE'
+      "
+      fix_tbl_type: "
+        UPDATE TBLS
+          SET TBL_TYPE = 'EXTERNAL_TABLE'
+          WHERE
+                  TBL_ID IN (
+                            SELECT
+                                T2.TBL_ID
+                            FROM (
+                                 SELECT *
+                                 FROM TBLS) T2
+                                     INNER JOIN DBS D ON T2.DB_ID = D.DB_ID
+                            WHERE
+                                    T2.TBL_ID NOT IN (
+                                                     SELECT
+                                                         T3.TBL_ID
+                                                     FROM TABLE_PARAMS TP
+                                                              INNER JOIN (
+                                                                         SELECT *
+                                                                         FROM TBLS) T3 ON TP.TBL_ID = T3.TBL_ID
+                                                     WHERE
+                                                         TP.PARAM_KEY = 'transactional'
+                                                       AND BINARY TP.PARAM_VALUE = 'true')
+                              AND TBL_TYPE = 'MANAGED_TABLE')
+      "
+  acid_table:
+    preparedStatements:
+      fix_bucketing_version: "
+      INSERT INTO TABLE_PARAMS
+        SELECT
+          TBL_ID
+        , 'bucketing_version'
+        , '2'
+        FROM (
+             SELECT DISTINCT
+                 DB.NAME AS DB_NAME
+               , TBL.TBL_NAME
+               , TBL.TBL_ID
+             FROM DBS DB
+                      JOIN
+                  TBLS TBL ON
+                      DB.DB_ID = TBL.DB_ID
+                      INNER JOIN SDS S ON TBL.SD_ID = S.SD_ID
+                      INNER JOIN (
+                                 SELECT
+                                     SP.TBL_ID
+                                   , SP.PARAM_KEY
+                                   , SP.PARAM_VALUE
+                                 FROM TABLE_PARAMS SP
+                                 WHERE
+                                       LOWER(SP.PARAM_KEY) = 'transactional'
+                                   AND LOWER(SP.PARAM_VALUE) = 'true'
+             ) P
+                                 ON TBL.TBL_ID = P.TBL_ID
+             ) WCAT
+        WHERE
+                WCAT.TBL_ID NOT IN (
+                                   SELECT
+                                       TBL_ID
+                                   FROM (
+                                        SELECT
+                                            SP.TBL_ID
+                                          , SP.PARAM_KEY
+                                          , SP.PARAM_VALUE
+                                        FROM TABLE_PARAMS SP
+                                        WHERE
+                                              LOWER(SP.PARAM_KEY) = 'bucketing_version'
+                                          AND SP.PARAM_VALUE = '2'
+                                        ) BPARAMS)
+        ON DUPLICATE KEY UPDATE PARAM_VALUE = '2'
+      "
+  serde_exchange:
+    preparedStatements:
+      regex_serde: "
+        UPDATE SERDES
+          SET SLIB = 'org.apache.hadoop.hive.serde2.RegexSerDe'
+          WHERE
+              SLIB = 'org.apache.hadoop.hive.contrib.serde2.RegexSerDe'
+      "
+      typed_bytes_serde: "
+        UPDATE SERDES
+          SET SLIB = 'org.apache.hadoop.hive.serde2.TypedBytesSerDe'
+          WHERE
+              SLIB = 'org.apache.hadoop.hive.contrib.serde2.TypedBytesSerDe'
+      "
+      multi_delimit_serde: "
+        UPDATE SERDES
+          SET SLIB = 'org.apache.hadoop.hive.serde2.MultiDelimitSerDe'
+          WHERE
+              SLIB = 'org.apache.hadoop.hive.contrib.serde2.MultiDelimitSerDe'
+      "

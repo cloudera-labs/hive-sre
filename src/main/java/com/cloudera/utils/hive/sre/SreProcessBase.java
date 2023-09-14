@@ -28,6 +28,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.apache.commons.io.IOUtils;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.net.URL;
@@ -42,10 +44,13 @@ import java.util.concurrent.Callable;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = DbSetProcess.class, name = "dbSet"),
         @JsonSubTypes.Type(value = MetastoreQueryProcess.class, name = "metastore.query"),
+        @JsonSubTypes.Type(value = MetastoreActionProcess.class, name = "metastore.action"),
         @JsonSubTypes.Type(value = MetastoreReportProcess.class, name = "metastore.report")})
+
 public abstract class SreProcessBase implements Callable<String> {
+    private static Logger LOG = LogManager.getLogger(SreProcessBase.class);
     private String displayName = "not set";
-    private String title = null;
+    private String title = "not set";
     private String note = null;
     private String id = null;
     private Boolean skip = Boolean.FALSE;
@@ -310,7 +315,7 @@ public abstract class SreProcessBase implements Callable<String> {
     public void init(ProcessContainer parent) throws FileNotFoundException {
         setParent(parent);
         setInitializing(Boolean.TRUE);
-
+        LOG.info("Init: " + getId());
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         mapper.enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
@@ -332,6 +337,7 @@ public abstract class SreProcessBase implements Callable<String> {
         } catch (Exception e) {
             throw new RuntimeException("Issue getting configs", e);
         }
+        LOG.info("Init (done): " + getId());
     }
 
     public abstract Boolean testSQLScript();

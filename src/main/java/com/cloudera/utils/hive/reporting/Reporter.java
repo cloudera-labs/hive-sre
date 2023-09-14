@@ -130,14 +130,29 @@ public class Reporter implements Runnable {
 
             Deque<String> lines = new LinkedList<>();
             // For the proc id
-            for (String groupName : this.counterGroups.keySet()) {
+
+            // Reverse Sort the Groups
+            Set<String> groupNames = new TreeSet<>(new Comparator<String>() {
+                @Override
+                public int compare(String o1, String o2) {
+                    return o2.compareTo(o1);
+                }
+            }
+            );
+
+            groupNames.addAll(this.counterGroups.keySet());
+
+            for (String groupName : groupNames) {
 
                 CounterGroup counterGroup = counterGroups.get(groupName);
 
-
                 // The CommandChecks for the Proc
-                if (counterGroup.getCounters().size() > 0) {
-                    for (ReportCounter ctr : counterGroup.getCounters()) {
+                if (!counterGroup.getCounters().isEmpty()) {
+                    List<ReportCounter> counters = counterGroup.getCounters();
+                    // Sort List
+                    counters.sort(Comparator.comparing(ReportCounter::getName));
+
+                    for (ReportCounter ctr : counters) {
 
                         Map<TaskState, AtomicLong> ccrProgress = new LinkedHashMap<TaskState, AtomicLong>();
                         for (Map.Entry<TaskState, AtomicLong> entry: ctr.getCounts().entrySet()) {
