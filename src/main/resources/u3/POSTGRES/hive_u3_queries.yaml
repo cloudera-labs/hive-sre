@@ -39,7 +39,7 @@ query_definitions:
                             THEN \"S\".\"LOCATION\"
                         ELSE \"PS\".\"LOCATION\"
                         END AS \"PATH_LOCATION\",
-                    \"P\".\"PART_ID\",
+                    \"P\".\"PART_ID\"
                 FROM
                     \"DBS\" \"D\"
                         INNER JOIN
