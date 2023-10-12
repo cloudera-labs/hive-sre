@@ -32,7 +32,7 @@ These scripts will execute directly against the METASTORE DB, skipping the HiveS
 
 The output of the `u3 -hdp2|-cdh` process creates an output file called `loc_scan_missing_dirs.md` that contains a list of all the existing partitions that have no matching directory on the filesystem.  In the report, there are several options available to correct these inconsistencies.  You can create empty directories that match the partition definitions, or remove the partitions via HiveSQL.
 
-Or these two options, dropping the partitions in Hive is preferred.  But a large number of these inconsistencies can take a lot of time to run via HiveSQL.  An alternative is available that builds a list of the partition ids and then build out the `MYSQL` scripts to drop them from the metastore directly.  This process is much faster than running the HiveSQL scripts.
+Of these two options, dropping the partitions in Hive is preferred.  But a large number of these inconsistencies can take a lot of time to run via HiveSQL.  An alternative is available that builds a list of the partition ids and then build out the `MYSQL` scripts to drop them from the metastore directly.  This process is much faster than running the HiveSQL scripts.
 
 Run the `u3` process as normal to generate the `loc_scan_missing_dirs.md` file.  Installed in the path is a script called `mysql_missing_parts.sh`, which should be on the path (in same directory as the `hive-sre` script. 
 
