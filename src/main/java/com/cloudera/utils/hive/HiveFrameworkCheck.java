@@ -306,11 +306,13 @@ public class HiveFrameworkCheck implements SreSubApp {
             configFile = System.getProperty("user.home") + System.getProperty("file.separator") + ".hive-sre/cfg/default.yaml";
         }
 
-        if (cmd.hasOption("o")) {
-            outputDirectory = cmd.getOptionValue("o");
-        } else {
-            outputDirectory = "hive-sre-output" + System.getProperty("file.separator") + getName();
-        }
+//        if (cmd.hasOption("o")) {
+            // Retrieve the environment variable APP_OUTPUT_DIR
+            outputDirectory = System.getenv("APP_OUTPUT_PATH");
+//            outputDirectory = cmd.getOptionValue("o");
+//        } else {
+//            outputDirectory = "hive-sre-output" + System.getProperty("file.separator") + getName();
+//        }
 
         // HERE: determine output dir and setup a place to write out the hsmm includelist config.
         if (cmd.hasOption("db")) {

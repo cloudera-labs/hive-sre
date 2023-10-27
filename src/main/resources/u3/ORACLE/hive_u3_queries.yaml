@@ -352,7 +352,7 @@ WHERE t.tbl_serde_slib IN
       SELECT
           D.NAME
         , T.TBL_NAME
-        , TO_CHAR(TO_DATE('01-jan-1970', 'dd-mon-yyyy') + TBL.CREATE_TIME / 86400, 'yyyy-mm-dd') CREATED_DATE
+        , TO_CHAR(TO_DATE('01-jan-1970', 'dd-mon-yyyy') + T.CREATE_TIME / 86400, 'yyyy-mm-dd') CREATED_DATE
         , T.TBL_TYPE
         , S.LOCATION
       FROM TBLS T

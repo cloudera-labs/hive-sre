@@ -56,7 +56,6 @@ fi
 
 PRG_ARGS=
 CMD_CP=${HOME}/.hive-sre/cust
-
 AUX_LIBS_DIR=${HIVE_SRE_AUX_LIBS:-${HOME}/.hive-sre/aux_libs}
 
 SHOW_CP=
@@ -64,7 +63,10 @@ CMD_DIRECTIVE=
 CMD_ARGS=
 VERBOSE=
 HADOOP_CLASSPATH=
+APP_OUTPUT_DIR=${HOME}/.hive-sre/hive-sre-output
+APP_PATH=u3
 APP_JAVA_OPTS=${JAVA_OPTS:-"-Xms1024m -Xmx2048m -XX:+UseG1GC"}
+DIR_OVERRIDE=
 #APP_JAVA_OPTS=${JAVA_OPTS:-}
 
 if [[ ! -d ${AUX_LIBS_DIR} ]]; then
@@ -73,6 +75,11 @@ fi
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    perf|sre|u3|cust|dba|stats)
+      PRG_ARGS="${PRG_ARGS} \"$1\""
+      APP_PATH=$1
+      shift
+      ;;
     -D*)
       APP_JAVA_OPTS="${APP_JAVA_OPTS} ${1}"
       shift
@@ -90,6 +97,13 @@ while [[ $# -gt 0 ]]; do
       shift
       SHOW_CP="true"
       ;;
+    -o|--output-dir)
+      shift
+      PRG_ARGS="${PRG_ARGS} -o \"$1\""
+      APP_OUTPUT_DIR=$1
+      DIR_OVERRIDE="x"
+      shift
+      ;;
     *)
       PRG_ARGS="${PRG_ARGS} \"$1\""
       shift
@@ -97,6 +111,15 @@ while [[ $# -gt 0 ]]; do
 done
 
 #echo "Program Args: ${PRG_ARGS}"
+if [[ "${DIR_OVERRIDE}x" == "x" ]]; then
+  # Add Date to output dir path
+  APP_OUTPUT_PATH=${APP_OUTPUT_DIR}/${APP_PATH}/$(date +%y-%m-%d_%H-%M-%S)
+else
+  APP_OUTPUT_PATH=${APP_OUTPUT_DIR}
+fi
+
+export APP_OUTPUT_PATH
+APP_JAVA_OPTS="${APP_JAVA_OPTS} -Dapp.path.dir=\"$APP_OUTPUT_PATH\""
 
 if [[ ! -d ${AUX_LIBS_DIR} ]]; then
     mkdir -p ${AUX_LIBS_DIR}

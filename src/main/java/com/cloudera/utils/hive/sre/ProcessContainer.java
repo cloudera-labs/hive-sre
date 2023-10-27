@@ -299,8 +299,8 @@ public class ProcessContainer implements Runnable {
             throw new RuntimeException("Config File and Output Directory must be set before init.");
         } else {
             Date now = new Date();
-            DateFormat df = new SimpleDateFormat("YY-MM-dd_HH-mm-ss");
-            jobRunDir = outputDirectory + System.getProperty("file.separator") + df.format(now);
+//            DateFormat df = new SimpleDateFormat("YY-MM-dd_HH-mm-ss");
+            jobRunDir = outputDirectory; // + System.getProperty("file.separator") + df.format(now);
             setOutputDirectory(jobRunDir);
             File jobDir = new File(jobRunDir);
             if (!jobDir.exists()) {
