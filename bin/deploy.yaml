@@ -41,6 +41,18 @@
         dest: /usr/local/hive-sre/bin
         mode: 0755
 
+    - name: Copy parts
+      copy:
+        src: ../src/main/bash/get_part_ids.sh
+        dest: /usr/local/hive-sre/bin
+        mode: 0755
+
+    - name: Copy missing parts
+      copy:
+        src: ../src/main/bash/mysql_missing_parts.sh
+        dest: /usr/local/hive-sre/bin
+        mode: 0755
+
     - name: Copy lib
       copy:
         src: ../target/hive-sre-shaded.jar
@@ -64,5 +76,19 @@
       file:
         src: /usr/local/hive-sre/bin/hive-sre-cli
         dest: /usr/local/bin/hive-sre-cli
+        mode: 0755
+        state: link
+
+    - name: Link Parts
+      file:
+        src: /usr/local/hive-sre/bin/get_part_ids.sh
+        dest: /usr/local/bin/get_part_ids.sh
+        mode: 0755
+        state: link
+
+    - name: Link Missing Parts
+      file:
+        src: /usr/local/hive-sre/bin/mysql_missing_parts.sh
+        dest: /usr/local/bin/mysql_missing_parts.sh
         mode: 0755
         state: link

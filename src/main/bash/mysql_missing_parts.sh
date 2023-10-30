@@ -8,7 +8,7 @@ echo "Temp Dir: $TMPDIR"
 
 $(dirname $0)/get_part_ids.sh $1 $TMPDIR/part_ids.txt
 
-while IFS="|" read -r line
+for line in `cat $TMPDIR/part_ids.txt`
 do
   echo "Line: $line"
   # PART_COL_PRIVS
@@ -23,4 +23,4 @@ do
   echo "DELETE FROM PARTITION_PARAMS WHERE PART_ID IN ($line);" >> mysql_missing_parts.sql
   # PARTITIONS
   echo "DELETE FROM PARTITIONS WHERE PART_ID IN ($line);" >> mysql_missing_parts.sql
-done <$TMPDIR/part_ids.txt
+done

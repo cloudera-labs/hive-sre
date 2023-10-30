@@ -5,16 +5,20 @@ PARTIDS=()
 # Build a list of id's that can be added to an 'in' clause
 # in SQL to modify the need tables.
 
-while IFS="|" read -r one two three four five six
+awk 'match($0, /\| [0-9]+ \|/) {
+    print substr($0, RSTART, RLENGTH)
+}' $1 > $1.part
+
+while IFS=" " read -r one two three
 do
-  nospaces=${six// } # remove leading spaces
+  nospaces=${two// } # remove leading spaces
 
   re='^[0-9]+$'
   if  [[ $nospaces =~ $re ]] ; then
      # echo "$nospaces"
      PARTIDS+=("$nospaces")
   fi
-done < <(grep ^\| $1)
+done < $1.part
 
 arraylength=${#PARTIDS[@]}
 #echo "Total Partition Ids: $arraylength"
