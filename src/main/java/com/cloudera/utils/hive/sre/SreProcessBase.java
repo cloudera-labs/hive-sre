@@ -49,8 +49,8 @@ import java.util.concurrent.Callable;
 
 public abstract class SreProcessBase implements Callable<String> {
     private static Logger LOG = LogManager.getLogger(SreProcessBase.class);
-    private String displayName = "not set";
-    private String title = "not set";
+    private String displayName = null;
+    private String title = null;
     private String note = null;
     private String id = null;
     private Boolean skip = Boolean.FALSE;

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE instance-profile
+        SYSTEM "https://resources.jetbrains.com/writerside/1.0/product-profile.dtd">
+
+<instance-profile id="hive-sre"
+                 name="hive-sre"
+                 start-page="hive-sre.md">
+
+    <toc-element topic="hive-sre.md">
+        <toc-element topic="hive-sre-Sub-Commands.md">
+            <toc-element topic="hive-sre-u3.md">
+                <toc-element topic="hive-sre-u3-procs.md"/>
+                <toc-element topic="hive-sre-to-cdp.md"/>
+            </toc-element>
+            <toc-element topic="u3e.md">
+                <toc-element topic="hive-sre-u3e-procs.md"/>
+            </toc-element>
+            <toc-element topic="hive-sre-sre.md"/>
+            <toc-element topic="hive-sre-perf.md">
+            </toc-element>
+        </toc-element>
+    </toc-element>
+    <toc-element topic="hive-sre-Pre-Requisites.md"/>
+    <toc-element topic="hive-sre-where-to-run.md"/>
+    <toc-element topic="hive-sre-download.md"/>
+    <toc-element topic="hive-sre-cfg.md">
+        <toc-element topic="default-hive-sre-cfg.md"/>
+    </toc-element>
+    <toc-element topic="hive-sre-running.md">
+        <toc-element topic="hive-sre-output.md"/>
+        <toc-element topic="hive-sre-encrypted-passwords.md"/>
+    </toc-element>
+    <toc-element topic="hive-sre-tips.md"/>
+    <toc-element topic="hive-sre-trouble-shooting.md"/>
+    <toc-element topic="hive-sre-sample-reports.md">
+        <toc-element toc-title="u3">
+            <toc-element topic="hive-sre-u3-loc_scan_missing_dirs.md"/>
+            <toc-element topic="hive-sre-u3-bad_filenames_for_orc_conversion.md"/>
+            <toc-element topic="hive-sre-u3-hms_checks.md"/>
+            <toc-element topic="hive-sre-u3-managed_upgrade_2_acid.md"/>
+            <toc-element topic="hive-sre-u3-acid_bucketing_update.md"/>
+            <toc-element topic="hive-sre-u3-managed_compactions.md"/>
+        </toc-element>
+        <toc-element toc-title="sre">
+            <toc-element topic="hive-sre-sre-acid_analyze_tables.md"/>
+            <toc-element topic="hive-sre-sre-hive_tbl_unique_base_dir_count.md"/>
+            <toc-element topic="hive-sre-sre-acid_analyze_tables_detailed.md"/>
+            <toc-element topic="hive-sre-sre-hms_report_summary.md"/>
+            <toc-element topic="hive-sre-sre-hive_tbl_anti_pattern_base_dir_count.md"/>
+            <toc-element topic="hive-sre-sre-hms_report_detail.md"/>
+            <toc-element topic="hive-sre-sre-small_files.md"/>
+            <toc-element topic="hive-sre-sre-table_volume.md"/>
+            <toc-element topic="hive-sre-sre-empty_datasets.md"/>
+        </toc-element>
+    </toc-element>
+</instance-profile>

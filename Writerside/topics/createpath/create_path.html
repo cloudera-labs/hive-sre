@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Hive Create Table Behaviors</title>
+    <style>
+        /* Style for the left navigation panel */
+        nav {
+            /*float: left;*/
+            width: 100%;
+            background-color: #f1f1f1;
+            /*height: 100%;*/
+            /*overflow: auto;*/
+        }
+
+        /* Style for the table in the main panel */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px;
+            margin-right: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+        th#CELL1 {
+          background-color: aqua;
+        }
+        th#CELL2 {
+          background-color: bisque;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Load the JSON data from a file or API endpoint
+            $.getJSON("create_path.json", function (data) {
+                // Store the data in a variable
+                var createData = data;
+
+                // Function to filter the books based on the selected genre
+                function filterCreateStatements() {
+                    // Get the value of the selected radio button
+                    var dttFilter = $("input[name='dbDefaultTableType']:checked").val();
+                    var eoFilter = $("input[name='dbEXTERNALONLY']:checked").val();
+                    var legacyFilter = $("input[name='legacy']:checked").val();
+                    var acidFilter = $("input[name='acid']:checked").val();
+                    var insertOnlyFilter = $("input[name='insertOnly']:checked").val();
+
+                    // Filter the books based on the selected genre
+                    var filteredCreateStatements = createData.filter(function (createStatement) {
+                        return createStatement.environment.db_properties["defaultTableType"].toLowerCase() === dttFilter
+                            && createStatement.environment.db_properties["EXTERNAL_TABLES_ONLY"].toLowerCase() === eoFilter
+                            && String(createStatement.environment.session_parameters["hive.create.as.external.legacy"]).toLowerCase() == legacyFilter
+                            && String(createStatement.environment.session_parameters["hive.create.as.acid"]).toLowerCase() == acidFilter
+                            && String(createStatement.environment.session_parameters["hive.create.as.insert.only"]).toLowerCase() === insertOnlyFilter;
+                    });
+
+                    // Build the HTML for the filtered books and display it in the table
+                    var tableHtml = "";
+                    $.each(filteredCreateStatements, function (index, createStatement) {
+                        tableHtml += "<tr><td>" + createStatement.create.description;
+                        tableHtml += "</td><td>";
+                        if (createStatement.create["external"] === true) {
+                            tableHtml += "&#10003";
+                            //     tableHtml += "External";
+                            // } else {
+                            //     tableHtml += "Managed";
+                        }
+                        tableHtml += "</td><td>";
+                        // if (createStatement.create.storage_type === true) {
+                        tableHtml += createStatement.create.storage_type;
+                        // } else {
+                        //     tableHtml += "Managed";
+                        // }
+                        tableHtml += "</td><td>";
+                        if (createStatement.created != null && createStatement.created["external"] === true) {
+                            tableHtml += "&#10003";
+                            // tableHtml += "External";
+                            // } else {
+                            //     tableHtml += "Managed";
+                        }
+                        tableHtml += "</td><td>";
+                        if (createStatement.created != null) {
+                            tableHtml += createStatement.created.storage_type;
+                            // } else {
+                            //     tableHtml += "Managed";
+                        }
+                        tableHtml += "</td><td>";
+                        if (createStatement.created != null && createStatement.created.transactional === true) {
+                            tableHtml += "&#10003";
+                            // tableHtml += "&#10003";
+                        }
+                        tableHtml += "</td><td>";
+                        if (createStatement.created != null && createStatement.created["transactional_properties"] != null) {
+                            if (createStatement.created["transactional_properties"] === "default") {
+                                // tableHtml += createStatement["transactional_properties"];
+                                tableHtml += "Full ACID"
+                            } else {
+                                tableHtml += "ACID Insert Only";
+                            }
+                        }
+                        tableHtml += "</td><td>";
+                        if (createStatement.created != null && createStatement.created["external.table.purge"] === true) {
+                            tableHtml += "&#10003";
+                        }
+                        tableHtml += "</td><td>";
+                        if (createStatement.created != null && createStatement.created["TRANSLATED_TO_EXTERNAL"] === true) {
+                            tableHtml += "&#10003";
+                        }
+                        tableHtml += "</td><td>";
+                        if (createStatement["error"] != null) {
+                            tableHtml += createStatement["error"];
+                        }
+
+                        // + "</td><td>" + createStatement["db.defaultTableType"]
+                        // + "</td><td>" + createStatement["db.externalTablesOnly"]
+                        // + "</td><td>" + createStatement["legacy"]
+                        // + "</td><td>" + createStatement["acid"]
+                        // + "</td><td>" + createStatement["insert_only"]
+                        // + "</td><td>" + createStatement.external
+                        // tableHtml += "</td><td>" + createStatement.transactional
+                        // tableHtml += "</td><td>" + createStatement["transactional_properties"]
+                        // tableHtml += "</td><td>" + createStatement["external.table.purge"]
+                        // tableHtml += "</td><td>" + createStatement["TRANSLATED_TO_EXTERNAL"]
+                        // tableHtml += "</td><td>" + createStatement["error"]
+                        tableHtml += "</td></tr>";
+                    });
+                    $("#create-table tbody").html(tableHtml);
+                }
+
+                // Attach the filterBooks function to the change event of the radio buttons
+                $("input[name='dbDefaultTableType']").change(function () {
+                    filterCreateStatements();
+                });
+                $("input[name='dbEXTERNALONLY']").change(function () {
+                    filterCreateStatements();
+                });
+                $("input[name='legacy']").change(function () {
+                    filterCreateStatements();
+                });
+                $("input[name='acid']").change(function () {
+                    filterCreateStatements();
+                });
+                $("input[name='insertOnly']").change(function () {
+                    filterCreateStatements();
+                });
+
+                // Load the table with all the books when the page loads
+                filterCreateStatements();
+            });
+        });
+    </script>
+</head>
+<body>
+<top>
+    <p>
+        Using the filters, select the configuration to see the resulting table properties.
+    </p>
+</top>
+<table style="width: fit-content">
+  <tr>
+    <td>
+      <dbf>
+        <!-- Navigation links here -->
+        <h3>Database Property Filters</h3>
+        <code>CREATE DATABASE xyz WITH DBPROPERTIES ('property'='value')</code><br>
+        <code>ALTER DATABASE xyz SET DBPROPERTIES ('property'='value')</code>
+        <table style="width: fit-content">
+          <tr>
+            <th colspan="1">Database Property</th>
+            <th colspan="3">Value</th>
+          </tr>
+          <tr>
+            <td>defaultTableType</td>
+            <td><label><input type="radio" name="dbDefaultTableType" value="na" checked>Not-Set(default)</label>
+            </td>
+            <td><label><input type="radio" name="dbDefaultTableType" value="external">EXTERNAL</label>
+            </td>
+            <td><label><input type="radio" name="dbDefaultTableType" value="acid">ACID</label>
+            </td>
+          </tr>
+          <tr>
+            <td>EXTERNAL_TABLES_ONLY</td>
+            <td><label><input type="radio" name="dbEXTERNALONLY" value="na" checked>Not-Set(default)</label>
+            </td>
+            <td><label><input type="radio" name="dbEXTERNALONLY" value="true">true</label>
+            </td>
+            <td><label><input type="radio" name="dbEXTERNALONLY" value="false">false</label>
+            </td>
+          </tr>
+        </table>
+      </dbf>
+    </td>
+    <td>
+      <slp>
+        <h3>Session Filters</h3>
+        <code>SET property=value;</code><br>
+        <table style="width: fit-content">
+          <tr>
+            <th colspan="1">Session Properties</th>
+            <th colspan="3">Value</th>
+          </tr>
+          <tr>
+            <td>Legacy Create Behavior<br>'hive.create.as.external.legacy'</td>
+            <td><label><input type="radio" name="legacy" value="true">true</label>
+            </td>
+            <td>
+              <label><input type="radio" name="legacy" value="false" checked>false(default)</label>
+            </td>
+          </tr>
+          <tr>
+            <td>Transactional Insert Only<br>'hive.create.as.insert.only'</td>
+            <td><label><input type="radio" name="insertOnly" value="true">true</label>
+            </td>
+            <td><label><input type="radio" name="insertOnly" value="false" checked>false(default)</label>
+            </td>
+          </tr>
+          <tr>
+            <td>Transactional Tables<br>'hive.create.as.acid'</td>
+            <td><label><input type="radio" name="acid" value="true" checked>true (default)</label>
+            </td>
+            <td><label><input type="radio" name="acid" value="false">false</label>
+            </td>
+          </tr>
+        </table>
+      </slp>
+    </td>
+  </tr>
+</table>
+<main>
+    <h3>Assumptions</h3>
+    <ul>
+        <li>Hive is configured without 'Impersonation'. <code>doAs=false</code></li>
+    </ul>
+
+    <h3>Resulting Table Properties</h3>
+    <table id="create-table" style="width: fit-content">
+        <thead>
+        <tr>
+            <th id="CELL1" colspan="3" style="text-align:center" >Submitted Create</th>
+            <th id="CELL2" colspan="7" style="text-align:center" >Create(d) Result</th>
+        </tr>
+        <tr>
+            <th id="CELL1">Create Statement</th>
+            <th id="CELL1">External</th>
+            <th id="CELL1">Storage Type</th>
+            <th id="CELL2">External</th>
+            <th id="CELL2">Storage Type</th>
+            <th id="CELL2">Transactional</th>
+            <th id="CELL2">Acid Type</th>
+            <th id="CELL2">Purge Flag</th>
+            <th id="CELL2">Metastore Translated</th>
+            <th>Error</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- The filtered books will be displayed here -->
+        </tbody>
+    </table>
+    <br><br>
+    <h4>Definitions</h4>
+    <table style="width: fit-content">
+        <tr>
+            <th>Property</th>
+            <th>Description</th>
+            <th>Notes</th>
+        </tr>
+        <tr>
+            <td><strong>External/Transactional</strong></td>
+            <td>When the table is 'External', all data will live in the location define in the metastore property
+                <code>hive.metastore.warehouse.external.dir</code> unless the table is created with a LOCATION element.<br/>
+                A Transactional table a Hive ACID table. The table property
+                <code>transactional=true</code> has been set and the
+                table data will reside in the metastores property <code>hive.metastore.warehouse.dir</code> directory.
+            </td>
+            <td>A LOCATION element of a table 'create' statement can only be used for "External" tables. If you wish to use
+                an alternate location for 'Transactional' tables, set the <code>MANAGEDLOCATION</code>
+                element at the database level.
+            </td>
+        </tr>
+        <tr>
+            <td><strong>Storage Type</strong></td>
+            <td>Identifies to table storage serde.  If the storage type is NOT declared during the 'CREATE', defaults are
+            used in various scenarios.</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><strong>Acid Type</strong></td>
+            <td>For ACID tables, this table property <code>transactional_properties</code> identifies the type of ACID support</td>
+            <td>There are two types:
+                <ul>
+                    <li>default - Full ACID support. INSERT, UPDATE, DELETE support. Only available for ORC file
+                        formats.
+                    </li>
+                    <li>insert_only - Insert Only ACID support. INSERT and Append operations supported. Available for
+                        ALL file
+                        formats.
+                    </li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td><strong>Purge Flag</strong></td>
+            <td>For "External" tables, when the table property <code>external.table.purge</code> is true the table/partitions
+                data will be deleted when the table/partition(s) are dropped.<br></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><strong>Metastore Translated</strong></td>
+            <td>If the table property <code>TRANSLATED_TO_EXTERNAL</code> is 'TRUE', the metastore converted the table
+                from an 'External' table to a 'Manaaged' table before storing the schema.
+            </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Error</td>
+            <td>Under some conditions, the properties conflict and won't allow the table to be created.</td>
+            <td></td>
+        </tr>
+    </table>
+
+</main>
+</body>
+</html>

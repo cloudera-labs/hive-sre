@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2023. Cloudera, Inc. All Rights Reserved
+  ~
+  ~  Licensed under the Apache License, Version 2.0 (the "License");
+  ~  you may not use this file except in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~        http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing, software
+  ~  distributed under the License is distributed on an "AS IS" BASIS,
+  ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  See the License for the specific language governing permissions and
+  ~  limitations under the License.
+  ~
+  -->
+
+<!DOCTYPE rules SYSTEM "https://resources.jetbrains.com/writerside/1.0/redirection-rules.dtd">
+<rules>
+    <!-- format is as follows
+    <rule id="<unique id>">
+        <accepts>page.html</accepts>
+    </rule>
+    -->
+    <rule id="53137a88">
+        <description><![CDATA[Created after removal of "<data_movement.md>" from Main]]></description>
+        <accepts>data_movement.html</accepts>
+    </rule>
+    <rule id="7336295c">
+        <description><![CDATA[Created after removal of "<iceberg_migration.md>" from Main]]></description>
+        <accepts>iceberg_migration.html</accepts>
+    </rule>
+    <rule id="60a0d056">
+        <description><![CDATA[Created after removal of "<schema_only.md>" from Main]]></description>
+        <accepts>schema_only.html</accepts>
+    </rule>
+    <rule id="273afb37">
+        <description><![CDATA[Created after removal of "<storage_migration.md>" from Main]]></description>
+        <accepts>storage_migration.html</accepts>
+    </rule>
+    <rule id="72fb11e8">
+        <description>Created after removal of "Topic title" from Main</description>
+        <accepts>linked_readme.html</accepts>
+    </rule>
+    <rule id="7f673cc8">
+        <description><![CDATA[Created after removal of "<linked_distcp_workbook.md>" from Main]]></description>
+        <accepts>linked_distcp_workbook.html</accepts>
+    </rule>
+    <rule id="116f9802">
+        <description>Created after removal of "ICEBERG_MIGRATION" from hive-sre</description>
+        <accepts>ICEBERG-MIGRATION.html</accepts>
+    </rule>
+    <rule id="2d1fd793">
+        <description>Created after removal of "Features" from hms-mirror</description>
+        <accepts>hive-sre-features.html</accepts>
+    </rule>
+    <rule id="46d91577">
+        <description>Created after removal of "Iceberg Migration" from hms-mirror</description>
+        <accepts>iceberg_migration.html</accepts>
+    </rule>
+    <rule id="119d02ab">
+        <description>Created after removal of "Default Config Template" from hms-mirror</description>
+        <accepts>hive-sre-default-config-template.html</accepts>
+    </rule>
+    <rule id="227a6131">
+        <description>Created after removal of "On Prem Legacy Hive to Non-Legacy Hive" from hms-mirror</description>
+        <accepts>hms-mirror-legacy-to-non-legacy.html</accepts>
+    </rule>
+    <rule id="15086aef">
+        <description>Created after removal of "Table Migration via SQL using Common Storage" from hms-mirror
+        </description>
+        <accepts>Table-Migration-via-SQL-using-Common-Storage-cs-common-storage.html</accepts>
+    </rule>
+    <rule id="7a4e9eb9">
+        <description>Created after removal of "Table Migration via SQL using Intermediate Storage" from hms-mirror
+        </description>
+        <accepts>Table-Migration-via-SQL-using-Intermediate-Storage.html</accepts>
+    </rule>
+    <rule id="2f47700a">
+        <description>Created after removal of "Hive Create Paths with CDP (7.1.9+)" from hive-sre</description>
+        <accepts>hive-sre-hive-create-path.html</accepts>
+    </rule>
+</rules>
