@@ -22,7 +22,7 @@
 
     <groupId>com.cloudera.utils.hive</groupId>
     <artifactId>hive-sre</artifactId>
-    <version>3.0.1.5</version>
+    <version>3.0.1.6</version>
 
     <name>hive-sre</name>
 
@@ -64,7 +64,7 @@
 
         <gateway-shell.version>1.0.0</gateway-shell.version>
 
-        <hadoop-cli.version>2.4.3.3</hadoop-cli.version>
+        <hadoop-cli.version>2.4.3.4</hadoop-cli.version>
 
     </properties>
 

@@ -17,10 +17,21 @@
 
 package com.cloudera.utils.hive.config;
 
-public class ConnectionPool {
+public class ConnectionPool implements Cloneable {
     private int min = 1;
     private int max = 3;
     private int timeout = 120;
+
+    @Override
+    public ConnectionPool clone() {
+        try {
+            ConnectionPool clone = (ConnectionPool) super.clone();
+            // TODO: copy mutable state here, so the clone can't change the internals of the original
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
 
     public int getMin() {
         return min;

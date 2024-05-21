@@ -4,7 +4,7 @@
   <groupId>com.cloudera.utils.hive</groupId>
   <artifactId>hive-sre</artifactId>
   <name>hive-sre</name>
-  <version>3.0.1.5</version>
+  <version>3.0.1.6</version>
   <url>https://github.com/cloudera-labs/hive-sre</url>
   <build>
     <finalName>${project.artifactId}</finalName>
@@ -248,7 +248,7 @@
     <maven.surefire.version>3.1.2</maven.surefire.version>
     <maven.site.version>3.7.1</maven.site.version>
     <maven.jar.version>3.3.0</maven.jar.version>
-    <hadoop-cli.version>2.4.3.3</hadoop-cli.version>
+    <hadoop-cli.version>2.4.3.4</hadoop-cli.version>
     <hikari.version>4.0.3</hikari.version>
     <oracle.client.version>12.1.0.2</oracle.client.version>
     <mariadb.client.version>2.7.3</mariadb.client.version>

@@ -21,7 +21,19 @@ package com.cloudera.utils.hive.config;
 import javax.validation.constraints.NotNull;
 import java.util.Properties;
 
-public class DBStore {
+public class DBStore implements Cloneable {
+    @Override
+    public DBStore clone() {
+        try {
+            DBStore clone = (DBStore) super.clone();
+            ConnectionPool connectionPoolClone = this.connectionPool.clone();
+            clone.setConnectionPool(connectionPoolClone);
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
+
     public enum DB_TYPE { MYSQL, POSTGRES, ORACLE
 //        , MSSQL
     };
