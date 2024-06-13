@@ -4,7 +4,7 @@
   <groupId>com.cloudera.utils.hive</groupId>
   <artifactId>hive-sre</artifactId>
   <name>hive-sre</name>
-  <version>3.0.1.6</version>
+  <version>3.0.1.7</version>
   <url>https://github.com/cloudera-labs/hive-sre</url>
   <build>
     <finalName>${project.artifactId}</finalName>

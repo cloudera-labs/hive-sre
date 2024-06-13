@@ -26,8 +26,10 @@ public class DBStore implements Cloneable {
     public DBStore clone() {
         try {
             DBStore clone = (DBStore) super.clone();
-            ConnectionPool connectionPoolClone = this.connectionPool.clone();
-            clone.setConnectionPool(connectionPoolClone);
+            if (this.connectionPool != null) {
+                ConnectionPool connectionPoolClone = this.connectionPool.clone();
+                clone.setConnectionPool(connectionPoolClone);
+            }
             return clone;
         } catch (CloneNotSupportedException e) {
             throw new AssertionError();
@@ -46,7 +48,7 @@ public class DBStore implements Cloneable {
     @NotNull
     private Properties connectionProperties = new Properties();
     @NotNull
-    private ConnectionPool connectionPool;
+    private ConnectionPool connectionPool = new ConnectionPool();
 
     public String getUri() {
         return uri;
