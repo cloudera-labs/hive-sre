@@ -45,10 +45,28 @@ public class DBStore implements Cloneable {
     private DB_TYPE type = DB_TYPE.MYSQL; // Default
     // Run for each fetch connection.  Mainly used to help set the DB/Schema for Oracle
     private String initSql;
+    private String resource;
+    private String version;
     @NotNull
     private Properties connectionProperties = new Properties();
     @NotNull
     private ConnectionPool connectionPool = new ConnectionPool();
+
+    public String getResource() {
+        return resource;
+    }
+
+    public void setResource(String resource) {
+        this.resource = resource;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
 
     public String getUri() {
         return uri;
